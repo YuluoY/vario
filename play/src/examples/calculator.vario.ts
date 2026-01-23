@@ -89,7 +89,7 @@ export function createCalculator(app?: App | null) {
       a: '123'
     },
     methods: {
-      inputNumber: ({ state, params, ctx }) => {
+      inputNumber: ({ state, params }) => {
         const display = state.display
         if (state.waitingForOperand) {
           state.display = params.num
@@ -98,7 +98,7 @@ export function createCalculator(app?: App | null) {
           state.display = display === '0' ? params.num : display + params.num
         }
       },
-      inputDecimal: ({ state, ctx }) => {
+      inputDecimal: ({ state }) => {
         if (state.waitingForOperand) {
           state.display = '0.'
           state.waitingForOperand = false
@@ -106,13 +106,13 @@ export function createCalculator(app?: App | null) {
           state.display += '.'
         }
       },
-      clear: ({ state, ctx }) => {
+      clear: ({ state }) => {
         state.display = '0'
         state.previousValue = null
         state.operator = null
         state.waitingForOperand = false
       },
-      handleOperator: ({ state, params, ctx }) => {
+      handleOperator: ({ state, params }) => {
         const currentValue = parseFloat(state.display)
         if (state.previousValue === null) {
           state.previousValue = currentValue

@@ -608,7 +608,7 @@ const runRenderingTest = async (nodeCount: number) => {
       children
     }
 
-    const { vnode } = useVario(schema, { app })
+    const { vnode: _vnode } = useVario(schema, { app })
     await nextTick()
 
     const endTime = performance.now()
@@ -781,7 +781,7 @@ const runExpressionTest = async (exprCount: number) => {
       children
     }
 
-    const { vnode, ctx } = useVario(schema, { app })
+    const { vnode: _vnode, ctx } = useVario(schema, { app })
     ctx.value!._set('count', 10)
     await nextTick()
 
@@ -825,7 +825,7 @@ const runCacheTest = async () => {
       ]
     }
 
-    const { vnode, ctx } = useVario(schema, { app })
+    const { vnode: _vnode, ctx } = useVario(schema, { app })
     
     // First run (no cache)
     const start1 = performance.now()
@@ -877,7 +877,7 @@ const runStateUpdateTest = async (updateCount: number) => {
       children: '{{ count }}'
     }
 
-    const { vnode, ctx } = useVario(schema, { app })
+    const { vnode: _vnode, ctx } = useVario(schema, { app })
     
     const startTime = performance.now()
     
@@ -1010,7 +1010,7 @@ const runComponentTest = async (componentCount: number) => {
       children
     }
 
-    const { vnode } = useVario(schema, {
+    const { vnode: _vnode } = useVario(schema, {
       app,
       state: {},
       methods: {
@@ -1110,7 +1110,7 @@ const runMixedTest = async () => {
       ]
     }
 
-    const { vnode, ctx } = useVario(schema, { app })
+    const { vnode: _vnode, ctx } = useVario(schema, { app })
     
     const items = Array.from({ length: 100 }, (_, i) => ({
       name: `Item ${i}`,

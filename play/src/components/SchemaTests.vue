@@ -228,7 +228,7 @@ const currentSchema = ref<any>({
 
 // 创建 useVario 实例（传入响应式的 schema）
 const { vnode, ctx } = useVario(computed(() => currentSchema.value), {
-  onEvent: (event, data) => {
+  onEmit: (event: string, data?: unknown) => {
     console.log('[Schema Tests] Event:', event, data)
   },
   onError: (error) => {

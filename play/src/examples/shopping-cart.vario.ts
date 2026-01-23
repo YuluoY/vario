@@ -176,7 +176,7 @@ export function createShoppingCart(app?: App | null) {
       cartEmpty: (s) => s.cart.length === 0
     },
     methods: {
-      addToCart: ({ state, params, ctx }) => {
+      addToCart: ({ state, params }) => {
         const product = state.products.find(p => p.id === params.productId)
         if (!product || product.stock === 0) return
         const existing = state.cart.find(i => i.id === params.productId)
@@ -186,16 +186,16 @@ export function createShoppingCart(app?: App | null) {
           state.cart.push({ id: product.id, name: product.name, price: product.price, quantity: 1 })
         }
       },
-      increaseQuantity: ({ state, params, ctx }) => {
+      increaseQuantity: ({ state, params }) => {
         const item = state.cart.find(i => i.id === params.itemId)
         const product = state.products.find(p => p.id === params.itemId)
         if (item && product && item.quantity < product.stock) item.quantity += 1
       },
-      decreaseQuantity: ({ state, params, ctx }) => {
+      decreaseQuantity: ({ state, params }) => {
         const item = state.cart.find(i => i.id === params.itemId)
         if (item && item.quantity > 1) item.quantity -= 1
       },
-      removeFromCart: ({ state, params, ctx }) => {
+      removeFromCart: ({ state, params }) => {
         state.cart = state.cart.filter(i => i.id !== params.itemId)
       },
       checkout: ({ state, ctx }) => {
