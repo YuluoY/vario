@@ -1,0 +1,28 @@
+{
+  "name": "vario",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vario - UI Behavior IR + Runtime VM",
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter './packages/*' dev",
+    "build": "pnpm --filter './packages/*' build",
+    "test": "pnpm --filter './packages/*' test",
+    "test:watch": "pnpm --filter './packages/*' test:watch",
+    "test:integration": "vitest run --config vitest.config.integration.ts",
+    "lint": "pnpm --filter './packages/*' lint",
+    "clean": "pnpm --filter './packages/*' clean"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "tsc-alias": "^1.8.16",
+    "typescript": "^5.3.3",
+    "vite-tsconfig-paths": "^6.0.4",
+    "vitest": "^1.2.0",
+    "vue": "^3.5.27"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

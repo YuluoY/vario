@@ -1,0 +1,14 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@vario/core": ["../packages/vario-core/dist"],
+      "@vario/schema": ["../packages/vario-schema/dist"],
+      "@vario/vue": ["../packages/vario-vue/dist"],
+      "@vario/cli": ["../packages/vario-cli/dist"]
+    }
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"]
+}

@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["./*"],
+      "@vario/core": ["../../vario-core/dist/index.d.ts"],
+      "@vario/schema": ["../../vario-schema/dist/index.d.ts"]
+    },
+    "types": ["node"],
+    "moduleResolution": "node",
+    "allowImportingTsExtensions": false
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+}

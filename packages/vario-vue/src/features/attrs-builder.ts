@@ -1,0 +1,204 @@
+/**
+ * 属性构建模块
+ * 
+ * 负责构建 Vue 组件的属性对象，包括 props、model 绑定、事件等
+ */
+
+import type { RuntimeContext } from '@vario/core'
+import type { SchemaNode } from '@vario/schema'
+import type { PathSegment } from '@vario/core'
+import { createModelBinding } from '../bindings.js'
+import type { ModelPathResolver } from './path-resolver.js'
+import type { EventHandler } from './event-handler.js'
+
+/**
+ * 属性构建器
+ */
+export class AttrsBuilder {
+  private staticAttrsCache = new WeakMap<SchemaNode, Record<string, any>>()
+
+  constructor(
+    private getState: (() => any) | undefined,
+    private pathResolver: ModelPathResolver,
+    private eventHandler: EventHandler
+  ) {}
+
+  /**
+   * 检查props是否完全静态（不包含表达式）
+   */
+  hasStaticProps(schema: SchemaNode): boolean {
+    if (!schema.props) return true
+    
+    for (const value of Object.values(schema.props)) {
+      if (typeof value === 'string' && (value.includes('{{') || value.includes('${'))) {
+        return false
+      }
+      if (typeof value === 'object' && value !== null) {
+        // 递归检查嵌套对象
+        const nested = value as Record<string, unknown>
+        for (const nestedValue of Object.values(nested)) {
+          if (typeof nestedValue === 'string' && (nestedValue.includes('{{') || nestedValue.includes('${'))) {
+            return false
+          }
+        }
+      }
+    }
+    return true
+  }
+
+  /**
+   * 合并动态属性（model绑定、事件）到静态属性
+   */
+  mergeDynamicAttrs(
+    schema: SchemaNode,
+    ctx: RuntimeContext,
+    component: any,
+    staticAttrs: Record<string, any>,
+    modelPathStack: PathSegment[] = []
+  ): Record<string, any> {
+    const attrs = { ...staticAttrs }
+    
+    // 添加动态model绑定
+    if (schema.model) {
+      const modelPath = this.pathResolver.resolveModelPath(
+        schema.model as string,
+        schema,
+        ctx,
+        modelPathStack
+      )
+      const binding = createModelBinding(schema.type, modelPath, ctx, component, this.getState)
+      Object.assign(attrs, binding)
+    }
+    
+    // 添加具名model绑定
+    for (const key in schema) {
+      if (key.startsWith('model:')) {
+        const modelName = key.slice(6)
+        const modelPath = this.pathResolver.resolveModelPath(
+          (schema as any)[key],
+          schema,
+          ctx,
+          modelPathStack
+        )
+        const binding = createModelBinding(
+          schema.type, 
+          modelPath, 
+          ctx, 
+          component, 
+          this.getState, 
+          modelName
+        )
+        Object.assign(attrs, binding)
+      }
+    }
+    
+    // 添加事件处理器
+    if (schema.events) {
+      const eventHandlers = this.eventHandler.getEventHandlers(schema, ctx)
+      Object.assign(attrs, eventHandlers)
+    }
+    
+    return attrs
+  }
+
+  /**
+   * 构建属性对象
+   * 
+   * 优化策略：
+   * - 批量设置属性（减少Object.assign调用）
+   * - 静态属性缓存（提升性能）
+   * - 事件处理器缓存（避免重复创建）
+   */
+  buildAttrs(
+    schema: SchemaNode,
+    ctx: RuntimeContext,
+    component: any,
+    modelPathStack: PathSegment[] = [],
+    evalProps: (props: Record<string, any>, ctx: RuntimeContext) => Record<string, any>
+  ): Record<string, any> {
+    // 检查静态属性缓存（如果props中没有表达式，可以缓存）
+    const hasStaticProps = this.hasStaticProps(schema)
+    if (hasStaticProps) {
+      const cached = this.staticAttrsCache.get(schema)
+      if (cached) {
+        // 合并动态部分（model绑定、事件）
+        return this.mergeDynamicAttrs(schema, ctx, component, cached, modelPathStack)
+      }
+    }
+
+    // 批量构建属性数组，最后一次性合并
+    const attrsParts: Record<string, any>[] = []
+    
+    // 1. 合并 props（支持表达式插值）
+    if (schema.props) {
+      attrsParts.push(evalProps(schema.props, ctx))
+    }
+    
+    // 2. 处理双向绑定（支持多 model）
+    if (schema.model) {
+      const modelPath = this.pathResolver.resolveModelPath(
+        schema.model as string,
+        schema,
+        ctx,
+        modelPathStack
+      )
+      const binding = createModelBinding(schema.type, modelPath, ctx, component, this.getState)
+      attrsParts.push(binding)
+    }
+    
+    // 处理具名 model（model:xxx）
+    for (const key in schema) {
+      if (key.startsWith('model:')) {
+        const modelName = key.slice(6) // 移除 'model:' 前缀
+        const modelPath = this.pathResolver.resolveModelPath(
+          (schema as any)[key],
+          schema,
+          ctx,
+          modelPathStack
+        )
+        const binding = createModelBinding(
+          schema.type, 
+          modelPath, 
+          ctx, 
+          component, 
+          this.getState, 
+          modelName
+        )
+        attrsParts.push(binding)
+      }
+    }
+    
+    // 3. 处理事件（使用缓存）
+    if (schema.events) {
+      const eventHandlers = this.eventHandler.getEventHandlers(schema, ctx)
+      attrsParts.push(eventHandlers)
+    }
+    
+    // 批量合并所有属性
+    const attrs = Object.assign({}, ...attrsParts)
+    
+    // 4. 统一处理 style 格式（确保始终是对象）
+    if (attrs.style) {
+      if (typeof attrs.style === 'string') {
+        const styleObj: Record<string, string> = {}
+        attrs.style.split(';').forEach((rule: string) => {
+          const [key, value] = rule.split(':').map((s: string) => s.trim())
+          if (key && value) {
+            const camelKey = key.replace(/-([a-z])/g, (_: string, letter: string) => letter.toUpperCase())
+            styleObj[camelKey] = value
+          }
+        })
+        attrs.style = styleObj
+      } else if (Array.isArray(attrs.style)) {
+        attrs.style = {}
+      }
+    }
+    
+    // 缓存静态属性
+    if (hasStaticProps) {
+      this.staticAttrsCache.set(schema, { ...attrs })
+    }
+    
+    return attrs
+  }
+}

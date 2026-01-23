@@ -1,0 +1,32 @@
+{
+  "name": "@vario/vue",
+  "version": "0.1.0",
+  "description": "Vario Vue Renderer - Vue 3 integration for Vario Schema rendering",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@vario/core": "workspace:*",
+    "@vario/schema": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0",
+    "vue": "^3.4.0",
+    "element-plus": "^2.4.0"
+  }
+}

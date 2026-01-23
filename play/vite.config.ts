@@ -1,0 +1,42 @@
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import path from 'path'
+
+// GitHub Pages 部署时使用仓库名作为 base 路径
+// 如果环境变量 GITHUB_REPOSITORY 存在，使用仓库名；否则使用 '/'
+const getBasePath = () => {
+  // 支持 GitHub Actions 环境变量
+  const repo = process.env.GITHUB_REPOSITORY || process.env.VITE_GITHUB_REPOSITORY
+  if (repo) {
+    const repoName = repo.split('/')[1]
+    return `/${repoName}/`
+  }
+  // 本地开发或自定义部署时使用 '/'
+  return process.env.BASE_PATH || process.env.VITE_BASE_PATH || '/'
+}
+
+export default defineConfig({
+  base: getBasePath(),
+  plugins: [vue()],
+  resolve: {
+    alias: {
+      // 为 vario-core 编译后的 dist 文件添加别名解析（使用 @/ 导入）
+      // Vite 使用最长匹配原则，更具体的别名应放在前面
+      '@/expression': path.resolve(__dirname, '../packages/vario-core/dist/expression'),
+      '@/vm': path.resolve(__dirname, '../packages/vario-core/dist/vm'),
+      '@/runtime': path.resolve(__dirname, '../packages/vario-core/dist/runtime'),
+      '@/types': path.resolve(__dirname, '../packages/vario-core/dist/types'),
+      // 通用的 @/ 别名（优先级最低，放在最后）
+      '@/': path.resolve(__dirname, '../packages/vario-core/dist/'),
+      // src 目录的别名（使用不同的前缀避免冲突）
+      '@src': path.resolve(__dirname, './src')
+    }
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `@use "@src/styles/design-tokens" as *;`
+      }
+    }
+  }
+})
