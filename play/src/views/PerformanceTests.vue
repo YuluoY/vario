@@ -608,7 +608,7 @@ const runRenderingTest = async (nodeCount: number) => {
       children
     }
 
-    const { vnode: _vnode } = useVario(schema, { app })
+    const { vnode } = useVario(schema, { app })
     await nextTick()
 
     const endTime = performance.now()
@@ -1010,7 +1010,7 @@ const runComponentTest = async (componentCount: number) => {
       children
     }
 
-    const { vnode: _vnode } = useVario(schema, {
+    const { vnode } = useVario(schema, {
       app,
       state: {},
       methods: {
