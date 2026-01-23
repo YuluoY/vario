@@ -1,0 +1,28 @@
+# <type>(<scope>): <subject>
+#
+# <body>
+#
+# <footer>
+
+# Type 类型:
+# - feat: 新功能
+# - fix: 修复bug
+# - docs: 文档更新
+# - style: 代码格式调整（不影响代码运行）
+# - refactor: 重构
+# - perf: 性能优化
+# - test: 测试相关
+# - chore: 构建/工具相关
+# - ci: CI/CD 相关
+
+# Scope 范围（可选）:
+# - core: 核心包
+# - schema: Schema 包
+# - vue: Vue 集成包
+# - cli: CLI 工具
+# - play: 演示平台
+# - ci: CI/CD 配置
+
+# Subject 主题（简短描述，50字符以内）
+# Body 详细描述（可选，72字符换行）
+# Footer 关闭的issue等（可选）
