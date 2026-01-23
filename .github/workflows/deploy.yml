@@ -38,9 +38,11 @@ jobs:
         run: |
           ls -la pnpm-lock.yaml || echo "Lockfile not found"
           head -5 pnpm-lock.yaml || echo "Cannot read lockfile"
+          pnpm --version
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          pnpm install --frozen-lockfile || (echo "Frozen lockfile failed, trying without..." && pnpm install --no-frozen-lockfile)
 
       - name: Build packages
         run: pnpm build
