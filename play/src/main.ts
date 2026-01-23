@@ -1,5 +1,7 @@
+// 按顺序导入，确保依赖关系正确
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+// Element Plus 必须在 Vue 之后导入
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
@@ -29,6 +31,19 @@ import '@src/styles/main.scss'
 
 const app = createApp(App)
 
+// 按顺序注册插件，确保依赖关系正确
+// 1. Pinia (状态管理)
+app.use(createPinia())
+
+// 2. Router (路由)
+app.use(router)
+
+// 3. Element Plus (UI 组件库，依赖 Vue)
+app.use(ElementPlus)
+
+// 4. i18n (国际化，依赖 Vue)
+app.use(i18n)
+
 // 注册全局组件图标（通过 app.component() 注册，Vario 会自动解析）
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
@@ -44,10 +59,5 @@ app.config.errorHandler = (err, _instance, info) => {
   // 其他错误正常处理
   console.error('[Vue] Error:', err, info)
 }
-
-app.use(createPinia())
-app.use(router)
-app.use(ElementPlus)
-app.use(i18n)
 
 app.mount('#app')

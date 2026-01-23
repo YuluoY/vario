@@ -44,7 +44,15 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Element Plus 单独打包
+          // Vue 核心库单独打包（必须在最前面）
+          if (id.includes('node_modules/vue/') || id.includes('node_modules/@vue/')) {
+            return 'vue-core'
+          }
+          // Vue 生态系统库（router, pinia, i18n）
+          if (id.includes('vue-router') || id.includes('pinia') || id.includes('vue-i18n')) {
+            return 'vue-vendor'
+          }
+          // Element Plus 单独打包（依赖 Vue，必须在 Vue 之后）
           if (id.includes('element-plus')) {
             return 'element-plus'
           }
@@ -52,16 +60,31 @@ export default defineConfig({
           if (id.includes('echarts')) {
             return 'echarts'
           }
-          // Vue 相关库打包在一起
-          if (id.includes('vue') || id.includes('vue-router') || id.includes('pinia') || id.includes('vue-i18n')) {
-            return 'vue-vendor'
+          // Monaco Editor 单独打包
+          if (id.includes('monaco-editor')) {
+            return 'monaco-editor'
           }
-          // node_modules 中的其他库
+          // 其他 node_modules 中的库
           if (id.includes('node_modules')) {
             return 'vendor'
           }
         }
       }
+    },
+    // 优化依赖预构建
+    commonjsOptions: {
+      include: [/node_modules/]
     }
+  },
+  optimizeDeps: {
+    include: [
+      'vue',
+      'vue-router',
+      'pinia',
+      'vue-i18n',
+      'element-plus',
+      '@element-plus/icons-vue'
+    ],
+    exclude: ['monaco-editor']
   }
 })
