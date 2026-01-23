@@ -667,7 +667,7 @@ const runNestingTest = async (depth: number) => {
       }
     }
 
-    const { vnode } = useVario(schema, { app })
+    const { vnode: _vnode } = useVario(schema, { app })
     await nextTick()
 
     const endTime = performance.now()
