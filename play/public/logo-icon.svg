@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <!-- 图标渐变 -->
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 发光效果 -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- 图标：抽象层叠结构，体现 IR/VM 和跨框架抽象 -->
+  <g transform="translate(32, 32)" filter="url(#glow)">
+    <!-- 底层：框架抽象层（类似 React 的轨道感，但更抽象） -->
+    <g opacity="0.25">
+      <ellipse cx="0" cy="0" rx="14" ry="6" 
+               stroke="url(#iconGradient)" 
+               stroke-width="1.5" 
+               fill="none"
+               transform="rotate(-20 0 0)"/>
+      <ellipse cx="0" cy="0" rx="14" ry="6" 
+               stroke="url(#iconGradient)" 
+               stroke-width="1.5" 
+               fill="none"
+               transform="rotate(20 0 0)"/>
+    </g>
+    
+    <!-- 中层：IR 转换层（几何形状，类似 Vite 的三角形感） -->
+    <g opacity="0.6">
+      <!-- 左侧转换箭头 -->
+      <path d="M -12 -6 L -6 0 L -12 6 Z" 
+            fill="url(#iconGradient)"/>
+      <!-- 右侧转换箭头 -->
+      <path d="M 12 -6 L 6 0 L 12 6 Z" 
+            fill="url(#iconGradient)"/>
+    </g>
+    
+    <!-- 顶层：Schema 核心（中心几何形状） -->
+    <g opacity="0.95">
+      <!-- 中心菱形/方形，代表 Schema -->
+      <path d="M -6 -6 L 6 -6 L 6 6 L -6 6 Z" 
+            fill="url(#iconGradient)"
+            transform="rotate(45 0 0)"/>
+      
+      <!-- 中心点，代表 VM 运行时 -->
+      <circle cx="0" cy="0" r="2.5" 
+              fill="white" 
+              opacity="0.9"/>
+    </g>
+    
+    <!-- 数据流粒子（体现运行时动态） -->
+    <g opacity="0.7">
+      <circle cx="-8" cy="-8" r="1.5" fill="white" opacity="0.8"/>
+      <circle cx="8" cy="-8" r="1.5" fill="white" opacity="0.8"/>
+      <circle cx="-8" cy="8" r="1.5" fill="white" opacity="0.8"/>
+      <circle cx="8" cy="8" r="1.5" fill="white" opacity="0.8"/>
+    </g>
+  </g>
+</svg>

@@ -938,9 +938,10 @@ const updateChart = () => {
         if (!Array.isArray(params)) return ''
         let result = `<div style="margin-bottom: 4px;">${params[0].axisValue}</div>`
         params.forEach((param: any) => {
+          const value = typeof param.value === 'number' ? param.value.toFixed(2) : param.value
           result += `<div style="margin: 2px 0;">
             <span style="display:inline-block;width:10px;height:10px;background:${param.color};border-radius:50%;margin-right:5px;"></span>
-            ${param.seriesName}: <strong>${param.value}${param.seriesName === t('performanceTests.expressionCacheHitRate') ? '%' : param.seriesName === t('performanceTests.avgInstructionTime') ? 'ms' : ''}</strong>
+            ${param.seriesName}: <strong>${value}${param.seriesName === t('performanceTests.expressionCacheHitRate') ? '%' : param.seriesName === t('performanceTests.avgInstructionTime') ? 'ms' : ''}</strong>
           </div>`
         })
         return result
@@ -974,7 +975,7 @@ const updateChart = () => {
         min: 0,
         max: 100,
         axisLabel: {
-          formatter: '{value}%'
+          formatter: (value: number) => `${value.toFixed(2)}%`
         }
       },
       {
@@ -982,7 +983,7 @@ const updateChart = () => {
         name: t('performanceTests.instructionTimeContextSize'),
         position: 'right',
         axisLabel: {
-          formatter: '{value}'
+          formatter: (value: number) => value.toFixed(2)
         }
       }
     ],
@@ -991,7 +992,7 @@ const updateChart = () => {
         name: t('performanceTests.expressionCacheHitRate'),
         type: 'line',
         smooth: true,
-        data: data.map(d => d.cacheHitRate.toFixed(1)),
+        data: data.map(d => parseFloat(d.cacheHitRate.toFixed(2))),
         itemStyle: {
           color: '#67c23a'
         },
@@ -1018,7 +1019,7 @@ const updateChart = () => {
         name: t('performanceTests.avgInstructionTime'),
         type: 'line',
         smooth: true,
-        data: data.map(d => (d.avgInstructionTime * 1000).toFixed(3)),
+        data: data.map(d => parseFloat((d.avgInstructionTime * 1000).toFixed(2))),
         itemStyle: {
           color: '#e6a23c'
         },
@@ -1045,7 +1046,7 @@ const updateChart = () => {
         name: t('performanceTests.contextSize'),
         type: 'line',
         smooth: true,
-        data: data.map(d => d.contextSize),
+        data: data.map(d => parseFloat(d.contextSize.toFixed(2))),
         itemStyle: {
           color: '#409eff'
         },

@@ -19,7 +19,7 @@
         </div>
       </div>
       <div class="hero-illustration">
-        <el-icon :size="200" color="#8B5CF6"><Connection /></el-icon>
+        <img src="/logo-icon.svg" alt="Vario" class="hero-logo" />
       </div>
     </section>
 
@@ -114,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import {
@@ -138,7 +138,7 @@ const navigateToExamples = () => {
   router.push('/examples')
 }
 
-const features = ref([
+const features = computed(() => [
   {
     icon: Lightning,
     title: t('home.feature1Title'),
@@ -171,30 +171,30 @@ const features = ref([
   }
 ])
 
-const stats = ref([
+const stats = computed(() => [
   { label: t('home.stat1Label'), value: '5' },
   { label: t('home.stat2Label'), value: '50+' },
   { label: t('home.stat3Label'), value: '20+' },
   { label: t('home.stat4Label'), value: '100%' }
 ])
 
-const gettingStartedSteps = ref([
+const gettingStartedSteps = computed(() => [
   {
-    timestamp: 'Step 1',
+    timestamp: t('home.step1Timestamp'),
     title: t('home.step1Title'),
     description: t('home.step1Desc'),
     action: navigateToTests,
     actionText: t('home.step1Action')
   },
   {
-    timestamp: 'Step 2',
+    timestamp: t('home.step2Timestamp'),
     title: t('home.step2Title'),
     description: t('home.step2Desc'),
     action: () => router.push('/integration-tests'),
     actionText: t('home.step2Action')
   },
   {
-    timestamp: 'Step 3',
+    timestamp: t('home.step3Timestamp'),
     title: t('home.step3Title'),
     description: t('home.step3Desc'),
     action: navigateToExamples,
@@ -204,6 +204,9 @@ const gettingStartedSteps = ref([
 </script>
 
 <style scoped lang="scss">
+@use '@src/styles/abstracts/variables' as *;
+@use '@src/styles/abstracts/mixins' as *;
+
 .home-view {
   animation: fadeIn 0.5s ease;
 }
@@ -212,11 +215,20 @@ const gettingStartedSteps = ref([
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-12);
-  margin-bottom: var(--space-16);
-  padding: var(--space-12);
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border-radius: var(--radius-lg);
+  gap: $spacing-xl;
+  margin-bottom: $spacing-xxl;
+  padding: $spacing-xl;
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: $radius-lg;
+  @include transition-opacity($transition-base);
+  
+  @include respond-below(xs) {
+    flex-direction: column;
+    text-align: center;
+    padding: $spacing-lg;
+    gap: $spacing-lg;
+  }
 }
 
 .hero-content {
@@ -225,26 +237,38 @@ const gettingStartedSteps = ref([
 }
 
 .hero-title {
-  font-size: var(--font-size-5xl);
-  font-weight: var(--font-weight-bold);
-  margin-bottom: var(--space-6);
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  @include typography-h1;
+  margin-bottom: $spacing-md;
+  background: linear-gradient(135deg, var(--primary-base) 0%, var(--primary-hover) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  
+  @include respond-below(xs) {
+    font-size: $font-size-h2-mobile;
+  }
 }
 
 .hero-subtitle {
-  font-size: var(--font-size-lg);
-  color: var(--color-text-secondary);
-  margin-bottom: var(--space-8);
-  line-height: var(--line-height-relaxed);
+  @include typography-body;
+  font-size: $font-size-h4-desktop;
+  color: var(--text-secondary);
+  margin-bottom: $spacing-lg;
+  line-height: $line-height-body;
+  
+  @include respond-below(xs) {
+    font-size: $font-size-body-mobile;
+  }
 }
 
 .hero-actions {
   display: flex;
-  gap: var(--space-4);
+  gap: $spacing-md;
   flex-wrap: wrap;
+  
+  @include respond-below(xs) {
+    justify-content: center;
+  }
 }
 
 .hero-illustration {
@@ -252,76 +276,111 @@ const gettingStartedSteps = ref([
   display: flex;
   align-items: center;
   justify-content: center;
+  
+  @include respond-below(xs) {
+    display: none;
+  }
+}
+
+.hero-logo {
+  width: 200px;
+  height: 200px;
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 10px 20px rgba(59, 130, 246, 0.2));
+  @include transition-transform($transition-slow);
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .section-title {
-  font-size: var(--font-size-4xl);
-  font-weight: var(--font-weight-bold);
+  @include typography-h2;
   text-align: center;
-  margin-bottom: var(--space-12);
+  margin-bottom: $spacing-xl;
+  color: var(--text-primary);
 }
 
 .features-section {
-  margin-bottom: var(--space-16);
+  margin-bottom: $spacing-xxl;
 }
 
 .features-grid {
-  margin-bottom: var(--space-8);
+  margin-bottom: $spacing-lg;
+  
+  // 为每个卡片添加上下间距
+  :deep(.el-col) {
+    margin-top: $spacing-md;
+    margin-bottom: $spacing-md;
+  }
 }
 
 .feature-card {
-  background: white;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-8);
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
   height: 100%;
-  transition: all var(--transition-base);
+  @include transition-transform($transition-base);
   box-shadow: var(--shadow-sm);
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-base);
   }
 }
 
 .feature-icon {
   width: 80px;
   height: 80px;
-  background: var(--color-primary-light);
-  border-radius: var(--radius-full);
+  background: var(--bg-hover);
+  border-radius: $radius-full;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: var(--space-6);
-  color: var(--color-primary);
+  margin-bottom: $spacing-md;
+  color: var(--primary-base);
+  @include transition-transform($transition-base);
+  
+  .feature-card:hover & {
+    transform: scale(1.1);
+  }
 }
 
 .feature-title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  margin-bottom: var(--space-3);
+  @include typography-h4;
+  margin-bottom: $spacing-sm;
+  color: var(--text-primary);
 }
 
 .feature-description {
-  color: var(--color-text-secondary);
-  line-height: var(--line-height-relaxed);
+  @include typography-body;
+  color: var(--text-secondary);
+  line-height: $line-height-body;
 }
 
 .stats-section {
-  margin-bottom: var(--space-16);
+  margin-bottom: $spacing-xxl;
 }
 
 .stats-grid {
-  margin-bottom: var(--space-8);
+  margin-bottom: $spacing-lg;
 }
 
 .stat-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: var(--radius-lg);
-  padding: var(--space-8);
+  background: linear-gradient(135deg, var(--primary-base) 0%, var(--primary-hover) 100%);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
   text-align: center;
   color: white;
   box-shadow: var(--shadow-md);
+  @include transition-transform($transition-base);
 
   &:hover {
     transform: translateY(-4px);
@@ -330,36 +389,45 @@ const gettingStartedSteps = ref([
 }
 
 .stat-value {
-  font-size: var(--font-size-4xl);
-  font-weight: var(--font-weight-bold);
-  margin-bottom: var(--space-2);
+  @include typography-h2;
+  margin-bottom: $spacing-xs;
+  color: white;
+  
+  @include respond-below(xs) {
+    font-size: $font-size-h3-mobile;
+  }
 }
 
 .stat-label {
-  font-size: var(--font-size-sm);
-  opacity: 0.9;
+  @include typography-body;
+  font-size: $font-size-small-desktop;
+  opacity: 0.95;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .getting-started-section {
-  margin-bottom: var(--space-16);
+  margin-bottom: $spacing-xxl;
 }
 
 .getting-started-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  
   :deep(.el-timeline-item__wrapper) {
-    padding-left: var(--space-4);
+    padding-left: $spacing-md;
   }
 }
 
 .status-section {
-  margin-bottom: var(--space-16);
+  margin-bottom: $spacing-xxl;
 }
 
 .status-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-4) 0;
-  border-bottom: 1px solid var(--color-border);
+  padding: $spacing-md 0;
+  border-bottom: 1px solid var(--border-default);
 
   &:last-child {
     border-bottom: none;
@@ -367,8 +435,9 @@ const gettingStartedSteps = ref([
 }
 
 .status-label {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
+  @include typography-body;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 @keyframes fadeIn {
@@ -383,39 +452,6 @@ const gettingStartedSteps = ref([
 }
 
 .mr-2 {
-  margin-right: var(--space-2);
-}
-
-// Responsive
-@media (max-width: 768px) {
-  .hero-section {
-    flex-direction: column;
-    text-align: center;
-    padding: var(--space-8);
-  }
-
-  .hero-title {
-    font-size: var(--font-size-3xl);
-  }
-
-  .hero-subtitle {
-    font-size: var(--font-size-base);
-  }
-
-  .hero-actions {
-    justify-content: center;
-  }
-
-  .hero-illustration {
-    display: none;
-  }
-
-  .section-title {
-    font-size: var(--font-size-3xl);
-  }
-
-  .stat-value {
-    font-size: var(--font-size-3xl);
-  }
+  margin-right: $spacing-xs;
 }
 </style>

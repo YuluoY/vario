@@ -1,0 +1,165 @@
+// ============================================
+// Navigation Component (BEM)
+// ============================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+.nav {
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border-default);
+  position: sticky;
+  top: 0;
+  z-index: $z-index-sticky;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  backdrop-filter: blur(8px);
+  transition: background-color $transition-base, border-color $transition-base, box-shadow $transition-base;
+  
+  &__content {
+    @include container($container-xl);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-sm $spacing-lg;
+    gap: $spacing-lg;
+    height: 56px;
+    
+    @include respond-below(xs) {
+      flex-wrap: wrap;
+      padding: $spacing-xs $spacing-md;
+      gap: $spacing-sm;
+      height: auto;
+      min-height: 48px;
+    }
+  }
+  
+  &__left {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+  
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    text-decoration: none;
+    transition: transform $transition-fast, opacity $transition-base;
+    padding: $spacing-xs;
+    border-radius: $radius-md;
+    
+    &:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+  }
+  
+  &__logo {
+    height: 64px;
+    width: 64px;
+    flex-shrink: 0;
+    transition: transform $transition-base;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.1));
+    
+    .nav__brand:hover & {
+      transform: scale(1.05);
+    }
+    
+    @include respond-below(xs) {
+      height: 40px;
+      width: 40px;
+    }
+  }
+  
+  &__title {
+    font-size: $font-size-body-desktop;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-primary);
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+    background: linear-gradient(135deg, var(--primary-base) 0%, var(--primary-hover) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+    
+    @include respond-below(xs) {
+      font-size: $font-size-body-mobile;
+    }
+  }
+  
+  &__center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    max-width: 800px;
+    
+    @include respond-below(xs) {
+      order: 3;
+      width: 100%;
+      margin-top: $spacing-sm;
+      max-width: 100%;
+    }
+  }
+  
+  &__menu {
+    border-bottom: none;
+    background: transparent;
+    
+    :deep(.el-menu-item) {
+      border-radius: $radius-sm;
+      margin: 0 $spacing-xs;
+      transition: all $transition-base;
+      height: 40px;
+      line-height: 40px;
+      font-size: $font-size-small-desktop;
+      
+      &:hover {
+        background: var(--bg-hover);
+        color: var(--primary-base);
+      }
+      
+      &.is-active {
+        background: var(--primary-base);
+        color: white;
+        font-weight: 600;
+        
+        .el-icon {
+          color: white;
+        }
+      }
+    }
+    
+    :deep(.el-menu--horizontal) {
+      border-bottom: none;
+    }
+    
+    @include respond-below(xs) {
+      overflow-x: auto;
+      width: 100%;
+      
+      :deep(.el-menu-item) {
+        margin: 0 $spacing-xs;
+        padding: 0 $spacing-sm;
+        font-size: $font-size-small-mobile;
+      }
+    }
+  }
+  
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    flex-shrink: 0;
+    min-width: 0; // 允许收缩，因为内容已移至浮动操作区
+    
+    @include respond-below(xs) {
+      gap: $spacing-xs;
+    }
+  }
+}

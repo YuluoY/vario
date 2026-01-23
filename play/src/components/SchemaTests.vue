@@ -61,7 +61,7 @@
               <p>{{ t('schemaTests.noSchemaRenderedYet') }}</p>
             </div>
             <!-- Debug info -->
-            <div v-if="renderedVnode" style="margin-top: 10px; padding: 10px; background: #f5f5f5; font-size: 12px; border-radius: 4px;">
+            <div v-if="renderedVnode" class="debug-info">
               <strong>{{ t('schemaTests.debugInfo') }}</strong>
               <pre style="font-size: 11px; margin-top: 5px;">{{ JSON.stringify({
                 hasVnode: !!renderedVnode,
@@ -153,6 +153,7 @@ import { useI18n } from 'vue-i18n'
 
 import { DocumentChecked, View, Document, Connection } from '@element-plus/icons-vue'
 import { useVario } from '@vario/vue'
+import { schemaExamples } from '../examples/schema-tests.vario'
 
 // @ts-ignore
 const { t } = useI18n()
@@ -174,47 +175,6 @@ const validationResult = reactive({
 const showConditional = ref(false)
 const listItems = ref(['Apple', 'Banana', 'Cherry'])
 const clickCount = ref(0)
-
-const schemaExamples = {
-  button: {
-    type: 'ElButton',
-    props: {
-      type: 'primary',
-      size: 'large'
-    },
-    children: 'Primary Button'
-  },
-  input: {
-    type: 'ElInput',
-    props: {
-      placeholder: 'Enter text...',
-      model: 'inputValue'
-    },
-    model: 'inputValue'
-  },
-  list: {
-    type: 'div',
-    props: { style: 'display: flex; flex-wrap: wrap; gap: 10px; padding: 20px;' },
-    children: [
-      {
-        type: 'h4',
-        props: { style: 'width: 100%; margin-bottom: 10px;' },
-        children: 'Items List:'
-      },
-      {
-        type: 'ElTag',
-        loop: {
-          items: '{{ items }}'
-        },
-        props: { 
-          type: 'primary',
-          style: 'margin-right: 8px; margin-bottom: 8px;'
-        },
-        children: '{{ $index + 1 }}. {{ $record }}'
-      }
-    ]
-  }
-}
 
 const loadSchemaExample = (type: keyof typeof schemaExamples) => {
   schemaInput.value = JSON.stringify(schemaExamples[type], null, 2)
@@ -416,6 +376,23 @@ h2 {
 
 .mb-4 {
   margin-bottom: var(--space-4);
+}
+
+.debug-info {
+  margin-top: var(--space-2);
+  padding: var(--space-2);
+  background: var(--bg-hover);
+  font-size: var(--font-size-aux-desktop);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  
+  pre {
+    font-size: var(--font-size-aux-mobile);
+    margin-top: var(--space-1);
+    color: var(--text-secondary);
+    font-family: var(--font-family-mono);
+  }
 }
 
 @keyframes slideIn {

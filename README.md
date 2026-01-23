@@ -1,11 +1,31 @@
-# Vario
+<div align="center">
 
-> UI 行为中间表示（IR）+ 运行时虚拟机（VM）+ 渐进式跨框架抽象层
+<img src="./play/public/logo-icon.svg" alt="Vario Logo" width="200" style="margin-bottom: -50px" />
+
+**UI 行为中间表示（IR）+ 运行时虚拟机（VM）+ 渐进式跨框架抽象层**
 
 [![GitHub Pages](https://img.shields.io/badge/demo-GitHub%20Pages-blue)](https://yuluoy.github.io/vario/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/badge/version-0.1.0-blue)](https://github.com/YuluoY/vario)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+[![pnpm Version](https://img.shields.io/badge/pnpm-%3E%3D8.0.0-orange)](https://pnpm.io/)
+
+[在线演示](https://yuluoy.github.io/vario/) • [文档](#-文档) • [快速开始](#-快速开始) • [GitHub](https://github.com/YuluoY/vario)
+
+</div>
+
+---
 
 Vario 是一个声明式的 UI 行为框架，通过 JSON Schema DSL 将 UI 逻辑与框架实现分离。它提供了框架无关的核心运行时，支持 Vue、React 等前端框架，并内置了安全沙箱和性能优化。
+
+## 🎯 为什么选择 Vario？
+
+- **声明式编程**：用 JSON Schema 描述 UI 行为，代码更清晰、更易维护
+- **框架无关**：核心运行时独立于具体框架，一次定义，多端运行
+- **类型安全**：完整的 TypeScript 支持，编译时类型检查
+- **安全可靠**：内置沙箱机制，防止恶意代码执行
+- **高性能**：表达式缓存、对象池等优化策略，确保运行时性能
+- **渐进式集成**：可以逐步迁移现有项目，无需重写
 
 ## ✨ 核心特性
 
@@ -38,13 +58,82 @@ Vario 是一个声明式的 UI 行为框架，通过 JSON Schema DSL 将 UI 逻�
 
 ## 📦 包结构
 
-- **`@vario/core`** - 核心运行时，包含 RuntimeContext、Expression System、Action VM
-- **`@vario/schema`** - Schema 类型定义、验证器、规范化工具
-- **`@vario/vue`** - Vue 3 渲染后端，深度集成 Composition API
-- **`@vario/cli`** - 命令行工具（开发中）
+本项目采用 monorepo 架构，使用 pnpm workspace 管理：
+
+### 核心包
+
+- **`@vario/core`** `v0.1.0` - 核心运行时
+  - RuntimeContext：运行时上下文管理
+  - Expression System：表达式解析、编译、求值
+  - Action VM：指令虚拟机，执行各种操作指令
+  - 安全沙箱：多层防护机制
+  - 性能优化：表达式缓存、对象池等
+  - **依赖**: `@babel/parser`, `@babel/types`
+
+- **`@vario/schema`** `v0.1.0` - Schema 层
+  - Schema 类型定义：完整的 TypeScript 类型
+  - Schema Validator：运行时验证
+  - Schema Normalizer：规范化工具
+  - Schema Transform：转换工具
+  - **依赖**: `@vario/core`
+
+- **`@vario/vue`** `v0.1.0` - Vue 3 渲染后端
+  - 深度集成 Composition API
+  - 支持 Vue 3 所有特性（Teleport、Provide/Inject、Refs 等）
+  - 双向绑定支持
+  - 生命周期钩子
+  - **依赖**: `@vario/core`, `@vario/schema`, `vue ^3.4.0`
+
+- **`@vario/cli`** `v0.1.0` - 命令行工具（开发中）
+  - 代码生成
+  - 开发服务器
+
+### 演示平台
+
 - **`play`** - 在线演示和测试平台
+  - 单元测试展示
+  - 集成测试示例
+  - 性能测试工具
+  - 代码编辑器（Monaco Editor）
+  - 实时预览
+  - **主要依赖**: 
+    - `vue ^3.4.21`
+    - `vue-router ^4.3.0`
+    - `vue-i18n ^11.2.8`
+    - `element-plus ^2.6.0`
+    - `monaco-editor ^0.55.1`
+    - `echarts ^5.4.3`
+    - `pinia ^2.1.7`
+
+### 开发依赖
+
+- **TypeScript**: `^5.3.3`
+- **Vitest**: `^1.2.0` - 测试框架
+- **Vite**: `^5.1.6` - 构建工具（play 平台）
+- **tsc-alias**: `^1.8.16` - TypeScript 路径别名处理
+
+## 📋 版本信息
+
+- **当前版本**: `0.1.0`
+- **Node.js**: `>=18.0.0`
+- **pnpm**: `>=8.0.0`
+- **TypeScript**: `^5.3.3`
+
+### 包版本
+
+| 包名 | 版本 | 说明 |
+|------|------|------|
+| `@vario/core` | `0.1.0` | 核心运行时 |
+| `@vario/schema` | `0.1.0` | Schema 层 |
+| `@vario/vue` | `0.1.0` | Vue 3 渲染后端 |
+| `@vario/cli` | `0.1.0` | CLI 工具（开发中） |
 
 ## 🚀 快速开始
+
+### 环境要求
+
+- Node.js >= 18.0.0
+- pnpm >= 8.0.0
 
 ### 安装
 
@@ -58,6 +147,21 @@ pnpm install
 
 # 构建所有包
 pnpm build
+```
+
+### 安装依赖包
+
+如果你想在自己的项目中使用 Vario，可以通过以下方式安装：
+
+```bash
+# 安装核心包
+pnpm add @vario/core @vario/schema @vario/vue
+
+# 或使用 npm
+npm install @vario/core @vario/schema @vario/vue
+
+# 或使用 yarn
+yarn add @vario/core @vario/schema @vario/vue
 ```
 
 ### 使用示例

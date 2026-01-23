@@ -1,0 +1,203 @@
+// ============================================
+// Main Stylesheet
+// Design Baseline: 1920px
+// Spacing Base: 8px
+// Design Style: Clean / Enterprise / Minimalist
+// Page Type: Official Website / Landing Page
+// Responsive: Desktop First
+// Theme: Light/Dark dual themes
+// ============================================
+
+// Abstracts (variables must come first)
+@use 'abstracts/variables' as *;
+@use 'abstracts/mixins' as *; // mixins imports variables, but that's OK
+
+// Base
+@use 'base/reset';
+@use 'base/typography';
+@use 'base/utilities';
+
+// Themes
+@use 'themes/light';
+@use 'themes/dark';
+
+// Element Plus Theme Override
+@use 'element-plus-theme';
+
+// Layout
+@use 'layout/navigation';
+@use 'layout/footer';
+@use 'layout/main';
+
+// Global CSS Variables (for compatibility)
+:root {
+  // Font Families
+  --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  
+  // Font Sizes (Desktop)
+  --font-size-body-desktop: #{$font-size-body-desktop};
+  --font-size-body-mobile: #{$font-size-body-mobile};
+  
+  // Spacing
+  --spacing-xs: #{$spacing-xs};
+  --spacing-sm: #{$spacing-sm};
+  --spacing-md: #{$spacing-md};
+  --spacing-lg: #{$spacing-lg};
+  --spacing-xl: #{$spacing-xl};
+  --spacing-xxl: #{$spacing-xxl};
+  
+  // Transitions
+  --transition-fast: #{$transition-fast};
+  --transition-base: #{$transition-base};
+  --transition-slow: #{$transition-slow};
+  
+  // Shadows
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  // Border Radius
+  --radius-sm: #{$radius-sm};
+  --radius-md: #{$radius-md};
+  --radius-lg: #{$radius-lg};
+  --radius-xl: #{$radius-xl};
+  --radius-full: #{$radius-full};
+}
+
+// Scrollbar Styling
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-card);
+  border-radius: $radius-full;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-disabled);
+  border-radius: $radius-full;
+  
+  &:hover {
+    background: var(--text-secondary);
+  }
+}
+
+// Page Transitions (GPU accelerated)
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity $transition-base, transform $transition-base;
+  will-change: opacity, transform;
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+// Global focus styles (Accessibility - WCAG AA/AAA)
+a, button, input, textarea, select {
+  @include focus-visible;
+}
+
+// Skip to content link (Accessibility)
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--primary-base);
+  color: white;
+  padding: $spacing-sm $spacing-md;
+  text-decoration: none;
+  z-index: $z-index-tooltip;
+  border-radius: 0 0 $radius-md $radius-md;
+  
+  &:focus {
+    top: 0;
+  }
+}
+
+// ============================================
+// Settings Popover (全局样式)
+// 适配主题
+// ============================================
+
+.settings-popover {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-default) !important;
+  box-shadow: var(--shadow-lg) !important;
+  
+  .el-popover__title {
+    display: none; // 隐藏默认标题
+  }
+  
+  .el-popover__body {
+    padding: 0;
+    background: var(--bg-card);
+    color: var(--text-primary);
+  }
+  
+  // Element Plus 组件主题适配
+  :deep(.el-select) {
+    .el-input__inner {
+      background: var(--bg-base);
+      border-color: var(--border-default);
+      color: var(--text-primary);
+      
+      &:hover {
+        border-color: var(--primary-base);
+      }
+    }
+    
+    .el-input__wrapper {
+      background: var(--bg-base);
+      box-shadow: 0 0 0 1px var(--border-default) inset;
+      
+      &:hover {
+        box-shadow: 0 0 0 1px var(--primary-base) inset;
+      }
+    }
+  }
+  
+  :deep(.el-switch) {
+    .el-switch__core {
+      background: var(--bg-hover);
+      border-color: var(--border-default);
+    }
+    
+    &.is-checked .el-switch__core {
+      background: var(--primary-base);
+      border-color: var(--primary-base);
+    }
+  }
+}
+
+// ============================================
+// Element Plus 卡片主题适配（全局）
+// ============================================
+
+:deep(.el-card) {
+  background: var(--bg-card) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+  
+  .el-card__header {
+    background: var(--bg-card) !important;
+    border-bottom-color: var(--border-default) !important;
+    color: var(--text-primary) !important;
+  }
+  
+  .el-card__body {
+    background: var(--bg-base) !important;
+    color: var(--text-primary) !important;
+  }
+}

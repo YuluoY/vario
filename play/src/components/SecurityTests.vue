@@ -453,6 +453,18 @@ const testProxyProtection = () => {
 
 const testMethodGlobalAccess = () => {
   try {
+    // 检查 $methods 是否被覆盖（安全漏洞检测）
+    if (typeof ctx.$methods !== 'object' || ctx.$methods === null || Array.isArray(ctx.$methods)) {
+      boundaryResults.methodVsExpression = {
+        passed: false,
+        result: `SECURITY BREACH: $methods was overwritten to ${typeof ctx.$methods}`
+      }
+      criticalIssues.value++
+      updateSecurityMetrics(false)
+      updateSecurityScore()
+      return
+    }
+    
     // Register a method that accesses globals
     ctx.$methods.testGlobalAccess = async () => {
       // This should work because methods can access globals

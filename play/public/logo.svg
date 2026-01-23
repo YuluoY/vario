@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 96" fill="none">
+  <defs>
+    <!-- 现代渐变 - 蓝紫科技感 -->
+    <linearGradient id="varioGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 图标渐变 -->
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 发光效果 -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- 整体内容组，用于居中 -->
+  <!-- viewBox: 320x96 -->
+  <!-- 图标占据: 0-60px (宽高), 文字占据: 72-254px (宽), 18-60px (高) -->
+  <!-- 总宽度: 254px, 总高度: 60px -->
+  <!-- 水平居中: (320-254)/2 = 33px, 垂直居中: (96-60)/2 = 18px -->
+  <g transform="translate(33, 18)">
+    <!-- 图标：抽象层叠结构，体现 IR/VM 和跨框架抽象 -->
+    <g id="icon" transform="translate(0, 0)">
+      <g transform="translate(30, 30)" filter="url(#glow)">
+      <!-- 底层：框架抽象层（类似 React 的轨道感，但更抽象） -->
+      <g opacity="0.25">
+        <ellipse cx="0" cy="0" rx="21" ry="9" 
+                 stroke="url(#iconGradient)" 
+                 stroke-width="2.25" 
+                 fill="none"
+                 transform="rotate(-20 0 0)"/>
+        <ellipse cx="0" cy="0" rx="21" ry="9" 
+                 stroke="url(#iconGradient)" 
+                 stroke-width="2.25" 
+                 fill="none"
+                 transform="rotate(20 0 0)"/>
+      </g>
+      
+      <!-- 中层：IR 转换层（几何形状，类似 Vite 的三角形感） -->
+      <g opacity="0.6">
+        <!-- 左侧转换箭头 -->
+        <path d="M -18 -9 L -9 0 L -18 9 Z" 
+              fill="url(#iconGradient)"/>
+        <!-- 右侧转换箭头 -->
+        <path d="M 18 -9 L 9 0 L 18 9 Z" 
+              fill="url(#iconGradient)"/>
+      </g>
+      
+      <!-- 顶层：Schema 核心（中心几何形状） -->
+      <g opacity="0.95">
+        <!-- 中心菱形/方形，代表 Schema -->
+        <path d="M -9 -9 L 9 -9 L 9 9 L -9 9 Z" 
+              fill="url(#iconGradient)"
+              transform="rotate(45 0 0)"/>
+        
+        <!-- 中心点，代表 VM 运行时 -->
+        <circle cx="0" cy="0" r="3.75" 
+                fill="white" 
+                opacity="0.9"/>
+      </g>
+      
+      <!-- 数据流粒子（体现运行时动态） -->
+      <g opacity="0.7">
+        <circle cx="-12" cy="-12" r="2.25" fill="white" opacity="0.8"/>
+        <circle cx="12" cy="-12" r="2.25" fill="white" opacity="0.8"/>
+        <circle cx="-12" cy="12" r="2.25" fill="white" opacity="0.8"/>
+        <circle cx="12" cy="12" r="2.25" fill="white" opacity="0.8"/>
+      </g>
+    </g>
+    </g>
+    
+    <!-- 文字：Vario（现代无衬线字体，类似 Vite 风格） -->
+    <text x="72" y="60" 
+        font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+        font-size="42" 
+        font-weight="600" 
+        letter-spacing="1.8" 
+        fill="url(#varioGradient)">
+    Vario
+    </text>
+  </g>
+</svg>

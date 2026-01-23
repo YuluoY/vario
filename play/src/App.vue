@@ -1,62 +1,57 @@
 <template>
-  <div id="app" class="app-container">
-    <!-- Header -->
-    <header class="app-header">
-      <div class="container header-content">
-        <div class="header-left">
-          <h1 class="app-title">{{ $t('app.title') }}</h1>
-          <p class="app-subtitle">{{ $t('app.subtitle') }}</p>
-        </div>
-        <div class="header-right">
-          <el-button 
-            :icon="Switch" 
-            @click="switchLanguage"
-            class="language-switcher"
-          >
-            {{ languageMap[locale as keyof typeof languageMap] }}
-          </el-button>
-          <el-tag type="primary" size="large">v0.1.0</el-tag>
-        </div>
-      </div>
-    </header>
-
+  <div id="app" class="app">
     <!-- Navigation -->
-    <nav class="app-nav">
-      <div class="container nav-content">
-        <el-menu
-          :default-active="activeRoute"
-          mode="horizontal"
-          :ellipsis="false"
-          router
-          class="nav-menu"
-        >
-          <el-menu-item index="/" route="/">
-            <el-icon><HomeFilled /></el-icon>
-            <span>{{ $t('app.home') }}</span>
-          </el-menu-item>
-          <el-menu-item index="/unit-tests" route="/unit-tests">
-            <el-icon><DocumentChecked /></el-icon>
-            <span>{{ $t('app.unitTestsNav') }}</span>
-          </el-menu-item>
-          <el-menu-item index="/integration-tests" route="/integration-tests">
-            <el-icon><Connection /></el-icon>
-            <span>{{ $t('app.integrationTestsNav') }}</span>
-          </el-menu-item>
-          <el-menu-item index="/performance-tests" route="/performance-tests">
-            <el-icon><Timer /></el-icon>
-            <span>{{ $t('app.performanceTestsNav') }}</span>
-          </el-menu-item>
-          <el-menu-item index="/examples" route="/examples">
-            <el-icon><Collection /></el-icon>
-            <span>{{ $t('app.examplesNav') }}</span>
-          </el-menu-item>
-        </el-menu>
+    <nav class="nav">
+      <div class="nav__content">
+        <div class="nav__left">
+          <router-link to="/" class="nav__brand">
+            <img src="/logo-icon.svg" alt="Vario" class="nav__logo" />
+            <h1 class="nav__title">{{ $t('app.title') }}</h1>
+          </router-link>
+        </div>
+        <div class="nav__center">
+          <el-menu
+            :default-active="activeRoute"
+            mode="horizontal"
+            :ellipsis="false"
+            router
+            class="nav__menu"
+          >
+            <el-menu-item index="/" route="/">
+              <el-icon><HomeFilled /></el-icon>
+              <span>{{ $t('app.home') }}</span>
+            </el-menu-item>
+            <el-menu-item index="/unit-tests" route="/unit-tests">
+              <el-icon><DocumentChecked /></el-icon>
+              <span>{{ $t('app.unitTestsNav') }}</span>
+            </el-menu-item>
+            <el-menu-item index="/integration-tests" route="/integration-tests">
+              <el-icon><Connection /></el-icon>
+              <span>{{ $t('app.integrationTestsNav') }}</span>
+            </el-menu-item>
+            <el-menu-item index="/performance-tests" route="/performance-tests">
+              <el-icon><Timer /></el-icon>
+              <span>{{ $t('app.performanceTestsNav') }}</span>
+            </el-menu-item>
+            <el-menu-item index="/examples" route="/examples">
+              <el-icon><Collection /></el-icon>
+              <span>{{ $t('app.examplesNav') }}</span>
+            </el-menu-item>
+            <el-menu-item index="/playground" route="/playground">
+              <el-icon><Edit /></el-icon>
+              <span>{{ $t('app.playgroundNav') }}</span>
+            </el-menu-item>
+          </el-menu>
+        </div>
+        <div class="nav__right">
+          <!-- 导航栏右侧内容已移至浮动操作区 -->
+        </div>
       </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="app-main">
-      <div class="container">
+    <main class="main">
+      <div class="main__container">
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
             <component :is="Component" />
@@ -66,23 +61,52 @@
     </main>
 
     <!-- Footer -->
-    <footer class="app-footer">
-      <div class="container footer-content">
-        <p>{{ $t('app.copyright') }}</p>
-        <div class="footer-links">
-          <a href="https://github.com/vario-project/vario" target="_blank">GitHub</a>
-          <a href="https://vario.dev/docs" target="_blank">Documentation</a>
+    <footer class="footer">
+      <div class="footer__content">
+        <div class="footer__left">
+          <p>{{ $t('app.copyright') }}</p>
+          <el-tag type="primary" size="small" class="footer__version">v0.1.0</el-tag>
+        </div>
+        <div class="footer__links">
+          <a href="https://github.com/YuluoY/vario" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="https://yuluoy.github.io/vario/" target="_blank" rel="noopener noreferrer">Documentation</a>
         </div>
       </div>
     </footer>
+
+    <!-- 浮动操作区 - 固定在右下角，纵向排列 -->
+    <div class="fab">
+      <div class="fab__container">
+        <!-- 语言切换 -->
+        <el-button 
+          @click="handleLanguageChange"
+          circle
+          class="fab__button"
+          :title="$t('app.switchLanguage')"
+          :aria-label="$t('app.switchLanguage')"
+        >
+          {{ currentLanguageCode }}
+        </el-button>
+        
+        <!-- 主题切换 -->
+        <el-button 
+          :icon="isDark ? Sunny : Moon" 
+          @click="handleThemeChange"
+          circle
+          class="fab__button fab__button--primary"
+          :title="$t('app.switchTheme')"
+          :aria-label="$t('app.switchTheme')"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { HomeFilled, DocumentChecked, Connection, Collection, Switch, Timer } from '@element-plus/icons-vue'
+import { HomeFilled, DocumentChecked, Connection, Collection, Switch, Timer, Moon, Sunny, Edit } from '@element-plus/icons-vue'
 // 注意：ElMessage 是 Element Plus 提供的全局方法，通过 app.use(ElementPlus) 注册
 // 这里直接导入使用是合理的，因为它是工具方法而非组件
 import { ElMessage } from 'element-plus'
@@ -97,150 +121,147 @@ const languageMap = {
   'en': 'English'
 }
 
-const switchLanguage = () => {
+const isDark = ref(false)
+
+// 当前语言代码（CN/EN）
+const currentLanguageCode = computed(() => {
+  return locale.value === 'zh-CN' ? 'CN' : 'EN'
+})
+
+// 从localStorage读取主题设置
+onMounted(() => {
+  const savedTheme = localStorage.getItem('theme') || 'light'
+  const html = document.documentElement
+  isDark.value = savedTheme === 'dark'
+  html.setAttribute('data-theme', savedTheme)
+  if (savedTheme === 'dark') {
+    html.classList.add('dark')
+  }
+})
+
+// 监听主题变化
+watch(isDark, (newVal) => {
+  const html = document.documentElement
+  const theme = newVal ? 'dark' : 'light'
+  html.setAttribute('data-theme', theme)
+  if (newVal) {
+    html.classList.add('dark')
+  } else {
+    html.classList.remove('dark')
+  }
+  localStorage.setItem('theme', theme)
+})
+
+const handleLanguageChange = () => {
   locale.value = locale.value === 'zh-CN' ? 'en' : 'zh-CN'
-  ElMessage.success(t('app.switchLanguage') + ': ' + languageMap[locale.value as keyof typeof languageMap])
+  // 不显示 message
+}
+
+const handleThemeChange = () => {
+  isDark.value = !isDark.value
+  // 不显示 message
 }
 </script>
 
 <style scoped lang="scss">
-.app-container {
+@use '@src/styles/abstracts/variables' as *;
+@use '@src/styles/abstracts/mixins' as *;
+
+.app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background: var(--bg-base);
+  transition: background-color $transition-base;
+  position: relative;
 }
 
-.app-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: var(--space-8) 0;
-  box-shadow: var(--shadow-md);
-}
+// ============================================
+// Floating Action Buttons (FAB)
+// 固定在右下角，纵向排列
+// ============================================
 
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+.fab {
+  position: fixed;
+  right: 20px;
+  bottom: 100px; // 确保在 footer 之上（footer 高度约 88px + 间距 12px）
+  z-index: $z-index-fixed;
+  pointer-events: none; // 容器不拦截事件
 
-.header-left {
-  .app-title {
-    font-size: var(--font-size-4xl);
+  @include respond-below(xs) {
+    right: $spacing-md;
+    bottom: 90px; // 移动端 footer 高度约 72px + 间距 18px
+  }
+
+  &__container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; // 居中对齐
+    gap: $spacing-md;
+    pointer-events: auto; // 子元素可点击
+  }
+
+  &__button {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    max-width: 48px;
+    border-radius: $radius-full;
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-md);
+    display: inline-flex; // 使用 inline-flex 确保尺寸一致
+    align-items: center;
+    justify-content: center;
+    transition: all $transition-base;
+    @include focus-visible;
+    font-size: $font-size-small-desktop;
+    font-weight: 600;
+    flex-shrink: 0;
     margin: 0;
-    font-weight: var(--font-weight-bold);
-  }
-
-  .app-subtitle {
-    font-size: var(--font-size-lg);
-    color: rgba(255, 255, 255, 0.9);
-    margin: var(--space-2) 0 0 0;
-  }
-}
-
-.app-nav {
-  background: white;
-  border-bottom: 1px solid var(--color-border);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: var(--shadow-sm);
-}
-
-.nav-content {
-  padding: 0 var(--space-6);
-}
-
-.nav-menu {
-  border-bottom: none;
-  background: transparent;
-}
-
-.app-main {
-  flex: 1;
-  padding: var(--space-8) 0;
-}
-
-.app-footer {
-  background: var(--color-bg-secondary);
-  border-top: 1px solid var(--color-border);
-  padding: var(--space-6) 0;
-  margin-top: auto;
-}
-
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: var(--color-text-secondary);
-}
-
-.footer-links {
-  display: flex;
-  gap: var(--space-6);
-
-  a {
-    color: var(--color-text-secondary);
-    transition: color var(--transition-fast);
-
-    &:hover {
-      color: var(--color-primary);
+    padding: 0;
+    
+    // 覆盖 Element Plus 默认样式
+    :deep(.el-icon) {
+      font-size: 20px;
     }
-  }
-}
-
-.language-switcher {
-  margin-right: var(--space-4);
-}
-
-// Transitions
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity var(--transition-base), transform var(--transition-base);
-}
-
-.fade-enter-from {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-// Responsive
-@media (max-width: 768px) {
-  .app-header {
-    padding: var(--space-6) 0;
-  }
-
-  .header-content {
-    flex-direction: column;
-    gap: var(--space-4);
-    text-align: center;
-  }
-
-  .app-title {
-    font-size: var(--font-size-3xl);
-  }
-
-  .app-subtitle {
-    font-size: var(--font-size-base);
-  }
-
-  .nav-menu {
-    overflow-x: auto;
-  }
-
-  .footer-content {
-    flex-direction: column;
-    gap: var(--space-4);
-    text-align: center;
-  }
-
-  .footer-links {
-    flex-direction: column;
-    gap: var(--space-2);
+    
+    &:hover {
+      background: var(--bg-hover);
+      border-color: var(--primary-base);
+      color: var(--primary-base);
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+    
+    &--primary {
+      background: var(--primary-base);
+      border-color: var(--primary-base);
+      color: white;
+      
+      &:hover {
+        background: var(--primary-hover);
+        border-color: var(--primary-hover);
+        color: white;
+      }
+    }
+    
+    @include respond-below(xs) {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      max-width: 44px;
+      font-size: $font-size-small-mobile;
+      
+      :deep(.el-icon) {
+        font-size: 18px;
+      }
+    }
   }
 }
 </style>

@@ -86,6 +86,31 @@
   --transition-slow: 300ms ease;
 }
 
+// Dark theme
+:root.dark,
+.dark-theme {
+  --color-text-primary: #F9FAFB;
+  --color-text-secondary: #D1D5DB;
+  --color-text-tertiary: #9CA3AF;
+  --color-bg-primary: #111827;
+  --color-bg-secondary: #1F2937;
+  --color-bg-tertiary: #374151;
+  --color-border: #4B5563;
+  
+  --color-primary-light: #1E3A8A;
+  --color-secondary-light: #5B21B6;
+  --color-success-light: #065F46;
+  --color-warning-light: #92400E;
+  --color-error-light: #991B1B;
+  
+  // Element Plus dark theme adjustments
+  --el-bg-color: var(--color-bg-primary);
+  --el-text-color-primary: var(--color-text-primary);
+  --el-text-color-regular: var(--color-text-secondary);
+  --el-border-color: var(--color-border);
+  --el-fill-color-blank: var(--color-bg-secondary);
+}
+
 // Base Reset
 * {
   box-sizing: border-box;
@@ -106,7 +131,7 @@ body {
 }
 
 #app {
-  height: 100%;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
 }

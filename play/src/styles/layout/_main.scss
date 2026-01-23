@@ -1,0 +1,30 @@
+// ============================================
+// Main Content Area
+// Design Baseline: 1920px
+// Content Width: 1200px (default) / 1440px (wide)
+// ============================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+.main {
+  flex: 1;
+  padding: $spacing-xl 0;
+  padding-bottom: 100px; // 为固定底部栏留出空间（根据 footer 实际高度调整）
+  background: var(--bg-base);
+  transition: background-color $transition-base;
+  min-height: calc(100vh - 56px); // 减去导航栏高度（56px）
+  
+  &__container {
+    @include container($container-xl); // 1200px default
+    
+    // Wide layout option (for landing pages)
+    &--wide {
+      max-width: $container-2xl; // 1440px
+    }
+    
+    @include respond-below(xs) {
+      padding: 0 $spacing-md;
+    }
+  }
+}

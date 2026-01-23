@@ -1,0 +1,146 @@
+// ============================================
+// Dark Theme
+// 优化的暗色主题配色方案 - 更舒适、更柔和
+// ============================================
+
+:root.dark,
+[data-theme="dark"],
+.dark-theme {
+  // Background Colors (优化的柔和灰色)
+  --bg-base: #0F1419;
+  --bg-card: #1A1F2E;
+  --bg-hover: #252B3A;
+  --bg-active: #2F3645;
+  
+  // Text Colors (优化的对比度)
+  --text-primary: #E4E7EB;
+  --text-secondary: #B0B8C4;
+  --text-disabled: #6B7280;
+  
+  // Border Colors (柔和的边框)
+  --border-default: #2A2F3E;
+  --border-focus: #5B9FEF;
+  
+  // Primary Colors (更柔和的蓝色)
+  --primary-base: #5B9FEF;
+  --primary-hover: #4A8FE0;
+  --primary-active: #3A7FD1;
+  
+  // Semantic Colors (优化的语义色)
+  --success-base: #4EC9B0;
+  --success-hover: #3DB89F;
+  --warning-base: #F5A623;
+  --warning-hover: #E49513;
+  --error-base: #F56565;
+  --error-hover: #E55555;
+  --info-base: #5B9FEF;
+  --info-hover: #4A8FE0;
+  
+  // Legacy compatibility (for existing code)
+  --color-primary: var(--primary-base);
+  --color-primary-hover: var(--primary-hover);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-disabled);
+  --color-bg-primary: var(--bg-base);
+  --color-bg-secondary: var(--bg-card);
+  --color-bg-tertiary: var(--bg-hover);
+  --color-border: var(--border-default);
+  --color-success: var(--success-base);
+  --color-success-light: #0D4A3A;
+  --color-error: var(--error-base);
+  --color-error-light: #7A1F1F;
+  
+  // ============================================
+  // Element Plus 完整主题变量覆盖
+  // ============================================
+  
+  // 基础颜色
+  --el-bg-color: var(--bg-base);
+  --el-bg-color-page: var(--bg-base);
+  --el-bg-color-overlay: var(--bg-card);
+  
+  // 文本颜色
+  --el-text-color-primary: var(--text-primary);
+  --el-text-color-regular: var(--text-secondary);
+  --el-text-color-secondary: var(--text-secondary);
+  --el-text-color-placeholder: var(--text-disabled);
+  --el-text-color-disabled: var(--text-disabled);
+  
+  // 边框颜色
+  --el-border-color: var(--border-default);
+  --el-border-color-light: var(--bg-hover);
+  --el-border-color-lighter: var(--bg-active);
+  --el-border-color-extra-light: var(--bg-hover);
+  --el-border-color-dark: var(--text-secondary);
+  --el-border-color-darker: var(--text-primary);
+  
+  // 填充颜色
+  --el-fill-color: var(--bg-hover);
+  --el-fill-color-light: var(--bg-active);
+  --el-fill-color-lighter: var(--bg-hover);
+  --el-fill-color-extra-light: var(--bg-card);
+  --el-fill-color-dark: var(--bg-active);
+  --el-fill-color-darker: var(--bg-hover);
+  --el-fill-color-blank: var(--bg-card);
+  
+  // 主色
+  --el-color-primary: var(--primary-base);
+  --el-color-primary-light-3: #7BB3F2;
+  --el-color-primary-light-5: #9BC7F5;
+  --el-color-primary-light-7: #BDDBF8;
+  --el-color-primary-light-8: #CEE5FA;
+  --el-color-primary-light-9: #DFEFFC;
+  --el-color-primary-dark-2: var(--primary-hover);
+  
+  // 成功色
+  --el-color-success: var(--success-base);
+  --el-color-success-light-3: #6DD3C2;
+  --el-color-success-light-5: #8EDDD0;
+  --el-color-success-light-7: #AFE7DE;
+  --el-color-success-light-8: #C0EBE4;
+  --el-color-success-light-9: #D1EFEA;
+  --el-color-success-dark-2: var(--success-hover);
+  
+  // 警告色
+  --el-color-warning: var(--warning-base);
+  --el-color-warning-light-3: #F7B84D;
+  --el-color-warning-light-5: #F9CA77;
+  --el-color-warning-light-7: #FBDCA1;
+  --el-color-warning-light-8: #FCE5B8;
+  --el-color-warning-light-9: #FDEECF;
+  --el-color-warning-dark-2: var(--warning-hover);
+  
+  // 危险/错误色
+  --el-color-danger: var(--error-base);
+  --el-color-danger-light-3: #F88484;
+  --el-color-danger-light-5: #FAA3A3;
+  --el-color-danger-light-7: #FCC2C2;
+  --el-color-danger-light-8: #FDD1D1;
+  --el-color-danger-light-9: #FEE0E0;
+  --el-color-danger-dark-2: var(--error-hover);
+  
+  // 信息色
+  --el-color-info: var(--info-base);
+  --el-color-info-light-3: #7BB3F2;
+  --el-color-info-light-5: #9BC7F5;
+  --el-color-info-light-7: #BDDBF8;
+  --el-color-info-light-8: #CEE5FA;
+  --el-color-info-light-9: #DFEFFC;
+  --el-color-info-dark-2: var(--info-hover);
+  
+  // 遮罩层
+  --el-mask-color: rgba(0, 0, 0, 0.8);
+  --el-mask-color-extra-light: rgba(0, 0, 0, 0.3);
+  
+  // 禁用状态
+  --el-disabled-bg-color: var(--bg-hover);
+  --el-disabled-text-color: var(--text-disabled);
+  --el-disabled-border-color: var(--border-default);
+  
+  // 阴影
+  --el-box-shadow: 0px 12px 32px 4px rgba(0, 0, 0, 0.36), 0px 8px 20px rgba(0, 0, 0, 0.72);
+  --el-box-shadow-light: 0px 0px 12px rgba(0, 0, 0, 0.72);
+  --el-box-shadow-lighter: 0px 0px 6px rgba(0, 0, 0, 0.72);
+  --el-box-shadow-dark: 0px 16px 48px 16px rgba(0, 0, 0, 0.72), 0px 12px 32px rgba(0, 0, 0, 0.72);
+}

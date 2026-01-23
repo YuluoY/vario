@@ -1,10 +1,5 @@
 <template>
   <div class="performance-tests-view">
-    <div class="page-header">
-      <h1>{{ $t('performanceTests.title') }}</h1>
-      <p>{{ $t('performanceTests.description') }}</p>
-    </div>
-
     <!-- Performance Metrics Overview -->
     <el-row :gutter="24" class="metrics-overview">
       <el-col :xs="12" :sm="6" v-for="metric in performanceMetrics" :key="metric.name">
@@ -1279,7 +1274,8 @@ const updateChart = () => {
       },
       formatter: (params: any) => {
         const param = params[0]
-        return `${param.name}<br/>${param.seriesName}: ${param.value}ms`
+        const value = typeof param.value === 'number' ? param.value.toFixed(2) : param.value
+        return `${param.name}<br/>${param.seriesName}: ${value}ms`
       }
     },
     grid: {
@@ -1298,7 +1294,10 @@ const updateChart = () => {
     },
     yAxis: {
       type: 'value',
-      name: '耗时 (ms)'
+      name: '耗时 (ms)',
+      axisLabel: {
+        formatter: (value: number) => value.toFixed(2)
+      }
     },
     series: [
       {
@@ -1313,7 +1312,7 @@ const updateChart = () => {
         label: {
           show: true,
           position: 'top',
-          formatter: '{c}ms'
+          formatter: (params: any) => `${params.value.toFixed(2)}ms`
         }
       }
     ]
@@ -1345,33 +1344,51 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+@use '@src/styles/abstracts/variables' as *;
+@use '@src/styles/abstracts/mixins' as *;
+
 .performance-tests-view {
   animation: fadeIn 0.5s ease;
 }
 
 .page-header {
-  margin-bottom: var(--space-8);
+  margin-bottom: $spacing-xl;
   text-align: center;
 
   h1 {
-    font-size: var(--font-size-4xl);
-    margin-bottom: var(--space-2);
+    @include typography-h1;
+    margin-bottom: $spacing-sm;
+    color: var(--text-primary);
   }
 
   p {
-    font-size: var(--font-size-lg);
-    color: var(--color-text-secondary);
+    @include typography-body;
+    font-size: $font-size-h4-desktop;
+    color: var(--text-secondary);
+    
+    @include respond-below(xs) {
+      font-size: $font-size-body-mobile;
+    }
   }
 }
 
 .metrics-overview {
-  margin-bottom: var(--space-8);
+  margin-bottom: $spacing-xl;
 
   .metric-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    @include transition-transform($transition-base);
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    
     .metric-content {
       display: flex;
       align-items: center;
-      gap: var(--space-4);
+      gap: $spacing-md;
 
       .metric-icon {
         flex-shrink: 0;
@@ -1381,15 +1398,15 @@ onUnmounted(() => {
         flex: 1;
 
         .metric-value {
-          font-size: var(--font-size-2xl);
-          font-weight: var(--font-weight-bold);
-          color: var(--color-primary);
+          @include typography-h3;
+          color: var(--primary-base);
+          margin-bottom: $spacing-xs;
         }
 
         .metric-label {
-          font-size: var(--font-size-sm);
-          color: var(--color-text-secondary);
-          margin-top: var(--space-1);
+          @include typography-body;
+          font-size: $font-size-small-desktop;
+          color: var(--text-secondary);
         }
       }
     }
@@ -1398,37 +1415,51 @@ onUnmounted(() => {
 
 .test-categories {
   min-height: 500px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: $radius-lg;
 
   :deep(.el-tabs__content) {
-    padding: var(--space-6);
+    padding: $spacing-lg;
+    background: var(--bg-base);
+  }
+  
+  :deep(.el-tabs__header) {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-default);
   }
 }
 
 .test-section {
   h3 {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-semibold);
-    margin-bottom: var(--space-4);
+    @include typography-h3;
+    margin-bottom: $spacing-md;
+    color: var(--text-primary);
   }
 
   .test-controls {
-    margin-bottom: var(--space-4);
+    margin-bottom: $spacing-md;
   }
 
   .test-result {
-    margin-top: var(--space-4);
+    margin-top: $spacing-md;
   }
 }
 
 .performance-chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: $radius-lg;
+  
   .chart-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
 
     h3 {
+      @include typography-h4;
       margin: 0;
-      font-size: var(--font-size-lg);
+      color: var(--text-primary);
     }
   }
 
@@ -1440,7 +1471,7 @@ onUnmounted(() => {
       align-items: center;
       justify-content: center;
       height: 400px;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
     }
 
     .chart-content {

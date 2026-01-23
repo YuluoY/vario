@@ -1,0 +1,48 @@
+// ============================================
+// Utility Classes
+// ============================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+.container {
+  @include container;
+}
+
+// Spacing Utilities
+.mt-xs { margin-top: $spacing-xs; }
+.mt-sm { margin-top: $spacing-sm; }
+.mt-md { margin-top: $spacing-md; }
+.mt-lg { margin-top: $spacing-lg; }
+.mt-xl { margin-top: $spacing-xl; }
+
+.mb-xs { margin-bottom: $spacing-xs; }
+.mb-sm { margin-bottom: $spacing-sm; }
+.mb-md { margin-bottom: $spacing-md; }
+.mb-lg { margin-bottom: $spacing-lg; }
+.mb-xl { margin-bottom: $spacing-xl; }
+
+.p-xs { padding: $spacing-xs; }
+.p-sm { padding: $spacing-sm; }
+.p-md { padding: $spacing-md; }
+.p-lg { padding: $spacing-lg; }
+.p-xl { padding: $spacing-xl; }
+
+// Flexbox Utilities
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.gap-sm { gap: $spacing-sm; }
+.gap-md { gap: $spacing-md; }
+.gap-lg { gap: $spacing-lg; }
+
+// Text Utilities
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-center { text-align: center; }
+
+// Background Utilities
+.bg-card { background-color: var(--bg-card); }
+.bg-base { background-color: var(--bg-base); }

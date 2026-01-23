@@ -1,0 +1,52 @@
+// ============================================
+// Light Theme
+// Semantic color tokens following web-design-spec
+// ============================================
+
+:root,
+[data-theme="light"] {
+  // Background Colors (semantic tokens)
+  --bg-base: #FFFFFF;
+  --bg-card: #F9FAFB;
+  --bg-hover: #F3F4F6;
+  --bg-active: #E5E7EB;
+  
+  // Text Colors (semantic tokens)
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-disabled: #9CA3AF;
+  
+  // Border Colors (semantic tokens)
+  --border-default: #E5E7EB;
+  --border-focus: #3B82F6;
+  
+  // Primary Colors
+  --primary-base: #3B82F6;
+  --primary-hover: #2563EB;
+  --primary-active: #1D4ED8;
+  
+  // Semantic Colors
+  --success-base: #10B981;
+  --success-hover: #059669;
+  --warning-base: #F59E0B;
+  --warning-hover: #D97706;
+  --error-base: #EF4444;
+  --error-hover: #DC2626;
+  --info-base: #3B82F6;
+  --info-hover: #2563EB;
+  
+  // Legacy compatibility (for existing code)
+  --color-primary: var(--primary-base);
+  --color-primary-hover: var(--primary-hover);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-disabled);
+  --color-bg-primary: var(--bg-base);
+  --color-bg-secondary: var(--bg-card);
+  --color-bg-tertiary: var(--bg-hover);
+  --color-border: var(--border-default);
+  --color-success: var(--success-base);
+  --color-success-light: #D1FAE5;
+  --color-error: var(--error-base);
+  --color-error-light: #FEE2E2;
+}

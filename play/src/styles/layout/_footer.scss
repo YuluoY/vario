@@ -1,0 +1,123 @@
+// ============================================
+// Footer Component (BEM)
+// 高度自适应，美观展示
+// ============================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-default);
+  transition: background-color $transition-base, border-color $transition-base;
+  z-index: $z-index-sticky;
+  // 高度自适应内容，不设置固定 padding
+  
+  &__content {
+    @include container($container-xl);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-secondary);
+    padding: $spacing-xl $spacing-lg; // 上下间距更大，左右使用 container 的 padding
+    min-height: auto; // 根据内容自适应
+    
+    @include respond-below(xs) {
+      flex-direction: column;
+      gap: $spacing-lg;
+      text-align: center;
+      padding: $spacing-lg $spacing-md;
+      align-items: center;
+    }
+  }
+  
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: $spacing-lg;
+    flex-wrap: wrap;
+    
+    p {
+      @include typography-body;
+      margin: 0;
+      font-size: $font-size-small-desktop;
+      color: var(--text-secondary);
+      line-height: $line-height-body;
+    }
+    
+    @include respond-below(xs) {
+      flex-direction: column;
+      gap: $spacing-md;
+      align-items: center;
+    }
+  }
+  
+  &__version {
+    padding: $spacing-xs $spacing-sm;
+    font-weight: 600;
+    font-size: $font-size-aux-desktop;
+    border: 1px solid var(--primary-base);
+    background: var(--primary-base);
+    color: white;
+    box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2);
+    transition: all $transition-fast;
+    border-radius: $radius-md;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+    
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+    }
+  }
+  
+  &__links {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xl;
+    flex-wrap: wrap;
+    
+    @include respond-below(xs) {
+      flex-direction: row;
+      gap: $spacing-lg;
+      justify-content: center;
+    }
+    
+    a {
+      @include typography-body;
+      color: var(--text-secondary);
+      font-size: $font-size-small-desktop;
+      text-decoration: none;
+      transition: all $transition-fast;
+      padding: $spacing-xs 0;
+      position: relative;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: var(--primary-base);
+        transition: width $transition-base;
+      }
+      
+      &:hover {
+        color: var(--primary-base);
+        
+        &::after {
+          width: 100%;
+        }
+      }
+      
+      @include focus-visible;
+    }
+  }
+}

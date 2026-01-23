@@ -1,0 +1,214 @@
+// ============================================
+// SCSS Mixins
+// Note: This file should be imported after _variables.scss
+// ============================================
+
+@use 'variables' as *;
+
+// Responsive Breakpoints (Desktop First)
+@mixin respond-below($breakpoint) {
+  @if $breakpoint == xs {
+    @media (max-width: #{$breakpoint-xs - 1px}) {
+      @content;
+    }
+  } @else if $breakpoint == sm {
+    @media (max-width: #{$breakpoint-sm - 1px}) {
+      @content;
+    }
+  } @else if $breakpoint == md {
+    @media (max-width: #{$breakpoint-md - 1px}) {
+      @content;
+    }
+  } @else if $breakpoint == lg {
+    @media (max-width: #{$breakpoint-lg - 1px}) {
+      @content;
+    }
+  }
+}
+
+@mixin respond-above($breakpoint) {
+  @if $breakpoint == sm {
+    @media (min-width: #{$breakpoint-xs}) {
+      @content;
+    }
+  } @else if $breakpoint == md {
+    @media (min-width: #{$breakpoint-sm}) {
+      @content;
+    }
+  } @else if $breakpoint == lg {
+    @media (min-width: #{$breakpoint-md}) {
+      @content;
+    }
+  } @else if $breakpoint == xl {
+    @media (min-width: #{$breakpoint-lg}) {
+      @content;
+    }
+  }
+}
+
+// Typography Mixins
+@mixin typography-h1 {
+  font-size: $font-size-h1-desktop;
+  line-height: $line-height-heading;
+  font-weight: 700;
+  
+  @include respond-below(xs) {
+    font-size: $font-size-h1-mobile;
+  }
+}
+
+@mixin typography-h2 {
+  font-size: $font-size-h2-desktop;
+  line-height: $line-height-heading;
+  font-weight: 700;
+  
+  @include respond-below(xs) {
+    font-size: $font-size-h2-mobile;
+  }
+}
+
+@mixin typography-h3 {
+  font-size: $font-size-h3-desktop;
+  line-height: $line-height-heading;
+  font-weight: 600;
+  
+  @include respond-below(xs) {
+    font-size: $font-size-h3-mobile;
+  }
+}
+
+@mixin typography-h4 {
+  font-size: $font-size-h4-desktop;
+  line-height: $line-height-heading;
+  font-weight: 600;
+  
+  @include respond-below(xs) {
+    font-size: $font-size-h4-mobile;
+  }
+}
+
+@mixin typography-body {
+  font-size: $font-size-body-desktop;
+  line-height: $line-height-body;
+  font-weight: 400;
+  
+  @include respond-below(xs) {
+    font-size: $font-size-body-mobile;
+  }
+}
+
+// Focus States (Accessibility)
+@mixin focus-visible {
+  &:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+  }
+}
+
+// Container
+@mixin container($max-width: $container-xl) {
+  width: 100%;
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 $spacing-md;
+  
+  @include respond-above(sm) {
+    padding: 0 $spacing-lg;
+  }
+}
+
+// GPU Accelerated Transitions (Performance optimized)
+@mixin transition-transform($duration: $transition-base) {
+  transition: transform $duration;
+  will-change: transform;
+}
+
+@mixin transition-opacity($duration: $transition-base) {
+  transition: opacity $duration;
+  will-change: opacity;
+}
+
+@mixin transition-all($duration: $transition-base) {
+  transition: all $duration;
+}
+
+// Hover effects with GPU acceleration
+@mixin hover-lift {
+  @include transition-transform($transition-base);
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+@mixin hover-scale($scale: 1.05) {
+  @include transition-transform($transition-base);
+  
+  &:hover {
+    transform: scale($scale);
+  }
+}
+
+// Focus states (Accessibility - WCAG AA/AAA)
+@mixin focus-visible {
+  &:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+    border-radius: $radius-sm;
+  }
+}
+
+@mixin focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--primary-base);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  }
+}
+
+// Card component pattern
+@mixin card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  @include transition-all($transition-base);
+  box-shadow: var(--shadow-sm);
+  
+  &:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-base);
+  }
+}
+
+// Section spacing
+@mixin section-spacing {
+  margin-bottom: $spacing-xxl;
+  
+  @include respond-below(xs) {
+    margin-bottom: $spacing-xl;
+  }
+}
+
+// Page header pattern
+@mixin page-header {
+  margin-bottom: $spacing-xl;
+  text-align: center;
+  
+  h1 {
+    @include typography-h1;
+    margin-bottom: $spacing-sm;
+    color: var(--text-primary);
+  }
+  
+  p {
+    @include typography-body;
+    font-size: $font-size-h4-desktop;
+    color: var(--text-secondary);
+    margin-bottom: 0;
+    
+    @include respond-below(xs) {
+      font-size: $font-size-body-mobile;
+    }
+  }
+}

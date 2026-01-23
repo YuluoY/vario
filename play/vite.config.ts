@@ -38,5 +38,30 @@ export default defineConfig({
         additionalData: `@use "@src/styles/design-tokens" as *;`
       }
     }
+  },
+  build: {
+    chunkSizeWarningLimit: 2000,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // Element Plus 单独打包
+          if (id.includes('element-plus')) {
+            return 'element-plus'
+          }
+          // ECharts 单独打包
+          if (id.includes('echarts')) {
+            return 'echarts'
+          }
+          // Vue 相关库打包在一起
+          if (id.includes('vue') || id.includes('vue-router') || id.includes('pinia') || id.includes('vue-i18n')) {
+            return 'vue-vendor'
+          }
+          // node_modules 中的其他库
+          if (id.includes('node_modules')) {
+            return 'vendor'
+          }
+        }
+      }
+    }
   }
 })

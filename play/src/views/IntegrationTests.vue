@@ -1,73 +1,109 @@
 <template>
   <div class="integration-tests-view">
-    <!-- 抽屉：示例列表 -->
-    <el-drawer
-      v-model="drawerVisible"
-      :title="$t('integrationTests.exampleList')"
-      :size="320"
-      direction="ltr"
-      :with-header="true"
-      class="examples-drawer"
-    >
-      <template #header>
-        <div class="drawer-header">
-          <span>{{ $t('integrationTests.exampleList') }}</span>
-        </div>
-      </template>
-      
-      <div class="drawer-content">
-        <div class="drawer-controls">
-          <el-button-group size="small" class="mode-switch">
-            <el-button 
-              :type="categoryMode === 'category' ? 'primary' : 'default'"
-              @click="categoryMode = 'category'"
-            >
-              {{ $t('integrationTests.category') }}
-            </el-button>
-            <el-button 
-              :type="categoryMode === 'level' ? 'primary' : 'default'"
-              @click="categoryMode = 'level'"
-            >
-              {{ $t('integrationTests.complexity') }}
-            </el-button>
-          </el-button-group>
-          <el-input
-            v-model="searchQuery"
-            :placeholder="$t('integrationTests.search')"
-            clearable
-            size="small"
-            prefix-icon="Search"
-            class="search-input"
-          />
-        </div>
-        <div class="tree-container">
-          <el-tree
-            :data="filteredTreeData"
-            :props="treeProps"
-            :default-expand-all="true"
-            :highlight-current="true"
-            :current-node-key="activeDemo"
-            node-key="id"
-            @node-click="handleNodeClick"
-            class="demo-tree"
-          >
-            <template #default="{ node, data }">
-              <span class="tree-node">
-                <el-icon v-if="data.icon" class="node-icon">
-                  <component :is="data.icon" />
-                </el-icon>
-                <span class="node-label">{{ node.label }}</span>
-                <el-tag v-if="data.level" :type="getLevelType(data.level)" size="small" class="level-tag">
-                  {{ data.level }}
-                </el-tag>
-              </span>
-            </template>
-          </el-tree>
-        </div>
-      </div>
-    </el-drawer>
-
     <div class="layout-container">
+      <!-- 左侧：示例列表侧边栏 -->
+      <div 
+        class="sidebar" 
+        :class="{ 'sidebar--collapsed': sidebarCollapsed, 'is-resizing': isSidebarResizing }"
+        :style="{ width: sidebarCollapsed ? '48px' : `${sidebarWidth}px` }"
+      >
+        <div class="sidebar-header">
+          <el-collapse-transition>
+            <span v-show="!sidebarCollapsed" class="sidebar-title">{{ $t('integrationTests.exampleList') }}</span>
+          </el-collapse-transition>
+          <div class="sidebar-actions">
+            <!-- 折叠状态下显示菜单图标，点击展开侧边栏 -->
+            <el-button 
+              v-if="sidebarCollapsed"
+              text 
+              circle 
+              size="small"
+              @click="sidebarCollapsed = false"
+              class="menu-btn"
+              :title="$t('integrationTests.expand')"
+            >
+              <el-icon><Menu /></el-icon>
+            </el-button>
+            
+            <!-- 展开状态下显示折叠按钮 -->
+            <el-button 
+              v-if="!sidebarCollapsed"
+              text 
+              circle 
+              size="small"
+              @click="sidebarCollapsed = true"
+              class="collapse-btn"
+              :title="$t('integrationTests.collapse')"
+            >
+              <el-icon>
+                <component :is="ArrowLeft" />
+              </el-icon>
+            </el-button>
+          </div>
+        </div>
+        
+        <el-collapse-transition>
+          <div v-show="!sidebarCollapsed" class="sidebar-content">
+            <div class="sidebar-controls">
+              <el-button-group size="small" class="mode-switch">
+                <el-button 
+                  :type="categoryMode === 'category' ? 'primary' : 'default'"
+                  @click="categoryMode = 'category'"
+                >
+                  {{ $t('integrationTests.category') }}
+                </el-button>
+                <el-button 
+                  :type="categoryMode === 'level' ? 'primary' : 'default'"
+                  @click="categoryMode = 'level'"
+                >
+                  {{ $t('integrationTests.complexity') }}
+                </el-button>
+              </el-button-group>
+              <el-input
+                v-model="searchQuery"
+                :placeholder="$t('integrationTests.search')"
+                clearable
+                size="small"
+                prefix-icon="Search"
+                class="search-input"
+              />
+            </div>
+            <div class="tree-container">
+              <el-tree
+                :data="filteredTreeData"
+                :props="treeProps"
+                :default-expand-all="true"
+                :highlight-current="true"
+                :current-node-key="activeDemo"
+                node-key="id"
+                @node-click="handleNodeClick"
+                class="demo-tree"
+              >
+                <template #default="{ node, data }">
+                  <span class="tree-node">
+                    <el-icon v-if="data.icon" class="node-icon">
+                      <component :is="data.icon" />
+                    </el-icon>
+                    <span class="node-label">{{ node.label }}</span>
+                    <el-tag v-if="data.level" :type="getLevelType(data.level)" size="small" class="level-tag">
+                      {{ data.level }}
+                    </el-tag>
+                  </span>
+                </template>
+              </el-tree>
+            </div>
+          </div>
+        </el-collapse-transition>
+      </div>
+
+      <!-- 拖动分隔条（左侧侧边栏） -->
+      <div 
+        v-if="!sidebarCollapsed"
+        class="sidebar-resizer"
+        @mousedown="startSidebarResize"
+      >
+        <div class="resizer-handle"></div>
+      </div>
 
       <!-- 中间：效果预览（主区域） -->
       <div 
@@ -77,14 +113,6 @@
       >
         <div class="content-header">
           <div class="header-left">
-            <el-button 
-              text
-              circle
-              @click="drawerVisible = true"
-              class="menu-btn"
-            >
-              <el-icon><Menu /></el-icon>
-            </el-button>
             <h2>{{ activeDemoTitle || $t('integrationTests.selectExample') }}</h2>
           </div>
           <el-button 
@@ -102,7 +130,7 @@
           <VNodeRenderer :vnode="vnode" v-if="vnode" />
           <div v-else class="loading">
             <el-icon class="is-loading"><Loading /></el-icon>
-            <p>加载中...</p>
+            <p>{{ $t('integrationTests.loading') }}</p>
           </div>
         </div>
       </div>
@@ -146,7 +174,7 @@
             </div>
             <div v-else class="loading-code">
               <el-icon class="is-loading"><Loading /></el-icon>
-              <p>加载源码中...</p>
+              <p>{{ $t('integrationTests.loadingSourceCode') }}</p>
             </div>
           </div>
         </div>
@@ -162,7 +190,7 @@ import type { VNode } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { 
   DocumentChecked, Edit, DataBoard, Operation, ShoppingCart, 
-  Document, Search, Plus, Loading, Close, Menu
+  Document, Search, Plus, Loading, Close, ArrowLeft, Menu
 } from '@element-plus/icons-vue'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github-dark.css'
@@ -179,6 +207,7 @@ const instance = getCurrentInstance()
 const app = instance?.appContext.app
 const { t: $t } = useI18n()
 
+
 // VNode 渲染器组件
 const VNodeRenderer = defineComponent({
   name: 'VNodeRenderer',
@@ -188,33 +217,40 @@ const VNodeRenderer = defineComponent({
       default: null
     }
   },
-  render() {
-    return this.vnode || h('div', 'Loading...')
+  setup(props) {
+    const { t } = useI18n()
+    return () => {
+      return props.vnode || h('div', t('integrationTests.loading'))
+    }
   }
 })
 
 // 示例数据配置
 interface DemoItem {
   id: string
-  label: string
+  labelKey: string
   icon?: any
-  level?: '简单' | '中等' | '复杂'
-  category?: string
-  description?: string
+  levelKey: string
+  categoryKey: string
+  descriptionKey: string
 }
 
 interface TreeNode extends DemoItem {
+  label?: string
+  level?: string
+  category?: string
+  description?: string
   children?: TreeNode[]
 }
 
 const demos: DemoItem[] = [
-  { id: 'counter', label: '计数器', icon: Plus, level: '简单', category: '基础', description: '基础状态管理和事件处理' },
-  { id: 'calculator', label: '计算器', icon: Operation, level: '简单', category: '基础', description: '基础计算功能' },
-  { id: 'todo', label: '待办事项', icon: DocumentChecked, level: '中等', category: '应用', description: '完整的 Todo 应用' },
-  { id: 'form', label: '表单', icon: Edit, level: '中等', category: '表单', description: '复杂表单处理' },
-  { id: 'search', label: '搜索过滤', icon: Search, level: '中等', category: '数据', description: '列表搜索和过滤' },
-  { id: 'table', label: '数据表格', icon: DataBoard, level: '复杂', category: '数据', description: '数据表格展示' },
-  { id: 'cart', label: '购物车', icon: ShoppingCart, level: '复杂', category: '应用', description: '购物车功能' }
+  { id: 'counter', labelKey: 'integrationTests.counter', icon: Plus, levelKey: 'integrationTests.simple', categoryKey: 'integrationTests.basic', descriptionKey: 'integrationTests.counterDescription' },
+  { id: 'calculator', labelKey: 'integrationTests.calculator', icon: Operation, levelKey: 'integrationTests.simple', categoryKey: 'integrationTests.basic', descriptionKey: 'integrationTests.calculatorDescription' },
+  { id: 'todo', labelKey: 'integrationTests.todo', icon: DocumentChecked, levelKey: 'integrationTests.medium', categoryKey: 'integrationTests.application', descriptionKey: 'integrationTests.todoDescription' },
+  { id: 'form', labelKey: 'integrationTests.form', icon: Edit, levelKey: 'integrationTests.medium', categoryKey: 'integrationTests.formCategory', descriptionKey: 'integrationTests.formDescription' },
+  { id: 'search', labelKey: 'integrationTests.searchFilter', icon: Search, levelKey: 'integrationTests.medium', categoryKey: 'integrationTests.data', descriptionKey: 'integrationTests.searchFilterDescription' },
+  { id: 'table', labelKey: 'integrationTests.dataTable', icon: DataBoard, levelKey: 'integrationTests.complex', categoryKey: 'integrationTests.data', descriptionKey: 'integrationTests.dataTableDescription' },
+  { id: 'cart', labelKey: 'integrationTests.shoppingCart', icon: ShoppingCart, levelKey: 'integrationTests.complex', categoryKey: 'integrationTests.application', descriptionKey: 'integrationTests.shoppingCartDescription' }
 ]
 
 // 构建树形数据（按类别分类）
@@ -222,15 +258,26 @@ const treeData = computed<TreeNode[]>(() => {
   const categories: Record<string, TreeNode> = {}
   
   demos.forEach(demo => {
-    const category = demo.category || '其他'
-    if (!categories[category]) {
-      categories[category] = {
-        id: `category-${category}`,
-        label: category,
+    const categoryKey = demo.categoryKey
+    const categoryLabel = $t(categoryKey) as string
+    if (!categories[categoryKey]) {
+      categories[categoryKey] = {
+        id: `category-${categoryKey}`,
+        label: categoryLabel,
+        labelKey: categoryKey,
+        levelKey: '',
+        categoryKey: '',
+        descriptionKey: '',
         children: []
       }
     }
-    categories[category].children!.push(demo)
+    categories[categoryKey].children!.push({
+      ...demo,
+      label: $t(demo.labelKey) as string,
+      level: $t(demo.levelKey) as string,
+      category: categoryLabel,
+      description: $t(demo.descriptionKey) as string
+    })
   })
   
   return Object.values(categories)
@@ -241,15 +288,26 @@ const treeDataByLevel = computed<TreeNode[]>(() => {
   const levels: Record<string, TreeNode> = {}
   
   demos.forEach(demo => {
-    const level = demo.level || '其他'
-    if (!levels[level]) {
-      levels[level] = {
-        id: `level-${level}`,
-        label: level,
+    const levelKey = demo.levelKey
+    const levelLabel = $t(levelKey) as string
+    if (!levels[levelKey]) {
+      levels[levelKey] = {
+        id: `level-${levelKey}`,
+        label: levelLabel,
+        labelKey: levelKey,
+        levelKey: '',
+        categoryKey: '',
+        descriptionKey: '',
         children: []
       }
     }
-    levels[level].children!.push(demo)
+    levels[levelKey].children!.push({
+      ...demo,
+      label: $t(demo.labelKey) as string,
+      level: levelLabel,
+      category: $t(demo.categoryKey) as string,
+      description: $t(demo.descriptionKey) as string
+    })
   })
   
   return Object.values(levels)
@@ -257,7 +315,9 @@ const treeDataByLevel = computed<TreeNode[]>(() => {
 
 // 当前分类模式
 const categoryMode = ref<'category' | 'level'>('category')
-const drawerVisible = ref(false)
+const sidebarCollapsed = ref(false)
+const sidebarWidth = ref(320)
+const isSidebarResizing = ref(false)
 
 // 搜索查询
 const searchQuery = ref('')
@@ -272,19 +332,22 @@ const filteredTreeData = computed(() => {
   
   const query = searchQuery.value.toLowerCase()
   const filterNode = (node: TreeNode): TreeNode | null => {
-    const labelMatch = node.label.toLowerCase().includes(query)
-    const childrenMatch = node.children?.some(child => 
-      child.label.toLowerCase().includes(query) || 
-      child.description?.toLowerCase().includes(query)
-    )
+    const nodeLabel = node.label || ''
+    const labelMatch = nodeLabel.toLowerCase().includes(query)
+    const childrenMatch = node.children?.some(child => {
+      const childLabel = child.label || ''
+      const childDesc = child.description || ''
+      return childLabel.toLowerCase().includes(query) || childDesc.toLowerCase().includes(query)
+    })
     
     if (labelMatch || childrenMatch) {
       return {
         ...node,
-        children: node.children?.filter(child => 
-          child.label.toLowerCase().includes(query) || 
-          child.description?.toLowerCase().includes(query)
-        )
+        children: node.children?.filter(child => {
+          const childLabel = child.label || ''
+          const childDesc = child.description || ''
+          return childLabel.toLowerCase().includes(query) || childDesc.toLowerCase().includes(query)
+        })
       }
     }
     
@@ -325,20 +388,23 @@ const demoCreators: Record<string, (app?: any) => { vnode: any }> = {
 }
 
 const demoTitles: Record<string, string> = {
-  todo: '待办事项',
-  form: '表单',
-  table: '数据表格',
-  calculator: '计算器',
-  cart: '购物车',
-  counter: '计数器',
-  search: '搜索过滤'
+  todo: $t('integrationTests.todo') as string,
+  form: $t('integrationTests.form') as string,
+  table: $t('integrationTests.dataTable') as string,
+  calculator: $t('integrationTests.calculator') as string,
+  cart: $t('integrationTests.shoppingCart') as string,
+  counter: $t('integrationTests.counter') as string,
+  search: $t('integrationTests.searchFilter') as string
 }
 
 const getLevelType = (level: string) => {
+  const simple = $t('integrationTests.simple') as string
+  const medium = $t('integrationTests.medium') as string
+  const complex = $t('integrationTests.complex') as string
   const map: Record<string, 'success' | 'warning' | 'danger'> = {
-    '简单': 'success',
-    '中等': 'warning',
-    '复杂': 'danger'
+    [simple]: 'success',
+    [medium]: 'warning',
+    [complex]: 'danger'
   }
   return map[level] || 'info'
 }
@@ -373,7 +439,7 @@ const loadSourceCode = async (demoType: string) => {
     highlightCode()
   } catch (error) {
     console.error('Failed to load source code:', error)
-    sourceCode.value = `// 无法加载源码: ${error instanceof Error ? error.message : String(error)}`
+    sourceCode.value = `// ${$t('integrationTests.failedToLoadSource')}: ${error instanceof Error ? error.message : String(error)}`
   }
 }
 
@@ -403,7 +469,7 @@ const startDemo = async (demoType: string) => {
   }
   
   activeDemo.value = demoType
-  activeDemoTitle.value = demoTitles[demoType] || '演示'
+  activeDemoTitle.value = demoTitles[demoType] || ($t('integrationTests.demo') as string)
   showSourceCode.value = false
   sourceCode.value = ''
   
@@ -421,10 +487,9 @@ const handleNodeClick = (data: TreeNode) => {
   // 只处理叶子节点（示例项）
   if (!data.children && data.id && data.id.startsWith('category-') === false && data.id.startsWith('level-') === false) {
     startDemo(data.id)
-    // 选择示例后自动关闭抽屉
-    drawerVisible.value = false
   }
 }
+
 
 const toggleSourceCode = async () => {
   showSourceCode.value = !showSourceCode.value
@@ -514,17 +579,72 @@ const startResize = (e: MouseEvent) => {
   document.addEventListener('mouseup', handleMouseUp)
 }
 
+// 侧边栏拖动调整宽度
+const startSidebarResize = (e: MouseEvent) => {
+  isSidebarResizing.value = true
+  e.preventDefault()
+  e.stopPropagation()
+  
+  document.body.style.userSelect = 'none'
+  document.body.style.cursor = 'col-resize'
+  
+  const startX = e.clientX
+  const startWidth = sidebarWidth.value
+  
+  let rafId: number | null = null
+  
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isSidebarResizing.value) return
+    
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId)
+    }
+    
+    rafId = requestAnimationFrame(() => {
+      const currentX = e.clientX
+      const deltaX = currentX - startX
+      const newWidth = startWidth + deltaX
+      
+      // 限制宽度范围：最小 200px，最大 500px
+      const minWidth = 200
+      const maxWidth = 500
+      
+      if (newWidth >= minWidth && newWidth <= maxWidth) {
+        sidebarWidth.value = newWidth
+      }
+    })
+  }
+  
+  const handleMouseUp = () => {
+    isSidebarResizing.value = false
+    document.body.style.userSelect = ''
+    document.body.style.cursor = ''
+    
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId)
+      rafId = null
+    }
+    
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', handleMouseUp)
+  }
+  
+  document.addEventListener('mousemove', handleMouseMove, { passive: true })
+  document.addEventListener('mouseup', handleMouseUp)
+}
+
 // 默认显示第一个例子
 onMounted(() => {
   if (demos.length > 0) {
     startDemo(demos[0].id)
   }
-  // 默认打开抽屉
-  drawerVisible.value = true
 })
 </script>
 
 <style scoped lang="scss">
+@use '../styles/abstracts/variables' as *;
+@use '../styles/abstracts/mixins' as *;
+
 .integration-tests-view {
   height: calc(100vh - 120px);
   overflow: hidden;
@@ -537,25 +657,87 @@ onMounted(() => {
   gap: 0;
 }
 
-// 抽屉样式
-.examples-drawer {
-  .drawer-header {
-    font-size: 16px;
-    font-weight: 600;
+// 左侧侧边栏
+.sidebar {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border-default);
+  overflow: hidden;
+  transition: width 0.2s ease;
+  
+  &.is-resizing {
+    transition: none;
+    user-select: none;
   }
   
-  .drawer-content {
+  &--collapsed {
+    .sidebar-header {
+      justify-content: center;
+      padding: $spacing-md $spacing-xs;
+    }
+    
+    .sidebar-title {
+      display: none;
+    }
+    
+    .sidebar-actions {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+  }
+  
+  .sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-md;
+    border-bottom: 1px solid var(--border-default);
+    flex-shrink: 0;
+    min-height: 48px;
+    
+    .sidebar-title {
+      font-size: $font-size-h4-desktop;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .sidebar-actions {
+      display: flex;
+      align-items: center;
+      gap: $spacing-xs;
+      flex-shrink: 0;
+    }
+    
+    .collapse-btn,
+    .menu-btn {
+      color: var(--text-secondary);
+      flex-shrink: 0;
+      
+      &:hover {
+        color: var(--primary-base);
+      }
+    }
+  }
+  
+  .sidebar-content {
     display: flex;
     flex-direction: column;
     height: 100%;
+    overflow: hidden;
     
-    .drawer-controls {
+    .sidebar-controls {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--el-border-color);
-      margin-bottom: 16px;
+      gap: $spacing-md;
+      padding: $spacing-md;
+      border-bottom: 1px solid var(--border-default);
+      flex-shrink: 0;
       
       .mode-switch {
         width: 100%;
@@ -574,25 +756,64 @@ onMounted(() => {
     .tree-container {
       flex: 1;
       overflow: auto;
-      padding: 8px;
+      padding: $spacing-xs 0;
+      background: var(--bg-card);
       
       .demo-tree {
+        background: var(--bg-card);
+        padding: 0 $spacing-md;
+        
+        :deep(.el-tree-node) {
+          margin-bottom: $spacing-xs;
+          background: var(--bg-card);
+          
+          .el-tree-node__content {
+            padding: $spacing-sm 0;
+            min-height: 36px;
+            height: auto;
+            background: var(--bg-card);
+            
+            &:hover {
+              background-color: var(--bg-hover);
+            }
+          }
+          
+          &.is-current > .el-tree-node__content {
+            background-color: var(--bg-hover);
+          }
+        }
+        
+        :deep(.el-tree-node__expand-icon) {
+          margin-right: $spacing-xs;
+        }
+        
         .tree-node {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: $spacing-sm;
           flex: 1;
+          padding-right: $spacing-sm;
+          min-width: 0;
           
           .node-icon {
-            font-size: 16px;
+            font-size: $font-size-h4-desktop;
+            flex-shrink: 0;
+            color: var(--text-secondary);
           }
           
           .node-label {
             flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--text-primary);
           }
           
           .level-tag {
             margin-left: auto;
+            flex-shrink: 0;
+            margin-right: 0;
           }
         }
       }
@@ -600,7 +821,38 @@ onMounted(() => {
   }
 }
 
-// 拖动分隔条
+// 侧边栏拖动分隔条
+.sidebar-resizer {
+  width: 4px;
+  background: var(--border-default);
+  cursor: col-resize;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  z-index: 10;
+  
+  &:hover {
+    background: var(--primary-base);
+    width: 6px;
+  }
+  
+  &:active {
+    background: var(--primary-base);
+    width: 6px;
+  }
+  
+  .resizer-handle {
+    position: absolute;
+    left: -4px;
+    top: 0;
+    width: 12px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 11;
+  }
+}
+
+// 中间和右侧之间的拖动分隔条
 .resizer {
   width: 4px;
   background: var(--el-border-color);
@@ -818,5 +1070,6 @@ onMounted(() => {
     }
   }
 }
+
 
 </style>
