@@ -106,20 +106,12 @@
 import { computed, ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { HomeFilled, DocumentChecked, Connection, Collection, Switch, Timer, Moon, Sunny, Edit } from '@element-plus/icons-vue'
-// 注意：ElMessage 是 Element Plus 提供的全局方法，通过 app.use(ElementPlus) 注册
-// 这里直接导入使用是合理的，因为它是工具方法而非组件
-import { ElMessage } from 'element-plus'
+import { HomeFilled, DocumentChecked, Connection, Collection, Timer, Moon, Sunny, Edit } from '@element-plus/icons-vue'
 
 const route = useRoute()
-const { locale, t } = useI18n()
+const { locale } = useI18n()
 
 const activeRoute = computed(() => route.path)
-
-const languageMap = {
-  'zh-CN': '中文',
-  'en': 'English'
-}
 
 const isDark = ref(false)
 
