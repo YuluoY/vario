@@ -9,9 +9,9 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
-    "@vario/core": "workspace:*",
-    "@vario/schema": "workspace:*",
-    "@vario/vue": "workspace:*",
+    "@variojs/core": "workspace:*",
+    "@variojs/schema": "workspace:*",
+    "@variojs/vue": "workspace:*",
     "echarts": "^5.4.3",
     "element-plus": "^2.6.0",
     "highlight.js": "^11.11.1",

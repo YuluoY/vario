@@ -1,5 +1,5 @@
 {
-  "name": "@vario/core",
+  "name": "@variojs/core",
   "version": "0.1.0",
   "description": "Vario Core Runtime - Instruction VM, Expression System, Runtime Context",
   "type": "module",
@@ -27,5 +27,12 @@
   "devDependencies": {
     "typescript": "^5.3.3",
     "vitest": "^1.2.0"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }

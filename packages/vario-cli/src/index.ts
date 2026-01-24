@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  * Vario CLI Tools
  * 

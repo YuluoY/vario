@@ -1,5 +1,5 @@
 {
-  "name": "@vario/vue",
+  "name": "@variojs/vue",
   "version": "0.1.0",
   "description": "Vario Vue Renderer - Vue 3 integration for Vario Schema rendering",
   "type": "module",
@@ -20,13 +20,20 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@vario/core": "workspace:*",
-    "@vario/schema": "workspace:*"
+    "@variojs/core": "workspace:*",
+    "@variojs/schema": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.3.3",
     "vitest": "^1.2.0",
     "vue": "^3.4.0",
     "element-plus": "^2.4.0"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }

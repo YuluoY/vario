@@ -1,5 +1,5 @@
 {
-  "name": "@vario/cli",
+  "name": "@variojs/cli",
   "version": "0.1.0",
   "description": "Vario CLI Tools - Development server, code generation, and build tools",
   "type": "module",
@@ -14,15 +14,16 @@
   },
   "scripts": {
     "build": "tsc",
+    "postbuild": "node -e \"const fs=require('fs');const f='dist/index.js';const c=fs.readFileSync(f,'utf8');if(!c.startsWith('#!/usr/bin/env node')){fs.writeFileSync(f,'#!/usr/bin/env node\\n'+c);fs.chmodSync(f,0o755)}\"",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@vario/core": "workspace:*",
-    "@vario/schema": "workspace:*",
-    "@vario/vue": "workspace:*",
+    "@variojs/core": "workspace:*",
+    "@variojs/schema": "workspace:*",
+    "@variojs/vue": "workspace:*",
     "commander": "^11.1.0"
   },
   "bin": {
@@ -31,5 +32,12 @@
   "devDependencies": {
     "typescript": "^5.3.3",
     "vitest": "^1.2.0"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }
