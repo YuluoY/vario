@@ -36,6 +36,7 @@ lerna-debug.log*
 .env
 .env.local
 .env.*.local
+.npmrc
 
 # Testing
 coverage/
