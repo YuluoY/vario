@@ -424,7 +424,7 @@ import {
 } from '@element-plus/icons-vue'
 import { createRuntimeContext, evaluate } from '@variojs/core'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 // 表达式选项列表
 const simpleExpressions = [
@@ -1085,6 +1085,15 @@ watch(performanceHistory, () => {
     })
   }
 }, { deep: true })
+
+// 监听语言变化，更新图表配置
+watch(locale, () => {
+  if (chartInstance && (monitoringActive.value || performanceHistory.value.length > 0)) {
+    nextTick(() => {
+      updateChart()
+    })
+  }
+})
 
 onMounted(() => {
   // 不立即初始化，等用户点击开始监控时再初始化

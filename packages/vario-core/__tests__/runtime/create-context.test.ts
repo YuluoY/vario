@@ -75,4 +75,26 @@ describe('createRuntimeContext', () => {
     expect(events[0].event).toBe('test')
     expect(events[0].data).toEqual({ value: 123 })
   })
+
+  it('应该防止 $methods 被整体覆盖', () => {
+    const ctx = createRuntimeContext()
+    
+    // 确保 $methods 是对象
+    expect(typeof ctx.$methods).toBe('object')
+    expect(ctx.$methods).not.toBeNull()
+    
+    // 尝试覆盖 $methods 为字符串应该抛出错误
+    expect(() => {
+      ctx.$methods = 'hacked' as any
+    }).toThrow('Cannot override system API')
+    
+    // 尝试覆盖 $methods 为 null 应该抛出错误
+    expect(() => {
+      ctx.$methods = null as any
+    }).toThrow('Cannot override system API')
+    
+    // 但可以向 $methods 添加新方法
+    ctx.$methods.customMethod = () => 'custom'
+    expect(ctx.$methods.customMethod()).toBe('custom')
+  })
 })

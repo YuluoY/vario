@@ -21,6 +21,22 @@ export type CompiledExpression = (ctx: RuntimeContext) => unknown
 const compiledCache = new Map<string, CompiledExpression | null>()
 
 /**
+ * 危险属性名称（不应被编译，需要回退到解释执行进行安全检查）
+ * - constructor: 可用于访问 Function 构造函数
+ * - prototype: 可用于修改原型链
+ * - __proto__: 可用于修改对象原型
+ */
+const DANGEROUS_PROPERTIES = ['constructor', 'prototype', '__proto__']
+
+/**
+ * 检查路径是否包含危险属性
+ */
+function containsDangerousProperty(path: string): boolean {
+  const segments = path.split('.')
+  return segments.some(segment => DANGEROUS_PROPERTIES.includes(segment))
+}
+
+/**
  * 提取静态路径（从 MemberExpression）
  * 
  * 例如：user.name → "user.name"
@@ -98,13 +114,17 @@ export function compileSimpleExpression(ast: ESTree.Node): CompiledExpression | 
   }
   
   // 静态成员访问：{{ user.name }} → (ctx) => ctx._get('user.name')
-  // 注意：如果路径以全局对象名称开头，不应该被编译
+  // 注意：如果路径以全局对象名称开头或包含危险属性，不应该被编译
   const path = extractStaticPath(ast)
   if (path) {
     // 检查路径是否以全局对象名称开头
     const globalObjectNames = ['window', 'document', 'global', 'globalThis', 'self']
     const firstSegment = path.split('.')[0]
     if (globalObjectNames.includes(firstSegment)) {
+      return null  // 回退到解释执行以进行安全检查
+    }
+    // 检查路径是否包含危险属性（constructor, prototype, __proto__）
+    if (containsDangerousProperty(path)) {
       return null  // 回退到解释执行以进行安全检查
     }
     return (ctx: RuntimeContext) => ctx._get(path)

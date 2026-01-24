@@ -506,7 +506,7 @@ const VNodeRenderer = defineComponent({
   }
 })
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const activeCategory = ref('rendering')
 
 // Performance metrics - keep as reactive array for mutability
@@ -1294,14 +1294,14 @@ const updateChart = () => {
     },
     yAxis: {
       type: 'value',
-      name: '耗时 (ms)',
+      name: t('performanceTests.durationMs'),
       axisLabel: {
         formatter: (value: number) => value.toFixed(2)
       }
     },
     series: [
       {
-        name: '渲染耗时',
+        name: t('performanceTests.renderDuration'),
         type: 'bar',
         data: durations.map((d, i) => ({
           value: d,
@@ -1327,6 +1327,15 @@ watch(performanceHistory, () => {
     updateChart()
   })
 }, { deep: true })
+
+// 监听语言变化，更新图表配置
+watch(locale, () => {
+  if (chartInstance && performanceHistory.value.length > 0) {
+    nextTick(() => {
+      updateChart()
+    })
+  }
+})
 
 // 组件挂载和卸载时处理图表
 onMounted(() => {

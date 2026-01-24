@@ -43,7 +43,8 @@ export {
   getCachedExpression,
   setCachedExpression,
   invalidateCache,
-  clearCache
+  clearCache,
+  getCacheStats
 } from './expression/index.js'
 
 // VM

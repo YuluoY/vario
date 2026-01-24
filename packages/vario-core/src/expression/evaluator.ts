@@ -76,6 +76,25 @@ const SAFE_ARRAY_METHODS = new Set([
 ])
 
 /**
+ * 危险属性名称集合（用于阻止原型链污染攻击）
+ * - constructor: 可用于访问 Function 构造函数
+ * - prototype: 可用于修改原型链
+ * - __proto__: 可用于修改对象原型
+ */
+const DANGEROUS_PROPERTIES = new Set([
+  'constructor',
+  'prototype',
+  '__proto__',
+])
+
+/**
+ * 检查属性名是否为危险属性
+ */
+function isDangerousProperty(propName: string | number): boolean {
+  return typeof propName === 'string' && DANGEROUS_PROPERTIES.has(propName)
+}
+
+/**
  * 运行时辅助函数
  */
   const RUNTIME_HELPERS: Record<string, (...args: unknown[]) => unknown> = {
@@ -263,15 +282,26 @@ export function evaluateExpression(
           }
         }
         
+        // 获取属性名
+        let propName: string | number
         if (member.computed) {
           // 计算属性：obj[key]
-          const key = evaluate(member.property)
-          return (object as Record<string | number, unknown>)[key as string | number]
+          propName = evaluate(member.property) as string | number
         } else {
           // 静态属性：obj.prop
-          const prop = (member.property as ESTree.Identifier).name
-          return (object as Record<string, unknown>)[prop]
+          propName = (member.property as ESTree.Identifier).name
         }
+        
+        // 禁止访问危险属性（constructor, prototype, __proto__）
+        if (!allowGlobals && isDangerousProperty(propName)) {
+          throw new ExpressionError(
+            String(propName),
+            `Access to "${propName}" is not allowed in expressions`,
+            ErrorCodes.EXPRESSION_UNSAFE_ACCESS
+          )
+        }
+        
+        return (object as Record<string | number, unknown>)[propName]
       }
       
       case 'OptionalMemberExpression': {
@@ -299,15 +329,26 @@ export function evaluateExpression(
           }
         }
         
+        // 获取属性名
+        let propName: string | number
         if (member.computed) {
           // 计算属性：obj?.[key]
-          const key = evaluate(member.property)
-          return (object as Record<string | number, unknown>)?.[key as string | number]
+          propName = evaluate(member.property) as string | number
         } else {
           // 静态属性：obj?.prop
-          const prop = (member.property as ESTree.Identifier).name
-          return (object as Record<string, unknown>)?.[prop]
+          propName = (member.property as ESTree.Identifier).name
         }
+        
+        // 禁止访问危险属性（constructor, prototype, __proto__）
+        if (!allowGlobals && isDangerousProperty(propName)) {
+          throw new ExpressionError(
+            String(propName),
+            `Access to "${propName}" is not allowed in expressions`,
+            ErrorCodes.EXPRESSION_UNSAFE_ACCESS
+          )
+        }
+        
+        return (object as Record<string | number, unknown>)?.[propName]
       }
       
       case 'BinaryExpression': {

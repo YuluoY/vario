@@ -11,7 +11,8 @@ export {
   getCachedExpression,
   setCachedExpression,
   invalidateCache,
-  clearCache
+  clearCache,
+  getCacheStats
 } from './cache.js'
 export {
   extractExpression,

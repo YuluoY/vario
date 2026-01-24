@@ -48,6 +48,7 @@ export default {
     cacheMonitoringDescription: '监控表达式缓存大小和命中率。',
     cachedExpressions: '已缓存的表达式',
     cacheSize: '缓存大小',
+    cachedExpressionsList: '缓存的表达式列表',
     lastExpression: '最后表达式：',
     refreshCacheInfo: '刷新缓存信息',
     clearCache: '清除缓存'
@@ -245,6 +246,7 @@ export default {
     chartInitFailed: '图表初始化失败：',
     // Performance Tests - 图表配置
     cacheHitRatePercentage: '缓存命中率 (%)',
+    instructionTimeContextSize: '指令时间 / 上下文大小',
     inructionTimeContextSize: '指令时间 / 上下文大小',
     renderingPerformance: '渲染性能',
     largeNodeRendering: '大量节点渲染',
@@ -293,7 +295,9 @@ export default {
     avgRenderTime: '平均渲染时间',
     avgExpressionTime: '平均表达式时间',
     totalTests: '总测试数',
-    memoryUsage: '内存使用'
+    memoryUsage: '内存使用',
+    durationMs: '耗时 (ms)',
+    renderDuration: '渲染耗时'
   },
 
   // Runtime Context Tests - 运行时上下文测试
@@ -449,7 +453,8 @@ export default {
     securityBreachOverwritten: '安全漏洞：{0} 被覆盖！',
     protectedCannotOverwrite: '受保护：{0} 无法被覆盖',
     infiniteLoopExpressionNotBlocked: '无限循环表达式未被阻止',
-    infiniteLoopCorrectlyBlocked: '无限循环被正确阻止'
+    infiniteLoopCorrectlyBlocked: '无限循环被正确阻止',
+    accessToPropertyNotAllowed: '不允许在表达式中访问 "{0}"'
   },
 
   // Vue Integration Tests - Vue 集成测试

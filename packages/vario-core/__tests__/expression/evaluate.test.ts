@@ -92,4 +92,33 @@ describe('表达式求值', () => {
     expect(evaluate('globalThis.__testVal', ctx, { allowGlobals: true })).toBe(7)
     delete (globalThis as any).__testVal
   })
+
+  describe('危险属性访问防护', () => {
+    it('应该拒绝访问 constructor 属性', () => {
+      expect(() => evaluate('Object.constructor', ctx)).toThrow()
+      expect(() => evaluate('user.constructor', ctx)).toThrow()
+      expect(() => evaluate('items.constructor', ctx)).toThrow()
+    })
+
+    it('应该拒绝访问 prototype 属性', () => {
+      expect(() => evaluate('Array.prototype', ctx)).toThrow()
+      expect(() => evaluate('Object.prototype', ctx)).toThrow()
+    })
+
+    it('应该拒绝访问 __proto__ 属性', () => {
+      expect(() => evaluate('user.__proto__', ctx)).toThrow()
+      expect(() => evaluate('items.__proto__', ctx)).toThrow()
+    })
+
+    it('应该拒绝通过计算属性访问危险属性', () => {
+      expect(() => evaluate('user["constructor"]', ctx)).toThrow()
+      expect(() => evaluate('user["__proto__"]', ctx)).toThrow()
+      expect(() => evaluate('Object["prototype"]', ctx)).toThrow()
+    })
+
+    it('开启 allowGlobals 时应允许访问危险属性', () => {
+      expect(evaluate('Object.constructor', ctx, { allowGlobals: true })).toBe(Function)
+      expect(evaluate('user.constructor', ctx, { allowGlobals: true })).toBe(Object)
+    })
+  })
 })

@@ -264,6 +264,20 @@
               </el-col>
             </el-row>
             
+            <div v-if="cacheInfo.cachedExpressions > 0" class="cached-expressions-list mt-4">
+              <h5>{{ $t('expressionTests.cachedExpressionsList') }}</h5>
+              <div class="expression-list">
+                <el-tag 
+                  v-for="(expr, index) in cacheInfo.expressions" 
+                  :key="index"
+                  class="expression-tag"
+                  size="small"
+                >
+                  {{ expr.length > 30 ? expr.substring(0, 30) + '...' : expr }}
+                </el-tag>
+              </div>
+            </div>
+            
             <div v-if="cacheInfo.lastExpression" class="last-expression mt-4">
               <h5>{{ $t('expressionTests.lastExpression') }}</h5>
               <pre class="expression-code">{{ cacheInfo.lastExpression }}</pre>
@@ -274,7 +288,7 @@
                 <el-button type="primary" @click="updateCacheInfo">
                   {{ $t('expressionTests.refreshCacheInfo') }}
                 </el-button>
-                <el-button type="danger" @click="clearCache(ctx)">
+                <el-button type="danger" @click="handleClearCache">
                   {{ $t('expressionTests.clearCache') }}
                 </el-button>
               </el-button-group>
@@ -287,10 +301,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Document, DataBoard, Clock, Warning } from '@element-plus/icons-vue'
-import { createRuntimeContext, evaluate, parseExpression, validateAST, getCachedExpression, clearCache, invalidateCache } from '@variojs/core'
+import { createRuntimeContext, evaluate, parseExpression, validateAST, getCachedExpression, clearCache, invalidateCache, getCacheStats } from '@variojs/core'
 
 // @ts-ignore
 const { t } = useI18n()
@@ -344,10 +358,12 @@ const cacheInfo = ref<{
   cachedExpressions: number
   cacheSize: string
   lastExpression: string | null
+  expressions: string[]
 }>({
   cachedExpressions: 0,
-  cacheSize: '0 KB',
-  lastExpression: null
+  cacheSize: '0 B',
+  lastExpression: null,
+  expressions: []
 })
 
 const ctx = createRuntimeContext(contextState)
@@ -430,15 +446,56 @@ const evaluateExpression = () => {
 }
 
 const updateCacheInfo = () => {
-  // This would require access to internal cache structure
-  // For now, we'll simulate cache info
-  const cached = getCachedExpression(expressionInput.value, ctx)
-  cacheInfo.value = {
-    cachedExpressions: cached ? 1 : 0,
-    cacheSize: 'N/A', // Would need internal cache access
-    lastExpression: expressionInput.value
+  try {
+    const stats = getCacheStats(ctx)
+    
+    // 计算缓存大小（简化版本：只计算表达式字符串大小）
+    let totalSize = 0
+    for (const expr of stats.expressions) {
+      // 只计算表达式字符串的字节大小
+      totalSize += new TextEncoder().encode(expr).length
+      // 加上基本的元数据开销（每个条目约 200 字节）
+      totalSize += 200
+    }
+    
+    // 格式化大小
+    let sizeStr: string
+    if (totalSize === 0) {
+      sizeStr = '0 B'
+    } else if (totalSize < 1024) {
+      sizeStr = `${totalSize} B`
+    } else if (totalSize < 1024 * 1024) {
+      sizeStr = `${(totalSize / 1024).toFixed(1)} KB`
+    } else {
+      sizeStr = `${(totalSize / (1024 * 1024)).toFixed(2)} MB`
+    }
+    
+    cacheInfo.value = {
+      cachedExpressions: stats.size,
+      cacheSize: sizeStr,
+      lastExpression: expressionInput.value || null,
+      expressions: stats.expressions
+    }
+  } catch (error: any) {
+    console.error('Failed to get cache stats:', error)
+    cacheInfo.value = {
+      cachedExpressions: 0,
+      cacheSize: '0 B',
+      lastExpression: expressionInput.value || null,
+      expressions: []
+    }
   }
 }
+
+const handleClearCache = () => {
+  clearCache(ctx)
+  updateCacheInfo()
+}
+
+// 初始化时更新缓存信息
+onMounted(() => {
+  updateCacheInfo()
+})
 
 const updateContext = () => {
   try {
@@ -794,6 +851,26 @@ h2 {
     display: flex;
     justify-content: center;
     gap: var(--space-4);
+  }
+  
+  .cached-expressions-list {
+    h5 {
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--space-2);
+      color: var(--color-text-secondary);
+    }
+    
+    .expression-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      
+      .expression-tag {
+        margin: 0;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: var(--font-size-xs);
+      }
+    }
   }
 }
 

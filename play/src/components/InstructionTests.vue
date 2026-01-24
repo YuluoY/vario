@@ -305,7 +305,7 @@ const arrayOperation = async (type: string) => {
         instructions.push({ type: 'shift', path: 'array' })
         break
       case 'unshift':
-        instructions.push({ type: 'unshift', path: 'array', value: 0 })
+        instructions.push({ type: 'unshift', path: 'array', value: arrayState.value.length + 1 })
         break
       case 'splice':
         instructions.push({ type: 'splice', path: 'array', start: 1, deleteCount: 2, items: [99, 100] })

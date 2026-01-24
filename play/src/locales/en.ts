@@ -48,6 +48,7 @@ export default {
     cacheMonitoringDescription: 'Monitor expression cache size and hit rates.',
     cachedExpressions: 'Cached Expressions',
     cacheSize: 'Cache Size',
+    cachedExpressionsList: 'Cached Expressions List',
     lastExpression: 'Last Expression:',
     refreshCacheInfo: 'Refresh Cache Info',
     clearCache: 'Clear Cache'
@@ -295,7 +296,9 @@ export default {
     avgRenderTime: 'Average Render Time',
     avgExpressionTime: 'Average Expression Time',
     totalTests: 'Total Tests',
-    memoryUsage: 'Memory Usage'
+    memoryUsage: 'Memory Usage',
+    durationMs: 'Duration (ms)',
+    renderDuration: 'Render Duration'
   },
 
   // Runtime Context Tests
@@ -450,7 +453,8 @@ export default {
     securityBreachOverwritten: 'Security breach: {0} was overwritten!',
     protectedCannotOverwrite: 'Protected: {0} cannot be overwritten',
     infiniteLoopExpressionNotBlocked: 'Infinite loop expression was not blocked',
-    infiniteLoopCorrectlyBlocked: 'Infinite loop correctly blocked'
+    infiniteLoopCorrectlyBlocked: 'Infinite loop correctly blocked',
+    accessToPropertyNotAllowed: 'Access to "{0}" is not allowed in expressions'
   },
 
   // Vue Integration Tests
