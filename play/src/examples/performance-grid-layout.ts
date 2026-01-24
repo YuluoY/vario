@@ -1,4 +1,4 @@
-import type { Schema } from '@vario/schema'
+import type { Schema } from '@variojs/schema'
 
 /**
  * 网格布局场景

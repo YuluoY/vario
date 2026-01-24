@@ -2,8 +2,8 @@
  * 计数器示例 - 展示基础状态管理和事件处理
  */
 
-import { useVario } from '@vario/vue'
-import type { Schema } from '@vario/schema'
+import { useVario, type MethodContext } from '@variojs/vue'
+import type { Schema } from '@variojs/schema'
 import type { App } from 'vue'
 
 interface CounterState extends Record<string, unknown> {
@@ -147,19 +147,19 @@ export function createCounter(app?: App | null) {
     app,
     state: initialState,
     methods: {
-      increment: ({ state }) => {
+      increment: ({ state }: MethodContext<CounterState>) => {
         state.count += state.step
         state.history.push(state.count)
       },
-      decrement: ({ state }) => {
+      decrement: ({ state }: MethodContext<CounterState>) => {
         state.count -= state.step
         state.history.push(state.count)
       },
-      clearHistory: ({ state }) => {
+      clearHistory: ({ state }: MethodContext<CounterState>) => {
         state.history = []
       }
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('[Counter] Error:', error)
     }
   })

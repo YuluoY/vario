@@ -1,5 +1,5 @@
-import type { Schema } from '@vario/schema'
-import type { RuntimeContext } from '@vario/core'
+import type { Schema } from '@variojs/schema'
+import type { RuntimeContext } from '@variojs/core'
 
 /**
  * 方法上下文类型

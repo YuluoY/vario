@@ -76,8 +76,8 @@ import {
 import { ElCard, ElButton, ElIcon, ElMessage } from 'element-plus'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github-dark.css'
-import { useVario } from '@vario/vue'
-import type { Schema } from '@vario/schema'
+import { useVario } from '@variojs/vue'
+import type { Schema } from '@variojs/schema'
 import {
   buttonExample,
   inputExample,
@@ -218,7 +218,7 @@ const ExampleCard = defineComponent({
       const { vnode } = useVario(props.schema, {
         state,
         methods: props.methods,
-        onError: (error) => {
+        onError: (error: Error) => {
           console.error('[ExampleCard] Render error:', error)
         }
       })

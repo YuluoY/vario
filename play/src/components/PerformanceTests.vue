@@ -422,7 +422,7 @@ import {
   VideoPause, 
   Refresh 
 } from '@element-plus/icons-vue'
-import { createRuntimeContext, evaluate } from '@vario/core'
+import { createRuntimeContext, evaluate } from '@variojs/core'
 
 const { t } = useI18n()
 

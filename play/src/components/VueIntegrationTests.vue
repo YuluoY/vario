@@ -263,8 +263,8 @@
 import { reactive, ref, watch, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { MagicStick, View, DataBoard, List, Document, Check } from '@element-plus/icons-vue'
-import { useVario, type VueRendererOptions } from '@vario/vue'
-import type { Schema } from '@vario/schema'
+import { useVario, type VueRendererOptions } from '@variojs/vue'
+import type { Schema } from '@variojs/schema'
 import { 
   defaultStates, 
   createSchemasFactory,

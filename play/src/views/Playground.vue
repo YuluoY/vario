@@ -104,8 +104,8 @@ import { VideoPlay, Refresh, Document, FullScreen, Aim, View, Hide } from '@elem
 import { ElMessage } from 'element-plus'
 import MonacoEditor from 'monaco-editor-vue3'
 import * as monaco from 'monaco-editor'
-import { useVario } from '@vario/vue'
-import type { Schema } from '@vario/schema'
+import { useVario } from '@variojs/vue'
+import type { Schema } from '@variojs/schema'
 
 const { t } = useI18n()
 const instance = getCurrentInstance()

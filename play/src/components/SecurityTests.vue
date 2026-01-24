@@ -249,7 +249,7 @@
 import { ref, reactive } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Lock, Warning, InfoFilled } from '@element-plus/icons-vue'
-import { createRuntimeContext, evaluate } from '@vario/core'
+import { createRuntimeContext, evaluate } from '@variojs/core'
 
 // @ts-ignore
 const { t } = useI18n()

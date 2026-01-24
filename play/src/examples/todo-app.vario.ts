@@ -2,8 +2,8 @@
  * Todo App 示例 - 使用 vario-vue Composition API
  */
 
-import { useVario } from '@vario/vue'
-import type { Schema } from '@vario/schema'
+import { useVario, type MethodContext } from '@variojs/vue'
+import type { Schema } from '@variojs/schema'
 import type { App } from 'vue'
 
 interface TodoState extends Record<string, unknown> {
@@ -223,21 +223,21 @@ export function createTodoApp(app?: App | null) {
       activeCount: (state) => state.todos.filter(t => !t.completed).length
     },
     methods: {
-      addTodo: ({ state }) => {
+      addTodo: ({ state }: MethodContext<TodoState>) => {
         const text = state.newTodoText?.trim()
         if (!text) return
         state.todos.push({ id: Date.now(), text, completed: false })
         state.newTodoText = ''
       },
-      toggleTodo: ({ state, params }) => {
+      toggleTodo: ({ state, params }: MethodContext<TodoState>) => {
         const todo = state.todos.find(t => t.id === params.todoId)
         if (todo) todo.completed = !todo.completed
       },
-      removeTodo: ({ state, params }) => {
+      removeTodo: ({ state, params }: MethodContext<TodoState>) => {
         state.todos = state.todos.filter(todo => todo.id !== params.todoId)
       }
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('[TodoApp] Error:', error)
     }
   })

@@ -2,8 +2,8 @@
  * 计算器应用示例 - 使用 vario-vue Composition API
  */
 
-import { useVario } from '@vario/vue'
-import type { Schema } from '@vario/schema'
+import { useVario, type MethodContext } from '@variojs/vue'
+import type { Schema } from '@variojs/schema'
 import type { App } from 'vue'
 
 interface CalculatorState extends Record<string, unknown> {
@@ -89,7 +89,7 @@ export function createCalculator(app?: App | null) {
       a: '123'
     },
     methods: {
-      inputNumber: ({ state, params }) => {
+      inputNumber: ({ state, params }: MethodContext<CalculatorState>) => {
         const display = state.display
         if (state.waitingForOperand) {
           state.display = params.num
@@ -98,7 +98,7 @@ export function createCalculator(app?: App | null) {
           state.display = display === '0' ? params.num : display + params.num
         }
       },
-      inputDecimal: ({ state }) => {
+      inputDecimal: ({ state }: MethodContext<CalculatorState>) => {
         if (state.waitingForOperand) {
           state.display = '0.'
           state.waitingForOperand = false
@@ -106,13 +106,13 @@ export function createCalculator(app?: App | null) {
           state.display += '.'
         }
       },
-      clear: ({ state }) => {
+      clear: ({ state }: MethodContext<CalculatorState>) => {
         state.display = '0'
         state.previousValue = null
         state.operator = null
         state.waitingForOperand = false
       },
-      handleOperator: ({ state, params }) => {
+      handleOperator: ({ state, params }: MethodContext<CalculatorState>) => {
         const currentValue = parseFloat(state.display)
         if (state.previousValue === null) {
           state.previousValue = currentValue
@@ -124,7 +124,7 @@ export function createCalculator(app?: App | null) {
         state.waitingForOperand = true
         state.operator = params.op
       },
-      calculate: ({ state, ctx }) => {
+      calculate: ({ state, ctx }: MethodContext<CalculatorState>) => {
         const currentValue = parseFloat(state.display)
         if (state.previousValue !== null && state.operator) {
           const result = performCalculation(state.previousValue, currentValue, state.operator)
@@ -139,7 +139,7 @@ export function createCalculator(app?: App | null) {
         }
       }
     },
-    onError: (error) => console.error('[Calculator] Error:', error)
+    onError: (error: Error) => console.error('[Calculator] Error:', error)
   })
 
   return { vnode, state, ctx }

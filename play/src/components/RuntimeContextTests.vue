@@ -158,7 +158,7 @@
 import { ref, reactive } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { DataAnalysis, Lock, Tools } from '@element-plus/icons-vue'
-import { createRuntimeContext, type RuntimeContext } from '@vario/core'
+import { createRuntimeContext, type RuntimeContext } from '@variojs/core'
 
 // @ts-ignore
 const { t } = useI18n()

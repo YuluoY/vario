@@ -3,7 +3,7 @@
  * 用于 VueIntegrationTests.vue 组件的示例 schemas、states 和 methods
  */
 
-import type { Schema } from '@vario/schema'
+import type { Schema } from '@variojs/schema'
 
 // 各场景默认状态
 export const defaultStates: Record<string, any> = {

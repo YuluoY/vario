@@ -152,7 +152,7 @@ import { ref, reactive, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { DocumentChecked, View, Document, Connection } from '@element-plus/icons-vue'
-import { useVario } from '@vario/vue'
+import { useVario } from '@variojs/vue'
 import { schemaExamples } from '../examples/schema-tests.vario'
 
 // @ts-ignore
@@ -191,7 +191,7 @@ const { vnode, ctx } = useVario(computed(() => currentSchema.value), {
   onEmit: (event: string, data?: unknown) => {
     console.log('[Schema Tests] Event:', event, data)
   },
-  onError: (error) => {
+  onError: (error: Error) => {
     console.error('[Schema Tests] Error:', error)
     validationResult.valid = false
     validationResult.message = error.message

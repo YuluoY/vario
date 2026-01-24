@@ -1,4 +1,4 @@
-import type { Schema } from '@vario/schema'
+import type { Schema } from '@variojs/schema'
 
 /**
  * 简单按钮场景

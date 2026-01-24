@@ -2,8 +2,8 @@
  * 表单应用示例 - 使用 vario-vue Composition API
  */
 
-import { useVario } from '@vario/vue'
-import type { Schema } from '@vario/schema'
+import { useVario, type MethodContext } from '@variojs/vue'
+import type { Schema } from '@variojs/schema'
 import type { App } from 'vue'
 
 interface FormState extends Record<string, unknown> {
@@ -185,7 +185,7 @@ export function createFormDemo(app?: App | null) {
       characterCount: (s) => (s.bio || '').length
     },
     methods: {
-      submitForm: async ({ state }) => {
+      submitForm: async ({ state }: MethodContext<FormState>) => {
         state.isSubmitting = true
         state.submitSuccess = false
         if (!state.isValid) {
@@ -197,11 +197,11 @@ export function createFormDemo(app?: App | null) {
         state.submitSuccess = true
         setTimeout(() => { state.submitSuccess = false }, 3000)
       },
-      resetForm: ({ state }) => {
+      resetForm: ({ state }: MethodContext<FormState>) => {
         Object.assign(state, initialState)
       }
     },
-    onError: (error) => console.error('[FormDemo] Error:', error)
+    onError: (error: Error) => console.error('[FormDemo] Error:', error)
   })
 
   return { vnode, state, ctx }

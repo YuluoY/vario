@@ -470,8 +470,8 @@
 <script setup lang="ts">
 import { ref, reactive, nextTick, defineComponent, h, getCurrentInstance, onMounted, onUnmounted, watch, shallowRef, computed, type VNode, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useVario } from '@vario/vue'
-import type { Schema } from '@vario/schema'
+import { useVario } from '@variojs/vue'
+import type { Schema } from '@variojs/schema'
 import { Timer, Lightning, DataBoard, Monitor } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import { createScenarioSchema, type TestScenario } from '../examples/performance-scenarios'

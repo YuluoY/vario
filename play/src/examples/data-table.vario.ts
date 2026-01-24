@@ -2,8 +2,8 @@
  * 数据表格应用示例 - 使用 vario-vue Composition API
  */
 
-import { useVario } from '@vario/vue'
-import type { Schema } from '@vario/schema'
+import { useVario, type MethodContext } from '@variojs/vue'
+import type { Schema } from '@variojs/schema'
 import type { App } from 'vue'
 
 interface Product {
@@ -228,7 +228,7 @@ export function createDataTable(app?: App | null) {
       totalPages: (s) => Math.max(1, Math.ceil((s.totalCount || 0) / s.pageSize))
     },
     methods: {
-      addProduct: ({ state }) => {
+      addProduct: ({ state }: MethodContext<DataTableState>) => {
         const newProduct: Product = {
           id: Date.now(),
           name: `新产品 ${state.products.length + 1}`,
@@ -239,18 +239,18 @@ export function createDataTable(app?: App | null) {
         }
         state.products.push(newProduct)
       },
-      editProduct: ({ params }) => {
+      editProduct: ({ params }: MethodContext<DataTableState>) => {
         console.log('Edit product:', params.id)
       },
-      deleteProduct: ({ state, params }) => {
+      deleteProduct: ({ state, params }: MethodContext<DataTableState>) => {
         state.products = state.products.filter(p => p.id !== params.id)
       },
-      batchDelete: ({ state }) => {
+      batchDelete: ({ state }: MethodContext<DataTableState>) => {
         state.products = state.products.filter(p => !state.selectedIds.includes(p.id))
         state.selectedIds = []
       }
     },
-    onError: (error) => console.error('[DataTable] Error:', error)
+    onError: (error: Error) => console.error('[DataTable] Error:', error)
   })
 
   return { vnode, state, ctx }

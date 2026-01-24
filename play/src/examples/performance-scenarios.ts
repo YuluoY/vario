@@ -1,4 +1,4 @@
-import type { Schema } from '@vario/schema'
+import type { Schema } from '@variojs/schema'
 import { createSimpleButtonsSchema } from './performance-simple-buttons'
 import { createNestedCardsSchema } from './performance-nested-cards'
 import { createFormComponentsSchema } from './performance-form-components'

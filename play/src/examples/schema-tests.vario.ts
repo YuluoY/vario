@@ -3,7 +3,7 @@
  * 用于 SchemaTests.vue 组件的示例 schemas
  */
 
-import type { Schema } from '@vario/schema'
+import type { Schema } from '@variojs/schema'
 
 export const schemaExamples: Record<string, Schema> = {
   button: {

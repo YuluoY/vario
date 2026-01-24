@@ -2,8 +2,8 @@
  * 购物车应用示例 - 使用 vario-vue Composition API
  */
 
-import { useVario } from '@vario/vue'
-import type { Schema } from '@vario/schema'
+import { useVario, type MethodContext } from '@variojs/vue'
+import type { Schema } from '@variojs/schema'
 import type { App } from 'vue'
 
 interface CartItem {
@@ -176,7 +176,7 @@ export function createShoppingCart(app?: App | null) {
       cartEmpty: (s) => s.cart.length === 0
     },
     methods: {
-      addToCart: ({ state, params }) => {
+      addToCart: ({ state, params }: MethodContext<ShoppingCartState>) => {
         const product = state.products.find(p => p.id === params.productId)
         if (!product || product.stock === 0) return
         const existing = state.cart.find(i => i.id === params.productId)
@@ -186,19 +186,19 @@ export function createShoppingCart(app?: App | null) {
           state.cart.push({ id: product.id, name: product.name, price: product.price, quantity: 1 })
         }
       },
-      increaseQuantity: ({ state, params }) => {
+      increaseQuantity: ({ state, params }: MethodContext<ShoppingCartState>) => {
         const item = state.cart.find(i => i.id === params.itemId)
         const product = state.products.find(p => p.id === params.itemId)
         if (item && product && item.quantity < product.stock) item.quantity += 1
       },
-      decreaseQuantity: ({ state, params }) => {
+      decreaseQuantity: ({ state, params }: MethodContext<ShoppingCartState>) => {
         const item = state.cart.find(i => i.id === params.itemId)
         if (item && item.quantity > 1) item.quantity -= 1
       },
-      removeFromCart: ({ state, params }) => {
+      removeFromCart: ({ state, params }: MethodContext<ShoppingCartState>) => {
         state.cart = state.cart.filter(i => i.id !== params.itemId)
       },
-      checkout: ({ state, ctx }) => {
+      checkout: ({ state, ctx }: MethodContext<ShoppingCartState>) => {
         // 扣减库存
         state.cart.forEach((item) => {
           const product = state.products.find(p => p.id === item.id)
@@ -211,7 +211,7 @@ export function createShoppingCart(app?: App | null) {
         state.showCart = false
       }
     },
-    onError: (error) => console.error('[ShoppingCart] Error:', error)
+    onError: (error: Error) => console.error('[ShoppingCart] Error:', error)
   })
 
   return { vnode, state, ctx }

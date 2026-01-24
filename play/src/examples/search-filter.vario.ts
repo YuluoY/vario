@@ -2,8 +2,8 @@
  * 搜索过滤示例 - 展示列表搜索和过滤功能
  */
 
-import { useVario } from '@vario/vue'
-import type { Schema } from '@vario/schema'
+import { useVario } from '@variojs/vue'
+import type { Schema } from '@variojs/schema'
 import type { App } from 'vue'
 
 interface ItemType {
@@ -224,7 +224,7 @@ export function createSearchFilter(app?: App | null) {
       }
     },
     methods: {},
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('[SearchFilter] Error:', error)
     }
   })

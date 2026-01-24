@@ -175,7 +175,7 @@
 import { ref, reactive } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Operation, DataBoard, List, Connection } from '@element-plus/icons-vue'
-import { createRuntimeContext, execute } from '@vario/core'
+import { createRuntimeContext, execute } from '@variojs/core'
 
 // @ts-ignore
 const { t } = useI18n()
