@@ -304,7 +304,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Document, DataBoard, Clock, Warning } from '@element-plus/icons-vue'
-import { createRuntimeContext, evaluate, parseExpression, validateAST, getCachedExpression, clearCache, invalidateCache, getCacheStats } from '@variojs/core'
+import { createRuntimeContext, evaluate, parseExpression, validateAST, clearCache, invalidateCache, getCacheStats } from '@variojs/core'
 
 // @ts-ignore
 const { t } = useI18n()
