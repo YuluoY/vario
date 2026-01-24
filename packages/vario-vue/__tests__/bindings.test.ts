@@ -10,7 +10,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createModelBinding, registerModelConfig, clearModelConfigs } from '../src/bindings.js'
-import { createRuntimeContext } from '@vario/core'
+import { createRuntimeContext } from '@variojs/core'
 
 describe('createModelBinding', () => {
   let ctx: ReturnType<typeof createRuntimeContext>

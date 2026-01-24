@@ -14,7 +14,7 @@
  */
 
 import type { SchemaNode } from './schema.types.js'
-import type { Action } from '@vario/core'
+import type { Action } from '@variojs/core'
 
 /**
  * 规范化结果缓存（基于对象引用）

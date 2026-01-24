@@ -4,9 +4,9 @@
  * 负责构建 Vue 组件的属性对象，包括 props、model 绑定、事件等
  */
 
-import type { RuntimeContext } from '@vario/core'
-import type { SchemaNode } from '@vario/schema'
-import type { PathSegment } from '@vario/core'
+import type { RuntimeContext } from '@variojs/core'
+import type { SchemaNode } from '@variojs/schema'
+import type { PathSegment } from '@variojs/core'
 import { createModelBinding } from '../bindings.js'
 import type { ModelPathResolver } from './path-resolver.js'
 import type { EventHandler } from './event-handler.js'

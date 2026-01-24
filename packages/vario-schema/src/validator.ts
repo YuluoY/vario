@@ -16,7 +16,7 @@
 
 import type { SchemaNode, LoopConfig } from './schema.types.js'
 import { SchemaValidationError } from './schema.types.js'
-import { parseExpression, validateAST } from '@vario/core'
+import { parseExpression, validateAST } from '@variojs/core'
 
 /**
  * 验证选项

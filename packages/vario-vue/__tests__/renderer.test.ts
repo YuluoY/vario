@@ -12,8 +12,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { h } from 'vue'
 import { VueRenderer } from '../src/renderer.js'
-import { createRuntimeContext } from '@vario/core'
-import type { SchemaNode } from '@vario/schema'
+import { createRuntimeContext } from '@variojs/core'
+import type { SchemaNode } from '@variojs/schema'
 
 describe('VueRenderer', () => {
   let renderer: VueRenderer

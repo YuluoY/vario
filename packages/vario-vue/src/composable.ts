@@ -28,14 +28,14 @@ import {
   type ComputedRef,
   type App
 } from 'vue'
-import type { Schema, SchemaNode } from '@vario/schema'
-import type { RuntimeContext, MethodsRegistry, ExpressionOptions } from '@vario/core'
+import type { Schema, SchemaNode } from '@variojs/schema'
+import type { RuntimeContext, MethodsRegistry, ExpressionOptions } from '@variojs/core'
 import {
   createRuntimeContext,
   invalidateCache,
   setPathValue,
   ServiceError
-} from '@vario/core'
+} from '@variojs/core'
 import { VueRenderer, type VueRendererOptions } from './renderer.js'
 import { registerModelConfig } from './bindings.js'
 import { RefsRegistry } from './features/refs.js'

@@ -15,7 +15,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { nextTick } from 'vue'
 import { useVario } from '../src/composable.js'
-import type { Schema } from '@vario/schema'
+import type { Schema } from '@variojs/schema'
 
 describe('Vario 性能压力测试', () => {
   describe('大量节点渲染', () => {

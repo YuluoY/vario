@@ -7,7 +7,7 @@
  * - 模板系统
  */
 
-import type { Schema } from '@vario/schema'
+import type { Schema } from '@variojs/schema'
 import { readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { join } from 'path'
 
@@ -87,7 +87,7 @@ function generateSchemaFile(schema: Schema): string {
  * Generated from Vario Schema
  */
 
-import type { Schema } from '@vario/schema'
+import type { Schema } from '@variojs/schema'
 
 export const schema: Schema = ${JSON.stringify(schema, null, 2)} as Schema
 `

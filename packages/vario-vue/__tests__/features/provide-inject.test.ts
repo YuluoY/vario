@@ -9,10 +9,10 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { provide, inject, defineComponent, h } from 'vue'
-import { createRuntimeContext } from '@vario/core'
+import { createRuntimeContext } from '@variojs/core'
 import { setupProvide, setupInject, setupProvideInject } from '../../src/features/provide-inject.js'
 import type { VueSchemaNode } from '../../src/types.js'
-import type { RuntimeContext } from '@vario/core'
+import type { RuntimeContext } from '@variojs/core'
 
 // Mock Vue's provide and inject
 vi.mock('vue', async (importOriginal) => {

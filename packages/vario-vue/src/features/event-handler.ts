@@ -4,9 +4,9 @@
  * 负责处理 Schema 中的事件绑定
  */
 
-import type { RuntimeContext, Action } from '@vario/core'
-import type { SchemaNode } from '@vario/schema'
-import { execute } from '@vario/core'
+import type { RuntimeContext, Action } from '@variojs/core'
+import type { SchemaNode } from '@variojs/schema'
+import { execute } from '@variojs/core'
 
 /**
  * 事件处理器

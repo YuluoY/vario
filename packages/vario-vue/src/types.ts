@@ -13,7 +13,7 @@
  * 应该在 Vue 组件中使用原生 API 定义，然后通过 useVario 的 computed 选项传入
  */
 
-import type { SchemaNode } from '@vario/schema'
+import type { SchemaNode } from '@variojs/schema'
 
 /**
  * Vue 特有的 SchemaNode 扩展

@@ -1,5 +1,5 @@
 /**
- * @vario/schema - Vario Schema DSL
+ * @variojs/schema - Vario Schema DSL
  * 
  * 提供：
  * - Schema DSL 类型定义

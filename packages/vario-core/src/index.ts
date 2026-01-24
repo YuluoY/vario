@@ -1,5 +1,5 @@
 /**
- * @vario/core - Vario Core Runtime
+ * @variojs/core - Vario Core Runtime
  * 
  * 核心运行时模块，包含：
  * - RuntimeContext: 扁平化状态 + $ 前缀系统 API

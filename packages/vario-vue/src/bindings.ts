@@ -14,8 +14,8 @@
  */
 
 import { resolveComponent } from 'vue'
-import type { RuntimeContext } from '@vario/core'
-import { getPathValue } from '@vario/core'
+import type { RuntimeContext } from '@variojs/core'
+import { getPathValue } from '@variojs/core'
 
 /**
  * 组件 model 配置

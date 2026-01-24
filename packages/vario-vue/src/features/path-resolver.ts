@@ -4,9 +4,9 @@
  * 负责处理 model 路径的解析、拼接和转换
  */
 
-import type { RuntimeContext } from '@vario/core'
-import type { SchemaNode } from '@vario/schema'
-import { parsePath, type PathSegment } from '@vario/core'
+import type { RuntimeContext } from '@variojs/core'
+import type { SchemaNode } from '@variojs/schema'
+import { parsePath, type PathSegment } from '@variojs/core'
 import type { ModelPathConfig } from '../renderer.js'
 
 /**

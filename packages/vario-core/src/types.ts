@@ -162,7 +162,7 @@ export interface ExpressionCache {
 /**
  * 错误类型定义
  * 
- * @deprecated 使用 @vario/core/errors 中的错误类
+ * @deprecated 使用 @variojs/core/errors 中的错误类
  * 保留这些导出以保持向后兼容，但建议使用新的错误体系
  */
 export {

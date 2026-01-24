@@ -11,9 +11,9 @@
  */
 
 import { h, type VNode, Fragment, ComponentInternalInstance, Transition, KeepAlive, type App } from 'vue'
-import type { SchemaNode } from '@vario/schema'
-import type { RuntimeContext } from '@vario/core'
-import type { PathSegment } from '@vario/core'
+import type { SchemaNode } from '@variojs/schema'
+import type { RuntimeContext } from '@variojs/core'
+import type { PathSegment } from '@variojs/core'
 import { attachRef, RefsRegistry } from './features/refs.js'
 import { createTeleport, shouldTeleport } from './features/teleport.js'
 import { ModelPathResolver } from './features/path-resolver.js'

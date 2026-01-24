@@ -18,8 +18,8 @@ import type {
   Schema,
   SchemaNode
 } from './schema.types.js'
-import type { MethodsRegistry, RuntimeContext } from '@vario/core'
-import { createRuntimeContext } from '@vario/core'
+import type { MethodsRegistry, RuntimeContext } from '@variojs/core'
+import { createRuntimeContext } from '@variojs/core'
 import { validateSchema } from './validator.js'
 import { SchemaValidationError } from './schema.types.js'
 import { normalizeSchema } from './normalizer.js'

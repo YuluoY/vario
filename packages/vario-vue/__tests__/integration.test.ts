@@ -12,7 +12,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { nextTick } from 'vue'
 import { useVario } from '../src/composable.js'
-import type { Schema } from '@vario/schema'
+import type { Schema } from '@variojs/schema'
 
 describe('useVario 集成测试', () => {
   describe('基础功能', () => {

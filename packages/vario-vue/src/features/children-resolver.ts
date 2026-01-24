@@ -4,9 +4,9 @@
  * 负责解析 Schema 的子节点，包括作用域插槽和文本内容
  */
 
-import type { RuntimeContext } from '@vario/core'
-import type { SchemaNode } from '@vario/schema'
-import type { PathSegment } from '@vario/core'
+import type { RuntimeContext } from '@variojs/core'
+import type { SchemaNode } from '@variojs/schema'
+import type { PathSegment } from '@variojs/core'
 import type { ExpressionEvaluator } from './expression-evaluator.js'
 
 /**

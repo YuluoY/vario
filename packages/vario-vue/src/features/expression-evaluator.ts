@@ -4,8 +4,8 @@
  * 负责求值 Schema 中的表达式
  */
 
-import type { RuntimeContext } from '@vario/core'
-import { evaluate, extractExpression } from '@vario/core'
+import type { RuntimeContext } from '@variojs/core'
+import { evaluate, extractExpression } from '@variojs/core'
 
 /**
  * 表达式求值器

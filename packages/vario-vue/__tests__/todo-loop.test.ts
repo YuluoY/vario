@@ -6,9 +6,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { h } from 'vue'
 import { VueRenderer } from '../src/renderer'
-import type { Schema } from '@vario/schema'
-import { createRuntimeContext } from '@vario/core'
-import type { RuntimeContext } from '@vario/core'
+import type { Schema } from '@variojs/schema'
+import { createRuntimeContext } from '@variojs/core'
+import type { RuntimeContext } from '@variojs/core'
 
 describe('TodoList 循环渲染完整测试', () => {
   let renderer: VueRenderer

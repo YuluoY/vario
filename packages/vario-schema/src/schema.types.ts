@@ -8,7 +8,7 @@
  * - 使用接口支持扩展
  */
 
-import type { Action, RuntimeContext } from '@vario/core'
+import type { Action, RuntimeContext } from '@variojs/core'
 
 /**
  * Schema 节点接口

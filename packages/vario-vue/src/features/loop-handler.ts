@@ -5,9 +5,9 @@
  */
 
 import { h, Fragment, type VNode } from 'vue'
-import type { RuntimeContext } from '@vario/core'
-import type { SchemaNode } from '@vario/schema'
-import { createLoopContext, type PathSegment } from '@vario/core'
+import type { RuntimeContext } from '@variojs/core'
+import type { SchemaNode } from '@variojs/schema'
+import { createLoopContext, type PathSegment } from '@variojs/core'
 import type { ModelPathResolver } from './path-resolver.js'
 
 /**

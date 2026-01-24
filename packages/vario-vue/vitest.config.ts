@@ -19,8 +19,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@vario/core': resolve(__dirname, '../vario-core/src'),
-      '@vario/schema': resolve(__dirname, '../vario-schema/src')
+      '@variojs/core': resolve(__dirname, '../vario-core/src'),
+      '@variojs/schema': resolve(__dirname, '../vario-schema/src')
     }
   }
 })

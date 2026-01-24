@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { ref, reactive, computed, nextTick } from 'vue'
 import { useVario } from '../src/composable.js'
-import type { Schema } from '@vario/schema'
+import type { Schema } from '@variojs/schema'
 
 describe('useVario 增强功能', () => {
   describe('状态双向同步', () => {
