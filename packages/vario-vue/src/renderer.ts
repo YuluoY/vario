@@ -54,8 +54,7 @@ export interface VueRendererOptions {
 export class VueRenderer {
   public refsRegistry: RefsRegistry
   private getState?: () => any
-  private modelPathConfig: ModelPathConfig
-  
+
   // 功能模块
   private pathResolver: ModelPathResolver
   private componentResolver: ComponentResolver
@@ -69,8 +68,8 @@ export class VueRenderer {
   constructor(options: VueRendererOptions = {}) {
     this.getState = options.getState
     this.refsRegistry = options.refsRegistry || new RefsRegistry()
-    this.modelPathConfig = options.modelPath ?? { separator: '.' }
-    
+    // modelPath 选项保留于 API，供后续路径解析扩展使用
+
     // 初始化功能模块
     // 优先级：components > app._context.components > instance?.appContext?.components
     const globalComponents = 
@@ -81,9 +80,8 @@ export class VueRenderer {
     this.componentResolver = new ComponentResolver(globalComponents)
     this.expressionEvaluator = new ExpressionEvaluator()
     this.eventHandler = new EventHandler((expr, ctx) => this.expressionEvaluator.evaluateExpr(expr, ctx))
-    this.pathResolver = new ModelPathResolver(
-      this.modelPathConfig,
-      (expr, ctx) => this.expressionEvaluator.evaluateExpr(expr, ctx)
+    this.pathResolver = new ModelPathResolver((expr, ctx) =>
+      this.expressionEvaluator.evaluateExpr(expr, ctx)
     )
     this.attrsBuilder = new AttrsBuilder(this.getState, this.pathResolver, this.eventHandler)
     this.lifecycleWrapper = new LifecycleWrapper()

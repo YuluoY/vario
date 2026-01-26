@@ -14,7 +14,7 @@
  * - 使用联合类型
  */
 
-import type { SchemaNode, LoopConfig } from './schema.types.js'
+import type { SchemaNode, LoopConfig, ModelScopeConfig } from './schema.types.js'
 import { SchemaValidationError } from './schema.types.js'
 import { parseExpression, validateAST } from '@variojs/core'
 
@@ -167,7 +167,7 @@ export function validateSchemaNode(
     if (typeof node.model === 'string') {
       if (validatePaths) validatePath(node.model, `${path}.model`)
     } else if (typeof node.model === 'object' && node.model !== null && !Array.isArray(node.model)) {
-      const m = node.model as Record<string, unknown>
+      const m = node.model as ModelScopeConfig
       if (typeof m.path !== 'string' || m.path.length === 0) {
         throw new SchemaValidationError(
           `${path}.model.path`,

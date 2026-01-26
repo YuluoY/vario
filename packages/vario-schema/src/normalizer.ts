@@ -13,7 +13,7 @@
  * - 使用深度克隆避免副作用
  */
 
-import type { SchemaNode } from './schema.types.js'
+import type { ModelScopeConfig, SchemaNode } from './schema.types.js'
 import type { Action } from '@variojs/core'
 
 /**
@@ -89,9 +89,9 @@ export function normalizeSchemaNode<TState extends Record<string, unknown>>(
     } else if (
       typeof node.model === 'object' &&
       node.model !== null &&
-      typeof (node.model as Record<string, unknown>).path === 'string'
+      typeof (node.model as ModelScopeConfig).path === 'string'
     ) {
-      const mo = node.model as { path: string; scope?: boolean }
+      const mo = node.model as ModelScopeConfig
       normalized.model = { path: mo.path.trim(), scope: mo.scope }
     }
   }

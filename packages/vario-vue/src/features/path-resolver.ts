@@ -7,16 +7,12 @@
 import type { RuntimeContext } from '@variojs/core'
 import type { SchemaNode } from '@variojs/schema'
 import { parsePath, type PathSegment } from '@variojs/core'
-import type { ModelPathConfig } from '../renderer.js'
 
 /**
  * Model 路径解析器
  */
 export class ModelPathResolver {
-  constructor(
-    private config: ModelPathConfig,
-    private evaluateExpr: (expr: string, ctx: RuntimeContext) => any
-  ) {}
+  constructor(private evaluateExpr: (expr: string, ctx: RuntimeContext) => any) {}
 
   /**
    * 从 model（string | { path, scope? }）中取出路径字符串
