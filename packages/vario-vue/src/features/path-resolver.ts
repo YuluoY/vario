@@ -19,6 +19,28 @@ export class ModelPathResolver {
   ) {}
 
   /**
+   * 从 model（string | { path, scope? }）中取出路径字符串
+   */
+  getModelPath(model: unknown): string | undefined {
+    if (model == null) return undefined
+    if (typeof model === 'string') return model
+    if (typeof model === 'object' && model !== null && typeof (model as { path?: string }).path === 'string') {
+      return (model as { path: string }).path
+    }
+    return undefined
+  }
+
+  /**
+   * 返回应压栈的路径：string 返回 path；object 且 scope 时返回 path；否则 undefined
+   */
+  getScopePath(model: unknown): string | undefined {
+    const path = this.getModelPath(model)
+    if (!path) return undefined
+    if (typeof model === 'string') return path
+    return (model as { scope?: boolean }).scope ? path : undefined
+  }
+
+  /**
    * 更新 model 路径栈
    * 
    * 根据当前节点的 model 属性更新路径栈，供子级使用。
@@ -98,6 +120,7 @@ export class ModelPathResolver {
    * 解析 model 路径为最终的状态路径
    * 
    * 支持：
+   * - 当前栈路径：`model: "."` 且路径栈非空时 → 返回栈对应路径（用于循环中绑定 items[0]、items[1] 等数组元素本身）
    * - 扁平路径：`name` → 拼接路径栈 → `form.user.name`
    * - 明确路径：`form.user.name` → 直接使用
    * - 数组访问：`users[0].name` → 解析为 `users.0.name`
@@ -123,6 +146,11 @@ export class ModelPathResolver {
         // 递归处理求值后的路径
         return this.resolveModelPath(evaluated, schema, ctx, modelPathStack)
       }
+    }
+    
+    // model 为 "." 表示绑定到「当前路径栈」对应路径（循环中即当前项 items[i]，数组元素本身）
+    if ((rawPath === '.' || rawPath === '') && modelPathStack.length > 0) {
+      return this.segmentsToPath(modelPathStack)
     }
     
     // 解析路径段
@@ -151,7 +179,7 @@ export class ModelPathResolver {
     // 判断是否为扁平路径（单段且为字符串）
     const isFlatPath = segments.length === 1 && typeof segments[0] === 'string'
     
-    if (isFlatPath && this.config.autoResolve && modelPathStack.length > 0) {
+    if (isFlatPath && modelPathStack.length > 0) {
       // 扁平路径：拼接路径栈
       const fullSegments = [...modelPathStack, segments[0]]
       return this.segmentsToPath(fullSegments)

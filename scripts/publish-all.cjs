@@ -50,27 +50,6 @@ function bumpVersion(pkgPath, typeOrVersion) {
   return { oldVersion, newVersion }
 }
 
-function replaceWorkspaceDeps(pkgPath, versionMap) {
-  const pkgFile = path.join(pkgPath, 'package.json')
-  const pkg = JSON.parse(fs.readFileSync(pkgFile, 'utf8'))
-  let changed = false
-
-  // Replace workspace dependencies
-  if (pkg.dependencies) {
-    for (const [depName, depVersion] of Object.entries(pkg.dependencies)) {
-      if (depVersion === 'workspace:*' && versionMap[depName]) {
-        pkg.dependencies[depName] = `^${versionMap[depName]}`
-        changed = true
-      }
-    }
-  }
-
-  if (changed) {
-    fs.writeFileSync(pkgFile, JSON.stringify(pkg, null, 2))
-  }
-  return changed
-}
-
 function ensurePublishConfig(pkgPath) {
   const pkgFile = path.join(pkgPath, 'package.json')
   const pkg = JSON.parse(fs.readFileSync(pkgFile, 'utf8'))
@@ -129,7 +108,7 @@ async function main() {
     {
       type: 'input',
       name: 'otp',
-      message: chalk.bold('如果启用了 2FA，请输入一次性密码（OTP，可选，留空则尝试使用 token）：'),
+      message: chalk.bold('若帐号开了 2FA，请输入 Authenticator 里的 6 位数字（仅 2FA 需要，用 token 发布请直接回车）：'),
       when: () => true
     }
   ])
@@ -152,55 +131,84 @@ async function main() {
     versionMap[pkgName] = newVersion
   }
 
-  // Second pass: replace workspace deps and ensure publish config
+  // Second pass: ensure publishConfig only（不修改 dependencies，本地始终保持 workspace:*）
   for (const pkgName of toPublish) {
     const pkgPath = path.join(__dirname, '..', 'packages', pkgName)
-    if (!fs.existsSync(pkgPath)) {
-      continue
-    }
-    // Map package name to npm package name
-    const npmNameMap = {
-      'vario-core': '@variojs/core',
-      'vario-schema': '@variojs/schema',
-      'vario-vue': '@variojs/vue',
-      'vario-cli': '@variojs/cli'
-    }
-    const depVersionMap = {}
-    for (const [localName, npmName] of Object.entries(npmNameMap)) {
-      if (versionMap[localName]) {
-        depVersionMap[npmName] = versionMap[localName]
-      }
-    }
-    replaceWorkspaceDeps(pkgPath, depVersionMap)
+    if (!fs.existsSync(pkgPath)) continue
     ensurePublishConfig(pkgPath)
   }
 
-  // Check npm authentication before publishing
-  console.log(chalk.yellow('\n检查 npm 认证状态...'))
-  try {
-    execSync('npm whoami', { stdio: 'pipe' })
-    console.log(chalk.green('✓ npm 已登录'))
-  } catch (e) {
-    console.log(chalk.bgRed.white('\n✗ npm 未登录或认证已过期'))
-    console.log(chalk.yellow('\n请先执行以下操作之一：'))
-    console.log(chalk.cyan('1. 登录 npm: npm login'))
-    console.log(chalk.cyan('2. 如果启用了 2FA，确保使用正确的认证方式'))
-    console.log(chalk.cyan('3. 或使用 granular access token (需要 bypass 2fa 权限)'))
-    console.log(chalk.yellow('\n对于 scoped packages，npm 要求：'))
-    console.log(chalk.white('  - 启用 2FA，或'))
-    console.log(chalk.white('  - 使用具有 "bypass 2fa" 权限的 granular access token'))
-    process.exit(1)
+  const npmNameMap = {
+    'vario-core': '@variojs/core',
+    'vario-schema': '@variojs/schema',
+    'vario-vue': '@variojs/vue',
+    'vario-cli': '@variojs/cli'
+  }
+  function buildDepVersionMap() {
+    const m = {}
+    for (const [localName, npmName] of Object.entries(npmNameMap)) {
+      if (versionMap[localName]) m[npmName] = versionMap[localName]
+    }
+    return m
   }
 
-  // Third pass: publish
+  // Check npm authentication before publishing
+  // 指定 registry，避免代理或其它 registry 干扰；capture 输出以便判断
+  console.log(chalk.yellow('\n检查 npm 认证状态...'))
+  let authOk = false
+  try {
+    const out = execSync('npm whoami --registry=https://registry.npmjs.org', {
+      encoding: 'utf8',
+      stdio: ['inherit', 'pipe', 'pipe'],
+      env: { ...process.env, npm_config_registry: 'https://registry.npmjs.org' }
+    })
+    const user = (out && String(out).trim()) || ''
+    if (user && !/^\s*$/.test(user)) {
+      console.log(chalk.green('✓ npm 已登录: ' + user))
+      authOk = true
+    }
+  } catch (e) {
+    const err = [e.stderr, e.stdout, e.message].filter(Boolean).join(' ')
+    if (/E401|E403|Unauthorized|token|credentials/i.test(err)) {
+      console.log(chalk.yellow('⚠ whoami 报错但疑似已配置 token，将继续尝试发布'))
+      authOk = true
+    }
+  }
+  if (!authOk) {
+    const skipAnswer = await inquirer.prompt([{
+      type: 'confirm',
+      name: 'skip',
+      message: chalk.yellow('未能确认 npm 登录。若已配置 token，可继续发布。是否继续？'),
+      default: true
+    }])
+    if (!skipAnswer.skip) process.exit(1)
+  }
+
+  // Third pass: publish（发布前临时把 workspace:* 换成 ^version，发布后恢复）
+  const depVersionMap = buildDepVersionMap()
   for (const pkgName of toPublish) {
     const pkgPath = path.join(__dirname, '..', 'packages', pkgName)
-    if (!fs.existsSync(pkgPath)) {
-      continue
-    }
+    if (!fs.existsSync(pkgPath)) continue
     const pkgFile = path.join(pkgPath, 'package.json')
     const pkg = JSON.parse(fs.readFileSync(pkgFile, 'utf8'))
     const newVersion = pkg.version
+
+    const originalDeps = pkg.dependencies ? { ...pkg.dependencies } : undefined
+    if (pkg.dependencies) {
+      for (const [depName, depVersion] of Object.entries(pkg.dependencies)) {
+        if (depVersion === 'workspace:*' && depVersionMap[depName]) {
+          pkg.dependencies[depName] = `^${depVersionMap[depName]}`
+        }
+      }
+      fs.writeFileSync(pkgFile, JSON.stringify(pkg, null, 2))
+    }
+
+    const restoreDeps = () => {
+      if (originalDeps) {
+        pkg.dependencies = originalDeps
+        fs.writeFileSync(pkgFile, JSON.stringify(pkg, null, 2))
+      }
+    }
 
     console.log(chalk.bold(`\n------------------------------`))
     console.log(chalk.bold(`【${chalk.cyan(pkgName)}】`))
@@ -209,47 +217,49 @@ async function main() {
       console.log(chalk.gray('更新内容: ') + chalk.white(answers.changelog))
     }
 
-    // Check if dist exists
-    const distPath = path.join(pkgPath, 'dist')
-    if (!fs.existsSync(distPath)) {
-      console.log(chalk.yellow('⚠️  构建产物不存在，正在构建...'))
-      try {
-        execSync('pnpm build', { cwd: pkgPath, stdio: 'inherit' })
-      } catch (e) {
-        console.log(chalk.bgRed.white(`构建失败: ${pkgName}`))
-        continue
+    try {
+      // Check if dist exists
+      const distPath = path.join(pkgPath, 'dist')
+      if (!fs.existsSync(distPath)) {
+        console.log(chalk.yellow('⚠️  构建产物不存在，正在构建...'))
+        try {
+          execSync('pnpm build', { cwd: pkgPath, stdio: 'inherit' })
+        } catch (e) {
+          console.log(chalk.bgRed.white(`构建失败: ${pkgName}`))
+          continue
+        }
       }
-    }
 
-    // Ensure bin file has shebang for ESM modules
-    if (pkg.bin) {
-      for (const [binName, binPath] of Object.entries(pkg.bin)) {
-        const fullBinPath = path.join(pkgPath, binPath)
-        if (fs.existsSync(fullBinPath)) {
-          const content = fs.readFileSync(fullBinPath, 'utf8')
-          if (!content.startsWith('#!/usr/bin/env node')) {
-            fs.writeFileSync(fullBinPath, '#!/usr/bin/env node\n' + content)
-            // Make executable on Unix systems
-            try {
-              fs.chmodSync(fullBinPath, '755')
-            } catch (e) {
-              // Ignore chmod errors on Windows
+      // Ensure bin file has shebang for ESM modules
+      if (pkg.bin) {
+        for (const [binName, binPath] of Object.entries(pkg.bin)) {
+          const fullBinPath = path.join(pkgPath, binPath)
+          if (fs.existsSync(fullBinPath)) {
+            const content = fs.readFileSync(fullBinPath, 'utf8')
+            if (!content.startsWith('#!/usr/bin/env node')) {
+              fs.writeFileSync(fullBinPath, '#!/usr/bin/env node\n' + content)
+              try {
+                fs.chmodSync(fullBinPath, '755')
+              } catch (e) {}
             }
           }
         }
       }
-    }
 
-    console.log(chalk.magenta('开始发布...'))
-    try {
+      console.log(chalk.magenta('开始发布...'))
       // Use --access public for scoped packages to ensure they're published as public
       let publishCmd = pkg.name && pkg.name.startsWith('@') 
         ? 'npm publish --access public' 
         : 'npm publish'
       
-      // Add OTP if provided
-      if (answers.otp && answers.otp.trim()) {
-        publishCmd += ` --otp=${answers.otp.trim()}`
+      // Add OTP if provided (must look like 6-digit code, not token)
+      const otpInput = answers.otp && answers.otp.trim()
+      if (otpInput) {
+        if (/^npm_/.test(otpInput) || otpInput.length > 20) {
+          console.log(chalk.yellow('⚠ 当前输入像 token 而非 OTP，已忽略。Token 请用: npm config set //registry.npmjs.org/:_authToken <TOKEN>'))
+        } else {
+          publishCmd += ` --otp=${otpInput}`
+        }
       }
       
       const output = execSync(publishCmd, { 
@@ -310,6 +320,9 @@ async function main() {
         if (stderr) console.log(chalk.red('STDERR:', stderr))
         if (e.message && !errorOutput.includes(e.message)) console.log(chalk.red('ERROR:', e.message))
       }
+    }
+    finally {
+      restoreDeps()
     }
     console.log(chalk.bold(`------------------------------\n`))
   }

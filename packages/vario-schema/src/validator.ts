@@ -162,17 +162,33 @@ export function validateSchemaNode(
     validateLoopConfig(node.loop, `${path}.loop`, options)
   }
 
-  // 验证 model（如果存在）
+  // 验证 model（如果存在）：string 或 { path: string, scope?: boolean }
   if (node.model !== undefined) {
-    if (typeof node.model !== 'string') {
+    if (typeof node.model === 'string') {
+      if (validatePaths) validatePath(node.model, `${path}.model`)
+    } else if (typeof node.model === 'object' && node.model !== null && !Array.isArray(node.model)) {
+      const m = node.model as Record<string, unknown>
+      if (typeof m.path !== 'string' || m.path.length === 0) {
+        throw new SchemaValidationError(
+          `${path}.model.path`,
+          'Model scope must have a non-empty string path',
+          'INVALID_MODEL_SCOPE_PATH'
+        )
+      }
+      if (m.scope !== undefined && typeof m.scope !== 'boolean') {
+        throw new SchemaValidationError(
+          `${path}.model.scope`,
+          'Model scope must be a boolean when present',
+          'INVALID_MODEL_SCOPE'
+        )
+      }
+      if (validatePaths) validatePath(m.path, `${path}.model.path`)
+    } else {
       throw new SchemaValidationError(
         `${path}.model`,
-        'Model must be a string path',
+        'Model must be a string path or { path: string, scope?: boolean }',
         'INVALID_MODEL_TYPE'
       )
-    }
-    if (validatePaths) {
-      validatePath(node.model, `${path}.model`)
     }
   }
 

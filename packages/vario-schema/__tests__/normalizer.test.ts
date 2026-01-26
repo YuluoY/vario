@@ -49,6 +49,15 @@ describe('Schema 规范化器', () => {
     expect(normalized.loop?.itemKey).toBe('item')
   })
 
+  it('应该规范化 model 作用域对象', () => {
+    const schema: SchemaNode = {
+      type: 'form',
+      model: { path: '  form  ', scope: true }
+    }
+    const normalized = normalizeSchema(schema)
+    expect(normalized.model).toEqual({ path: 'form', scope: true })
+  })
+
   it('应该移除空事件处理器', () => {
     const schema: SchemaNode = {
       type: 'Button',

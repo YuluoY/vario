@@ -27,7 +27,7 @@
     "commander": "^11.1.0"
   },
   "bin": {
-    "vario": "./dist/index.js"
+    "vario": "./bin/vario.mjs"
   },
   "devDependencies": {
     "typescript": "^5.3.3",
@@ -35,6 +35,7 @@
   },
   "files": [
     "dist",
+    "bin",
     "README.md"
   ],
   "publishConfig": {

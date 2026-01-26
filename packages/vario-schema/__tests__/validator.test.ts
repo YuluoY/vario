@@ -62,6 +62,24 @@ describe('Schema 验证器', () => {
     expect(() => validateSchema(schema)).toThrow(SchemaValidationError)
   })
 
+  it('应该接受 model 作用域对象 { path, scope: true }', () => {
+    const schema: SchemaNode = {
+      type: 'form',
+      model: { path: 'form', scope: true },
+      children: [{ type: 'input', model: 'name' }]
+    }
+    expect(() => validateSchema(schema)).not.toThrow()
+  })
+
+  it('应该拒绝缺少 path 的 model 作用域对象', () => {
+    const schema = {
+      type: 'form',
+      model: { scope: true },
+      children: [] as SchemaNode[]
+    }
+    expect(() => validateSchema(schema)).toThrow(SchemaValidationError)
+  })
+
   it('应该验证循环配置', () => {
     const schema: SchemaNode = {
       type: 'div',

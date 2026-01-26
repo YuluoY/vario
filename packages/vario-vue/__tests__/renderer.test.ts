@@ -256,11 +256,16 @@ describe('VueRenderer', () => {
   describe('事件处理', () => {
     it('应该绑定事件处理器', () => {
       let clicked = false
-      ctx.$methods = {
-        set: async (ctx: any, ins: any) => {
-          clicked = true
+      const testCtx = createRuntimeContext(
+        { count: 0, name: 'Test', isVisible: true, items: ['a', 'b', 'c'] },
+        {
+          methods: {
+            set: async () => {
+              clicked = true
+            }
+          }
         }
-      }
+      )
 
       const schema: SchemaNode = {
         type: 'button',
@@ -271,7 +276,7 @@ describe('VueRenderer', () => {
         }
       }
 
-      const vnode = renderer.render(schema, ctx)
+      const vnode = renderer.render(schema, testCtx)
       expect(vnode).not.toBeNull()
       expect(vnode!.props).toBeDefined()
       expect(typeof (vnode!.props as any).onClick).toBe('function')

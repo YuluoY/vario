@@ -372,40 +372,10 @@ describe('Model 路径自动解析 - 全面测试', () => {
   })
 
   describe('4. 配置选项', () => {
-    it('应该支持禁用自动解析', async () => {
+    it('应该支持 modelPath 对象配置（如 separator）', async () => {
       const schema: VueSchemaNode = {
         type: 'div',
-        model: 'form',
-        children: [
-          { type: 'input', model: 'name' }  // 禁用后，应该保持为 name（顶层）
-        ]
-      }
-
-      const { state, vnode } = useVario(schema, {
-        state: {},
-        modelPath: false  // 禁用自动解析
-      })
-
-      await nextTick()
-
-      const nameInput = (vnode.value as any)?.children?.[0]
-      if (nameInput?.props?.onInput) {
-        nameInput.props.onInput('Test')
-      } else if (nameInput?.props?.['onUpdate:modelValue']) {
-        nameInput.props['onUpdate:modelValue']('Test')
-      }
-
-      await nextTick()
-
-      // 禁用后，name 应该是顶层，form 不会影响它
-      expect(state.name).toBe('Test')
-      expect(state.form).toBeUndefined()
-    })
-
-    it('应该支持布尔值 true 启用自动解析', async () => {
-      const schema: VueSchemaNode = {
-        type: 'div',
-        model: 'form',
+        model: { path: 'form', scope: true },
         children: [
           { type: 'input', model: 'name' }
         ]
@@ -413,38 +383,7 @@ describe('Model 路径自动解析 - 全面测试', () => {
 
       const { state, vnode } = useVario(schema, {
         state: {},
-        modelPath: true  // 启用自动解析
-      })
-
-      await nextTick()
-
-      const nameInput = (vnode.value as any)?.children?.[0]
-      if (nameInput?.props?.onInput) {
-        nameInput.props.onInput('Test')
-      } else if (nameInput?.props?.['onUpdate:modelValue']) {
-        nameInput.props['onUpdate:modelValue']('Test')
-      }
-
-      await nextTick()
-
-      expect(state.form.name).toBe('Test')
-    })
-
-    it('应该支持对象配置', async () => {
-      const schema: VueSchemaNode = {
-        type: 'div',
-        model: 'form',
-        children: [
-          { type: 'input', model: 'name' }
-        ]
-      }
-
-      const { state, vnode } = useVario(schema, {
-        state: {},
-        modelPath: {
-          autoResolve: true,
-          separator: '.'
-        }
+        modelPath: { separator: '.' }
       })
 
       await nextTick()

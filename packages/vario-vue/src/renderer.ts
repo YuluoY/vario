@@ -27,11 +27,10 @@ import { LifecycleWrapper } from './features/lifecycle-wrapper.js'
 import type { VueSchemaNode } from './types.js'
 
 /**
- * Model 路径解析配置
+ * Model 路径解析配置（仅保留与格式相关的选项）
  */
 export interface ModelPathConfig {
-  autoResolve: boolean
-  separator: string
+  separator?: string
 }
 
 /**
@@ -70,7 +69,7 @@ export class VueRenderer {
   constructor(options: VueRendererOptions = {}) {
     this.getState = options.getState
     this.refsRegistry = options.refsRegistry || new RefsRegistry()
-    this.modelPathConfig = options.modelPath || { autoResolve: true, separator: '.' }
+    this.modelPathConfig = options.modelPath ?? { separator: '.' }
     
     // 初始化功能模块
     // 优先级：components > app._context.components > instance?.appContext?.components
@@ -172,10 +171,12 @@ export class VueRenderer {
     const vueSchema = schema as VueSchemaNode
     
     // 处理 model 路径（更新路径栈，供子级使用）
+    // model 为 string 或 object+scope 时压栈
     let currentModelPathStack = [...modelPathStack]
-    if (schema.model && this.modelPathConfig.autoResolve) {
+    const scopePath = this.pathResolver.getScopePath(schema.model)
+    if (scopePath) {
       currentModelPathStack = this.pathResolver.updateModelPathStack(
-        schema.model as string,
+        scopePath,
         modelPathStack,
         ctx,
         schema

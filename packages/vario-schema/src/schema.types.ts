@@ -11,6 +11,14 @@
 import type { Action, RuntimeContext } from '@variojs/core'
 
 /**
+ * model 作用域配置（不绑定本节点，仅为子节点提供路径根）
+ */
+export interface ModelScopeConfig {
+  readonly path: string
+  readonly scope?: boolean
+}
+
+/**
  * Schema 节点接口
  * 
  * 表示 Vario Schema 中的一个节点，可以是组件、元素或文本
@@ -81,13 +89,15 @@ export interface SchemaNode<TState extends Record<string, unknown> = Record<stri
   readonly loop?: Readonly<LoopConfig>
 
   /**
-   * 双向绑定路径（单 model）
+   * 双向绑定路径或作用域配置（单 model）
    * 
-   * 用于表单元素的双向数据绑定
+   * - 字符串：绑定路径，在 autoResolve 时会参与路径栈并创建绑定
+   * - 对象且 scope: true：仅作为子节点路径作用域，不在本节点创建绑定
    * 
    * @example "user.name"
+   * @example { path: "form", scope: true }
    */
-  readonly model?: string
+  readonly model?: string | ModelScopeConfig
 
   /**
    * 具名双向绑定（多 model，Vue 3.4+）

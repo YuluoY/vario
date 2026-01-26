@@ -15,7 +15,9 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "vitest run",
+    "test": "NODE_OPTIONS=--max-old-space-size=4096 vitest run",
+    "test:perf": "NODE_OPTIONS=--max-old-space-size=8192 vitest run __tests__/performance.test.ts",
+    "test:comprehensive": "NODE_OPTIONS=--max-old-space-size=4096 vitest run __tests__/model-path-comprehensive.test.ts",
     "test:watch": "vitest",
     "clean": "rm -rf dist"
   },

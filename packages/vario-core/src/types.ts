@@ -1,10 +1,8 @@
 /**
  * Vario Core Types
- * 
- * 核心类型定义，遵循架构图设计：
- * - RuntimeContext: 扁平化状态 + $ 前缀系统 API
- * - Action: 动作接口
- * - ExpressionCache: 表达式缓存
+ *
+ * 复杂类型集中在此定义，便于推演类型关系、保持业务/运行时逻辑代码简洁。
+ * 核心：RuntimeContext、路径值推导(GetPathValue/SetPathValue)、上下文创建选项(CreateContextOptions)等。
  */
 
 /**
@@ -86,18 +84,25 @@ export type RuntimeContext<TState extends Record<string, unknown> = Record<strin
 
 /**
  * 路径值类型推导工具
- * 根据路径字符串推导对应的值类型
- * 
+ * 根据路径字符串推导对应的值类型，支持对象嵌套与数组索引
+ *
  * @example
  * GetPathValue<{ user: { name: string } }, 'user.name'> // string
  * GetPathValue<{ items: number[] }, 'items.0'> // number
+ * GetPathValue<{ list: { id: number }[] }, 'list.0.id'> // number
  */
-export type GetPathValue<T, TPath extends string> = 
+export type GetPathValue<T, TPath extends string> =
   TPath extends `${infer Key}.${infer Rest}`
     ? Key extends keyof T
       ? T[Key] extends Record<string, unknown>
         ? GetPathValue<T[Key], Rest>
-        : unknown
+        : T[Key] extends readonly (infer E)[]
+          ? Rest extends `${number}`
+            ? E
+            : Rest extends `${number}.${infer R}`
+              ? GetPathValue<E, R>
+              : unknown
+          : unknown
       : unknown
     : TPath extends keyof T
       ? T[TPath]
@@ -108,6 +113,35 @@ export type GetPathValue<T, TPath extends string> =
  * 根据路径字符串推导可以设置的值类型
  */
 export type SetPathValue<T, TPath extends string> = GetPathValue<T, TPath>
+
+// ---------------------------------------------------------------------------
+// 上下文创建相关类型（createRuntimeContext 的选项与回调，集中在此便于推演）
+// ---------------------------------------------------------------------------
+
+/**
+ * 状态变更回调：path 与 value 类型联动，TPath 由 path 推导，value 为 GetPathValue<TState, TPath>
+ */
+export type OnStateChangeCallback<TState extends Record<string, unknown>> = <TPath extends string>(
+  path: TPath,
+  value: GetPathValue<TState, TPath>,
+  ctx: RuntimeContext<TState>
+) => void
+
+/**
+ * RuntimeContext 创建选项
+ * @template TState 与 context 一致的状态类型，供 onStateChange 等回调获得完整类型推导
+ */
+export interface CreateContextOptions<TState extends Record<string, unknown> = Record<string, unknown>> {
+  onEmit?: (event: string, data?: unknown) => void
+  methods?: MethodsRegistry
+  /** 在 _set 调用后触发，value 类型随 path 推导 */
+  onStateChange?: OnStateChangeCallback<TState>
+  createObject?: () => Record<string, unknown>
+  createArray?: () => unknown[]
+  exprOptions?: ExpressionOptions
+}
+
+// ---------------------------------------------------------------------------
 
 /**
  * 动作接口

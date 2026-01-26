@@ -65,12 +65,12 @@ export class LoopHandler {
       return null
     }
     
-    // 处理循环节点自身的 model 属性（如 model: 'users' 同时有 loop）
-    // 这种情况下，路径栈需要先更新为 model 的路径
+    // 处理循环节点自身的 model 属性（如 model: 'users' 或 model: { path: 'users', scope: true }）
     let basePathStack = [...modelPathStack]
-    if (schema.model) {
+    const scopePath = this.pathResolver.getScopePath(schema.model)
+    if (scopePath) {
       basePathStack = this.pathResolver.updateModelPathStack(
-        schema.model as string,
+        scopePath,
         modelPathStack,
         ctx,
         schema
@@ -95,11 +95,11 @@ export class LoopHandler {
           // 创建子节点（排除 loop 和已处理的 model 属性，避免递归和重复处理）
           const childSchema = { ...schema }
           delete (childSchema as any).loop
-          // 如果 schema.model 和 loop.items 路径相同（如 model: 'users' 配合 loop: { items: '{{ users }}' }），
-          // 需要删除 model，因为循环节点的 model 已经在 createLoopVNode 中处理到 basePathStack 中了
-          if (schema.model) {
-            const modelPath = this.pathResolver.extractModelPath(schema.model as string)
-            if (modelPath === itemsPath) {
+          // 若 model 的 path 与 loop.items 相同，子节点不再带 model，避免重复压栈
+          const modelPathVal = this.pathResolver.getModelPath(schema.model)
+          if (modelPathVal) {
+            const extracted = this.pathResolver.extractModelPath(modelPathVal)
+            if (extracted === itemsPath) {
               delete (childSchema as any).model
             }
           }

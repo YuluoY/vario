@@ -57,11 +57,13 @@ export class AttrsBuilder {
     modelPathStack: PathSegment[] = []
   ): Record<string, any> {
     const attrs = { ...staticAttrs }
-    
-    // 添加动态model绑定
-    if (schema.model) {
+
+    // 仅当 model 为字符串时创建绑定；model 为对象（scope）时不绑定
+    const modelPathStr = this.pathResolver.getModelPath(schema.model)
+    const shouldBindModel = modelPathStr && typeof schema.model === 'string'
+    if (shouldBindModel && modelPathStr) {
       const modelPath = this.pathResolver.resolveModelPath(
-        schema.model as string,
+        modelPathStr,
         schema,
         ctx,
         modelPathStack
@@ -134,10 +136,12 @@ export class AttrsBuilder {
       attrsParts.push(evalProps(schema.props, ctx))
     }
     
-    // 2. 处理双向绑定（支持多 model）
-    if (schema.model) {
+    // 2. 处理双向绑定（支持多 model）。仅当 model 为字符串时创建绑定
+    const modelPathStr = this.pathResolver.getModelPath(schema.model)
+    const shouldBindModel = modelPathStr && typeof schema.model === 'string'
+    if (shouldBindModel && modelPathStr) {
       const modelPath = this.pathResolver.resolveModelPath(
-        schema.model as string,
+        modelPathStr,
         schema,
         ctx,
         modelPathStack
@@ -145,7 +149,7 @@ export class AttrsBuilder {
       const binding = createModelBinding(schema.type, modelPath, ctx, component, this.getState)
       attrsParts.push(binding)
     }
-    
+
     // 处理具名 model（model:xxx）
     for (const key in schema) {
       if (key.startsWith('model:')) {

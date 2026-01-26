@@ -197,16 +197,22 @@ const { state } = useVario(schema, {
 
 #### 自动路径解析与状态创建
 
-Vario 支持智能的 model 路径解析，可以自动拼接扁平路径，并自动创建缺失的状态结构。
+Vario 支持智能的 model 路径解析，可以自动拼接扁平路径，并自动创建缺失的状态结构。行为完全由 **model 的写法** 决定。
 
-**扁平路径自动拼接**
+**model 的几种形式**
 
-当启用 `modelPath.autoResolve`（默认启用）时，扁平路径会自动与父级 `model` 路径拼接：
+| 写法 | 是否压栈 | 是否在本节点绑定 | 典型用途 |
+|------|----------|------------------|----------|
+| **字符串路径** `model: "form"` | 压栈 | 绑定 | 普通表单项、嵌套路径根 |
+| **字符串** `model: "."` | 不压栈（用现有栈） | 栈非空时绑定到「当前栈路径」 | 循环中绑定到 `items[0]`、`items[1]` 等数组元素本身 |
+| **对象** `model: { path: "form", scope: true }` | 压栈 `path` | **不**绑定 | 仅作层级的容器（如表单根、区块） |
+
+子节点的扁平路径会自动与父级路径栈（来自字符串 `model` 或 `model: { path, scope: true }`）拼接：
 
 ```typescript
 const schema: VueSchemaNode = {
   type: 'div',
-  model: 'form',  // 父级定义
+  model: { path: 'form', scope: true },  // 父级仅作作用域，不绑定
   children: [
     {
       type: 'input',
@@ -218,7 +224,7 @@ const schema: VueSchemaNode = {
     },
     {
       type: 'div',
-      model: 'user',  // 扁平路径 → 自动变成 form.user
+      model: { path: 'user', scope: true },  // 再压一层 user，不绑定
       children: [
         {
           type: 'input',
@@ -238,14 +244,30 @@ const { state } = useVario(schema, {
 // ✅ state.form.user.age 会被自动创建
 ```
 
+**使用 scope 的容器（仅作用域、不绑定）**
+
+希望某节点只提供路径层级、自身不参与绑定时，使用对象形式并设置 `scope: true`：
+
+```typescript
+const schema: VueSchemaNode = {
+  type: 'form',
+  model: { path: 'form', scope: true },  // 仅作用域，不绑定
+  children: [
+    { type: 'input', model: 'name' },   // → form.name
+    { type: 'input', model: 'email' }   // → form.email
+  ]
+}
+// ✅ 根节点不会对 state.form 做 v-model，仅子节点绑定 form.name / form.email
+```
+
 **明确路径**
 
-使用完整路径时，不会进行拼接，直接使用：
+使用完整路径时，不会进行拼接，直接使用。容器建议用 `scope`，避免对 div 建立 v-model：
 
 ```typescript
 const schema: VueSchemaNode = {
   type: 'div',
-  model: 'form',
+  model: { path: 'form', scope: true },  // 容器用 scope，不绑定
   children: [
     {
       type: 'input',
@@ -313,12 +335,12 @@ const schema: VueSchemaNode = {
 
 **循环中的自动路径解析**
 
-在循环中，扁平路径会自动拼接循环索引：
+在循环中，扁平路径会自动拼接循环索引。循环层用 `scope` 提供数组路径，避免对容器做 v-model：
 
 ```typescript
 const schema: VueSchemaNode = {
   type: 'div',
-  model: 'users',  // 父级定义
+  model: { path: 'users', scope: true },  // 循环层用 scope，不绑定
   loop: {
     items: '{{ users }}',
     itemKey: 'user'
@@ -347,14 +369,39 @@ const { state } = useVario(schema, {
 // ✅ 每个循环项都会正确绑定到对应的数组索引
 ```
 
-**循环中嵌套的 model 路径栈**
+**绑定到数组元素本身（`model: "."`）**
 
-循环中可以嵌套多层 model 定义：
+当希望「子组件输入值」直接作为数组元素（`state.items[0]`、`state.items[1]` 为字符串等原始值），而不是 `items[i].xxx` 的对象的字段时，在循环内使用 **`model: "."`**，表示绑定到当前路径栈对应的路径（即当前循环项在 state 中的位置）：
 
 ```typescript
 const schema: VueSchemaNode = {
   type: 'div',
-  model: 'data',
+  loop: { items: 'items', itemKey: 'it' },
+  model: { path: 'items', scope: true },
+  children: [
+    { type: 'input', model: '.' }  // 绑定到 items[0]、items[1] 本身
+  ]
+}
+
+const { state } = useVario(schema, {
+  state: { items: ['', ''] }
+})
+
+// 第 1 行输入 "a" → state.items[0] === 'a'
+// 第 2 行输入 "b" → state.items[1] === 'b'
+// state.items 为字符串数组，不是对象数组
+```
+
+使用 `model: "."` 时，当前路径栈必须非空（例如在带 `model: { path, scope: true }` 的循环下）才会创建绑定。
+
+**循环中嵌套的 model 路径栈**
+
+循环中可以嵌套多层；每层容器用 `scope` 只提供路径、不绑定：
+
+```typescript
+const schema: VueSchemaNode = {
+  type: 'div',
+  model: { path: 'data', scope: true },  // 容器用 scope
   loop: {
     items: '{{ data.items }}',
     itemKey: 'item'
@@ -362,7 +409,7 @@ const schema: VueSchemaNode = {
   children: [
     {
       type: 'div',
-      model: 'item.profile',  // 相对于循环项的路径
+      model: { path: 'item.profile', scope: true },  // 相对循环项压栈，不绑定
       children: [
         {
           type: 'input',
@@ -374,22 +421,15 @@ const schema: VueSchemaNode = {
 }
 ```
 
-**配置选项**
+**modelPath 配置选项**
 
-可以通过 `modelPath` 选项自定义行为：
+仅保留与格式相关的配置（如路径分隔符），路径解析与绑定行为由 model 写法决定，无需开关：
 
 ```typescript
 const { state } = useVario(schema, {
   modelPath: {
-    autoResolve: true,  // 是否自动解析扁平路径（默认 true）
-    separator: '.'       // 路径分隔符（默认 '.'）
+    separator: '.'  // 路径分隔符（默认 '.'）
   },
-  state: {}
-})
-
-// 或使用布尔值简化配置
-const { state } = useVario(schema, {
-  modelPath: true,  // 启用自动解析（默认）
   state: {}
 })
 ```
@@ -418,16 +458,18 @@ model: 'data.users[0].profile.tags[1]'
   → state.data.users[0].profile.tags = []
 ```
 
-**路径语法总结**
+**路径语法与 model 写法总结**
 
-| 语法 | 示例 | 说明 | 自动创建 |
+| 类型 | 示例 | 说明 | 自动创建 |
 |------|------|------|---------|
-| 扁平路径 | `name` | 单段路径，自动拼接父级路径栈 | ✅ 对象 |
-| 明确路径 | `form.user.name` | 完整路径，直接使用 | ✅ 对象 |
-| 数组访问 `[]` | `users[0].name` | 明确数组索引访问 | ✅ 数组 |
-| 动态索引 `[]` | `users[].name` | 循环中自动填充索引 | ✅ 数组 |
-| 点语法数字 | `users.0.name` | 纯数字段视为数组索引 | ✅ 数组 |
-| 混合嵌套 | `data[0].items[1].value` | 数组和对象混合 | ✅ 自动推断 |
+| 扁平路径 | `model: "name"` | 单段路径，自动拼接父级路径栈 | ✅ 对象 |
+| 明确路径 | `model: "form.user.name"` | 完整路径，直接使用 | ✅ 对象 |
+| 当前栈路径 | `model: "."` | 绑定到当前路径栈（循环中即 `items[0]`、`items[1]` 等元素本身）；栈非空时有效 | ✅ 按栈推断 |
+| 作用域（不绑定） | `model: { path: "form", scope: true }` | 仅压栈，本节点不绑定；子节点扁平路径拼在 `path` 下 | — |
+| 数组访问 `[]` | `model: "users[0].name"` | 明确数组索引访问 | ✅ 数组 |
+| 动态索引 `[]` | `model: "users[].name"` | 循环中自动填充索引 | ✅ 数组 |
+| 点语法数字 | `model: "users.0.name"` | 纯数字段视为数组索引 | ✅ 数组 |
+| 混合嵌套 | `model: "data[0].items[1].value"` | 数组和对象混合 | ✅ 自动推断 |
 
 **最佳实践**
 
@@ -785,27 +827,8 @@ interface UseVarioOptions<TState> {
   /** 自定义 model 绑定配置 */
   modelBindings?: Record<string, ModelConfig>
   
-  /** 
-   * Model 路径解析配置
-   * - boolean: 简单开关，true 启用自动路径拼接（默认），false 禁用
-   * - object: 详细配置
-   * 
-   * @example
-   * // 启用自动解析（默认）
-   * modelPath: true
-   * 
-   * // 禁用自动解析
-   * modelPath: false
-   * 
-   * // 自定义配置
-   * modelPath: {
-   *   autoResolve: true,  // 是否自动解析扁平路径（默认 true）
-   *   separator: '.'       // 路径分隔符（默认 '.'）
-   * }
-   */
-  modelPath?: boolean | {
-    /** 是否自动解析扁平路径（默认 true） */
-    autoResolve?: boolean
+  /** Model 路径解析配置（可选，仅与格式相关如 separator） */
+  modelPath?: {
     /** 路径分隔符（默认 '.'） */
     separator?: string
   }

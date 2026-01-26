@@ -15,7 +15,14 @@ export default defineConfig({
   ],
   test: {
     globals: true,
-    environment: 'node' // 暂时使用 node 环境，后续可改为 jsdom
+    environment: 'node', // 暂时使用 node 环境，后续可改为 jsdom
+    // 默认排除重量级用例，避免 pnpm test 时 OOM；需跑时用 pnpm test:perf / pnpm test:comprehensive
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/performance.test.ts',
+      '**/model-path-comprehensive.test.ts'
+    ]
   },
   resolve: {
     alias: {

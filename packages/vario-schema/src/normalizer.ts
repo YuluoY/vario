@@ -46,7 +46,7 @@ export function normalizeSchemaNode<TState extends Record<string, unknown>>(
     cond?: string
     show?: string
     loop?: Readonly<{ items: string; itemKey: string; indexKey?: string }>
-    model?: string
+    model?: string | Readonly<{ path: string; scope?: boolean }>
   } = {
     type: node.type.trim()  // 规范化 type
   }
@@ -83,8 +83,17 @@ export function normalizeSchemaNode<TState extends Record<string, unknown>>(
     normalized.loop = normalizeLoop(node.loop)
   }
 
-  if (node.model !== undefined && node.model.trim().length > 0) {
-    normalized.model = node.model.trim()
+  if (node.model !== undefined) {
+    if (typeof node.model === 'string' && node.model.trim().length > 0) {
+      normalized.model = node.model.trim()
+    } else if (
+      typeof node.model === 'object' &&
+      node.model !== null &&
+      typeof (node.model as Record<string, unknown>).path === 'string'
+    ) {
+      const mo = node.model as { path: string; scope?: boolean }
+      normalized.model = { path: mo.path.trim(), scope: mo.scope }
+    }
   }
 
   // 处理具名 model（model:xxx）

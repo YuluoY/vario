@@ -29,7 +29,7 @@ import {
   type App
 } from 'vue'
 import type { Schema, SchemaNode } from '@variojs/schema'
-import type { RuntimeContext, MethodsRegistry, ExpressionOptions } from '@variojs/core'
+import type { RuntimeContext, MethodsRegistry, ExpressionOptions, OnStateChangeCallback } from '@variojs/core'
 import {
   createRuntimeContext,
   invalidateCache,
@@ -79,12 +79,9 @@ export interface UseVarioOptions<TState extends Record<string, unknown> = Record
   exprOptions?: ExpressionOptions
   /** 
    * Model 路径解析配置
-   * - boolean: 简单开关，true 启用自动路径拼接（默认），false 禁用
-   * - object: 详细配置
+   * - object: 可选，如 { separator: '.' }
    */
-  modelPath?: boolean | {
-    /** 是否自动解析扁平路径（默认 true） */
-    autoResolve?: boolean
+  modelPath?: {
     /** 路径分隔符（默认 '.'） */
     separator?: string
   }
@@ -150,42 +147,36 @@ export const useVario: UseVarioOverload = <TState extends Record<string, unknown
     },
     methods: methodsRegistry,
     exprOptions: options.exprOptions,
-    onStateChange: (path: string, value: unknown, runtimeCtx: RuntimeContext) => {
+    onStateChange: ((path: string, value: unknown, runtimeCtx: RuntimeContext<TState>) => {
       // 如果正在同步，跳过（防止循环）
       if (syncing) return
-      
       // 循环检测：如果当前路径正在同步，跳过
-      if (syncingPaths.has(path)) {
-        return
-      }
-      
+      if (syncingPaths.has(path)) return
+
       syncing = true
       syncingPaths.add(path)
-      
       try {
         // 同步到 Vue 响应式状态（自动创建缺失的对象结构）
         setPathValue(
           reactiveState as Record<string, unknown>,
           path,
           value,
-          { 
-            createObject: () => reactive({}), 
+          {
+            createObject: () => reactive({}),
             createArray: () => reactive([]),
             // 自动创建中间对象，确保路径存在
             createIntermediate: true
           }
         )
         // 缓存失效
-        invalidateCache(path, runtimeCtx)
+        invalidateCache(path, runtimeCtx as RuntimeContext)
         // 触发重新渲染（确保 UI 及时更新）
-        if (renderFn) {
-          nextTick(renderFn)
-        }
+        if (renderFn) nextTick(renderFn)
       } finally {
         syncingPaths.delete(path)
         syncing = false
       }
-    },
+    }) as OnStateChangeCallback<TState>,
     createObject: () => reactive({}),
     createArray: () => reactive([])
   })
@@ -520,19 +511,10 @@ function isDeepEqual(a: unknown, b: unknown): boolean {
  * 规范化 modelPath 配置
  */
 function normalizeModelPathConfig(
-  config?: boolean | { autoResolve?: boolean; separator?: string }
-): { autoResolve: boolean; separator: string } {
-  if (config === undefined) {
-    return { autoResolve: true, separator: '.' }
-  }
-  
-  if (typeof config === 'boolean') {
-    return { autoResolve: config, separator: '.' }
-  }
-  
+  config?: { separator?: string }
+): { separator: string } {
   return {
-    autoResolve: config.autoResolve ?? true,
-    separator: config.separator ?? '.'
+    separator: config?.separator ?? '.'
   }
 }
 

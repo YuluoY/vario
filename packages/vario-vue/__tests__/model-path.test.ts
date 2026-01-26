@@ -99,6 +99,96 @@ describe('Model 路径自动解析', () => {
     })
   })
 
+  describe('model 作用域 (scope)', () => {
+    it('model: { path, scope: true } 时仅作作用域不绑定本节点', async () => {
+      const schema: VueSchemaNode = {
+        type: 'form',
+        model: { path: 'form', scope: true },
+        children: [
+          { type: 'input', model: 'name' },
+          { type: 'input', model: 'age' }
+        ]
+      }
+
+      const { state, vnode } = useVario(schema, { state: {} })
+      await nextTick()
+
+      const nameInput = (vnode.value as any)?.children?.[0]
+      const ageInput = (vnode.value as any)?.children?.[1]
+      if (nameInput?.props?.onInput) nameInput.props.onInput('Alice')
+      else if (nameInput?.props?.['onUpdate:modelValue']) nameInput.props['onUpdate:modelValue']('Alice')
+      if (ageInput?.props?.onInput) ageInput.props.onInput('28')
+      else if (ageInput?.props?.['onUpdate:modelValue']) ageInput.props['onUpdate:modelValue']('28')
+      await nextTick()
+
+      expect(state.form).toBeDefined()
+      expect(state.form.name).toBe('Alice')
+      expect(state.form.age).toBe('28')
+    })
+
+    it('多级 scope 时子路径正确拼接', async () => {
+      const schema: VueSchemaNode = {
+        type: 'div',
+        model: { path: 'form', scope: true },
+        children: [
+          {
+            type: 'div',
+            model: { path: 'addr', scope: true },
+            children: [
+              { type: 'input', model: 'city' },
+              { type: 'input', model: 'street' }
+            ]
+          }
+        ]
+      }
+
+      const { state, vnode } = useVario(schema, { state: {} })
+      await nextTick()
+
+      const innerDiv = (vnode.value as any)?.children?.[0]
+      const cityInput = innerDiv?.children?.[0]
+      if (cityInput?.props?.onInput) cityInput.props.onInput('Beijing')
+      else if (cityInput?.props?.['onUpdate:modelValue']) cityInput.props['onUpdate:modelValue']('Beijing')
+      await nextTick()
+
+      expect(state.form?.addr?.city).toBe('Beijing')
+    })
+
+    it('model: "." 时绑定到当前路径栈（循环中即数组元素本身 items[0]/items[1]）', async () => {
+      const schema: VueSchemaNode = {
+        type: 'div',
+        loop: { items: 'items', itemKey: 'i' },
+        model: { path: 'items', scope: true },
+        children: [{ type: 'input', model: '.' }]
+      }
+
+      const { state, vnode } = useVario(schema, { state: { items: ['', ''] } })
+      await nextTick()
+
+      const row0 = (vnode.value as any)?.children?.[0]
+      const input0 = row0?.children?.[0]
+      if (input0?.props?.onInput) {
+        input0.props.onInput('first')
+      } else if (input0?.props?.['onUpdate:modelValue']) {
+        input0.props['onUpdate:modelValue']('first')
+      }
+      await nextTick()
+      expect(state.items[0]).toBe('first')
+      expect(state.items[1]).toBe('')
+
+      const row1 = (vnode.value as any)?.children?.[1]
+      const input1 = row1?.children?.[0]
+      if (input1?.props?.onInput) {
+        input1.props.onInput('second')
+      } else if (input1?.props?.['onUpdate:modelValue']) {
+        input1.props['onUpdate:modelValue']('second')
+      }
+      await nextTick()
+      expect(state.items[1]).toBe('second')
+      expect(state.items).toEqual(['first', 'second'])
+    })
+  })
+
   describe('明确路径', () => {
     it('应该直接使用明确路径，不受父级影响', async () => {
       const schema: VueSchemaNode = {
@@ -148,21 +238,21 @@ describe('Model 路径自动解析', () => {
   })
 
   describe('配置选项', () => {
-    it('应该支持禁用自动解析', async () => {
+    it('应该支持 modelPath 配置（如 separator）', async () => {
       const schema: VueSchemaNode = {
         type: 'div',
-        model: 'form',
+        model: { path: 'form', scope: true },
         children: [
           {
             type: 'input',
-            model: 'name'  // 禁用后，应该保持为 name（顶层）
+            model: 'name'
           }
         ]
       }
 
       const { state, vnode } = useVario(schema, {
         state: {},
-        modelPath: false  // 禁用自动解析
+        modelPath: { separator: '.' }
       })
 
       await nextTick()
@@ -177,45 +267,6 @@ describe('Model 路径自动解析', () => {
 
       await nextTick()
 
-      // 禁用后，name 应该是顶层，form 不会影响它
-      expect(state.name).toBe('Test')  // 顶层 name
-      expect(state.form).toBeUndefined()  // form 没有设置值
-    })
-
-    it('应该支持自定义分隔符', async () => {
-      const schema: VueSchemaNode = {
-        type: 'div',
-        model: 'form',
-        children: [
-          {
-            type: 'input',
-            model: 'name'  // 使用 / 分隔符解析，但 state 仍使用 . 结构
-          }
-        ]
-      }
-
-      const { state, vnode } = useVario(schema, {
-        state: {},
-        modelPath: {
-          autoResolve: true,
-          separator: '/'  // 自定义分隔符（用于路径解析）
-        }
-      })
-
-      await nextTick()
-
-      // 设置值
-      const nameInput = (vnode.value as any)?.children?.[0]
-      if (nameInput?.props?.onInput) {
-        nameInput.props.onInput('Test')
-      } else if (nameInput?.props?.['onUpdate:modelValue']) {
-        nameInput.props['onUpdate:modelValue']('Test')
-      }
-
-      await nextTick()
-
-      // 注意：虽然路径解析使用 /，但 state 结构仍然使用 .（因为 setPathValue 内部使用 .）
-      // 这里主要验证不会报错，实际路径解析逻辑正确
       expect(state.form).toBeDefined()
       expect(state.form.name).toBe('Test')
     })

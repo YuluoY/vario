@@ -13,6 +13,7 @@ export type {
   SchemaNode,
   Schema,
   LoopConfig,
+  ModelScopeConfig,
   DefineSchemaConfig,
   VarioView,
   InferStateType,

@@ -28,9 +28,8 @@ export {
   getParentPath,
   getLastSegment
 } from './runtime/index.js'
-export type { RuntimeContext } from './types.js'
+export type { RuntimeContext, CreateContextOptions, OnStateChangeCallback } from './types.js'
 export type { PathSegment } from './runtime/path.js'
-export type { CreateContextOptions } from './runtime/create-context.js'
 
 // Expression
 export {

@@ -1,68 +1,47 @@
 /**
  * RuntimeContext 创建工厂
- * 
- * 实现要点：
- * - 扁平化状态存储
- * - 系统 API 保护（$ 和 _ 前缀）
- * - 命名冲突检测
- * - Proxy 拦截防止覆盖系统 API
+ *
+ * 实现要点：扁平化状态存储、系统 API 保护、命名冲突检测、Proxy 保护。
+ * 复杂类型见 ../types.ts（CreateContextOptions、OnStateChangeCallback 等）。
  */
 
-import type { RuntimeContext, MethodsRegistry, GetPathValue, SetPathValue, ExpressionOptions } from '../types.js'
+import type {
+  RuntimeContext,
+  CreateContextOptions,
+  OnStateChangeCallback,
+  MethodsRegistry,
+  GetPathValue,
+  SetPathValue,
+} from '../types.js'
 import { createProxy } from './proxy.js'
 import { registerBuiltinMethods } from '../vm/handlers/index.js'
 import { getPathValue as getPath, setPathValue as setPath } from './path.js'
 import { invalidateCache } from '../expression/cache.js'
 
 /**
- * RuntimeContext 创建选项
+ * 创建运行时上下文（传入具体 initialState 时，TState 从实参自动推导）
  */
-export interface CreateContextOptions {
-  /**
-   * 事件发射回调
-   */
-  onEmit?: (event: string, data?: unknown) => void
-  
-  /**
-   * 预注册的方法
-   */
-  methods?: MethodsRegistry
-  
-  /**
-   * 状态变更钩子（用于框架集成）
-   * 在 _set 调用后触发，可用于缓存失效等
-   */
-  onStateChange?: (path: string, value: unknown, ctx: RuntimeContext) => void
-  
-  /**
-   * 创建对象的工厂函数（用于框架集成创建响应式对象）
-   */
-  createObject?: () => Record<string, unknown>
-  
-  /**
-   * 创建数组的工厂函数（用于框架集成创建响应式数组）
-   */
-  createArray?: () => unknown[]
-
-  /**
-   * 表达式求值配置
-   */
-  exprOptions?: ExpressionOptions
-}
-
+export function createRuntimeContext<TState extends Record<string, unknown>>(
+  initialState: TState,
+  options?: CreateContextOptions<TState>
+): RuntimeContext<TState>
 /**
- * 创建运行时上下文
- * 
- * @param initialState 初始状态（扁平化）
- * @param options 配置选项
- * 
- * @template TState 状态类型，从 initialState 推导
+ * 创建运行时上下文（显式指定 TState 时可传空或部分初始状态，如 createRuntimeContext<MyState>({}, options)）
  */
-export function createRuntimeContext<
-  TState extends Record<string, unknown> = Record<string, unknown>
->(
-  initialState: Partial<TState> = {} as Partial<TState>,
-  options: CreateContextOptions = {}
+export function createRuntimeContext<TState extends Record<string, unknown>>(
+  initialState: Partial<TState> & Record<string, unknown>,
+  options?: CreateContextOptions<TState>
+): RuntimeContext<TState>
+/**
+ * 创建运行时上下文（不传或传空且未指定 TState 时，退回 Record<string, unknown>）
+ */
+export function createRuntimeContext(
+  initialState?: Record<string, unknown>,
+  options?: CreateContextOptions<Record<string, unknown>>
+): RuntimeContext<Record<string, unknown>>
+export function createRuntimeContext<TState extends Record<string, unknown>>(
+  initialState: Partial<TState> & Record<string, unknown> = {} as Partial<TState> & Record<string, unknown>,
+  options: CreateContextOptions<TState> | CreateContextOptions<Record<string, unknown>> = {}
 ): RuntimeContext<TState> {
   // 1. 验证命名冲突
   validateStateKeys(initialState)
@@ -99,15 +78,14 @@ export function createRuntimeContext<
       })
       // 使缓存失效（使用 proxied 引用以确保缓存键一致）
       invalidateCache(path, (proxiedRef || ctx) as RuntimeContext)
-      // 触发状态变更钩子
       if (onStateChange && !options?.skipCallback) {
-        onStateChange(path, value, (proxiedRef || ctx) as RuntimeContext)
+        ;(onStateChange as OnStateChangeCallback<TState>)(path, value, proxiedRef || ctx)
       }
     },
   } as RuntimeContext<TState>
 
-  // 3. 自动注册内置指令到 $methods
-  registerBuiltinMethods(ctx as RuntimeContext)
+  // 3. 自动注册内置指令到 $methods（RuntimeContext<TState> 与 RuntimeContext 在 _set 值域上逆变，需通过 unknown 转接）
+  registerBuiltinMethods(ctx as unknown as RuntimeContext)
 
   // 4. 使用 Proxy 保护系统 API
   const proxied = createProxy(ctx as unknown as RuntimeContext) as RuntimeContext<TState>
