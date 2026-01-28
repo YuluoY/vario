@@ -825,6 +825,7 @@ export default {
     integrationTestsNav: 'Integration Tests',
     performanceTestsNav: 'Performance Tests',
     examplesNav: 'Examples',
+    docsNav: 'Docs',
     playgroundNav: 'Playground',
     language: 'Language',
     switchLanguage: 'Switch Language',

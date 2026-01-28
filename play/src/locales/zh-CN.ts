@@ -825,6 +825,7 @@ export default {
     integrationTestsNav: '集成测试',
     performanceTestsNav: '压力测试',
     examplesNav: '示例',
+    docsNav: '文档',
     playgroundNav: '代码靶场',
     language: '语言',
     switchLanguage: '切换语言',

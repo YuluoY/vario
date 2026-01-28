@@ -62,7 +62,7 @@ Vario 是一个声明式的 UI 行为框架，通过 JSON Schema DSL 将 UI 逻�
 
 ### 核心包
 
-- **`@vario/core`** `v0.1.0` - 核心运行时
+- **`@variojs/core`** `v0.0.2` - 核心运行时
   - RuntimeContext：运行时上下文管理
   - Expression System：表达式解析、编译、求值
   - Action VM：指令虚拟机，执行各种操作指令
@@ -70,21 +70,21 @@ Vario 是一个声明式的 UI 行为框架，通过 JSON Schema DSL 将 UI 逻�
   - 性能优化：表达式缓存、对象池等
   - **依赖**: `@babel/parser`, `@babel/types`
 
-- **`@vario/schema`** `v0.1.0` - Schema 层
+- **`@variojs/schema`** `v0.0.2` - Schema 层
   - Schema 类型定义：完整的 TypeScript 类型
   - Schema Validator：运行时验证
   - Schema Normalizer：规范化工具
   - Schema Transform：转换工具
-  - **依赖**: `@vario/core`
+  - **依赖**: `@variojs/core`
 
-- **`@vario/vue`** `v0.1.0` - Vue 3 渲染后端
+- **`@variojs/vue`** `v0.0.2` - Vue 3 渲染后端
   - 深度集成 Composition API
   - 支持 Vue 3 所有特性（Teleport、Provide/Inject、Refs 等）
   - 双向绑定支持
   - 生命周期钩子
-  - **依赖**: `@vario/core`, `@vario/schema`, `vue ^3.4.0`
+  - **依赖**: `@variojs/core`, `@variojs/schema`, `vue ^3.4.0`
 
-- **`@vario/cli`** `v0.1.0` - 命令行工具（开发中）
+- **`@variojs/cli`** `v0.0.2` - 命令行工具（开发中）
   - 代码生成
   - 开发服务器
 
@@ -123,10 +123,10 @@ Vario 是一个声明式的 UI 行为框架，通过 JSON Schema DSL 将 UI 逻�
 
 | 包名 | 版本 | 说明 |
 |------|------|------|
-| `@vario/core` | `0.1.0` | 核心运行时 |
-| `@vario/schema` | `0.1.0` | Schema 层 |
-| `@vario/vue` | `0.1.0` | Vue 3 渲染后端 |
-| `@vario/cli` | `0.1.0` | CLI 工具（开发中） |
+| `@variojs/core` | `0.0.2` | 核心运行时 |
+| `@variojs/schema` | `0.0.2` | Schema 层 |
+| `@variojs/vue` | `0.0.2` | Vue 3 渲染后端 |
+| `@variojs/cli` | `0.0.2` | CLI 工具（开发中） |
 
 ## 🚀 快速开始
 
@@ -155,20 +155,20 @@ pnpm build
 
 ```bash
 # 安装核心包
-pnpm add @vario/core @vario/schema @vario/vue
+pnpm add @variojs/core @variojs/schema @variojs/vue
 
 # 或使用 npm
-npm install @vario/core @vario/schema @vario/vue
+npm install @variojs/core @variojs/schema @variojs/vue
 
 # 或使用 yarn
-yarn add @vario/core @vario/schema @vario/vue
+yarn add @variojs/core @variojs/schema @variojs/vue
 ```
 
 ### 使用示例
 
 ```typescript
-import { useVario } from '@vario/vue'
-import type { VueSchemaNode } from '@vario/vue'
+import { useVario } from '@variojs/vue'
+import type { VueSchemaNode } from '@variojs/vue'
 
 const schema: VueSchemaNode = {
   type: 'div',
@@ -227,7 +227,7 @@ export default {
 
 - [架构设计](./docs/vario-implementation.md) - 完整的技术实现指南
 - [开发任务清单](./docs/DEVELOPMENT_TASKS.md) - 当前开发状态和任务
-- [Vue 集成文档](./packages/vario-vue/README.md) - Vue 3 集成详细说明
+- [Vue 集成文档](./packages/vario-vue/README.md) - Vue 3 集成详细说明（注意：包名为 `@variojs/vue`）
 - [表达式系统](./packages/vario-core/src/expression/README.md) - 表达式语法和特性
 
 ## 🛠️ 开发指南
@@ -261,10 +261,10 @@ pnpm dev
 ```
 vario/
 ├── packages/
-│   ├── vario-core/      # 核心运行时
-│   ├── vario-schema/    # Schema 层
-│   ├── vario-vue/       # Vue 渲染后端
-│   └── vario-cli/        # CLI 工具
+│   ├── vario-core/      # 核心运行时 (@variojs/core)
+│   ├── vario-schema/    # Schema 层 (@variojs/schema)
+│   ├── vario-vue/       # Vue 渲染后端 (@variojs/vue)
+│   └── vario-cli/       # CLI 工具 (@variojs/cli)
 ├── play/                # 演示平台
 ├── tests/               # 集成测试
 └── docs/                # 文档

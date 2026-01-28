@@ -47,12 +47,23 @@ jobs:
       - name: Build packages
         run: pnpm build
 
+      - name: Build docs
+        working-directory: ./docs
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: pnpm build
+
       - name: Build play site
         working-directory: ./play
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
           VITE_GITHUB_REPOSITORY: ${{ github.repository }}
         run: pnpm build
+
+      - name: Verify docs are in dist
+        run: |
+          ls -la play/dist/docs/ || echo "Docs directory not found in dist"
+          ls -la play/dist/docs/index.html || echo "Docs index.html not found"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

@@ -1,6 +1,6 @@
 {
   "name": "@variojs/schema",
-  "version": "0.1.0",
+  "version": "0.0.2",
   "description": "Vario Schema DSL - Schema definition, validation, normalization, and transformation",
   "type": "module",
   "main": "./dist/index.js",
@@ -14,13 +14,11 @@
   },
   "scripts": {
     "build": "tsc",
+    "postbuild": "node ../../scripts/minify.js",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "clean": "rm -rf dist"
-  },
-  "dependencies": {
-    "@variojs/core": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.3.3",
@@ -32,5 +30,8 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "@variojs/core": "workspace:*"
   }
 }

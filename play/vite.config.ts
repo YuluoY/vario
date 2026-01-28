@@ -18,6 +18,11 @@ const getBasePath = () => {
 export default defineConfig({
   base: getBasePath(),
   plugins: [vue()],
+  server: {
+    // 本地开发时，如果 docs 已构建在 public/docs，可以直接访问
+    // 如果需要实时预览 VitePress，可以启动 docs dev server (pnpm --filter docs dev)
+    // 然后访问 http://localhost:5174
+  },
   resolve: {
     alias: {
       // 为 vario-core 编译后的 dist 文件添加别名解析（使用 @/ 导入）

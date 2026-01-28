@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
+    "postbuild": "node ../../scripts/fix-gh-pages.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

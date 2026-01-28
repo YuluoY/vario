@@ -1,6 +1,6 @@
 {
   "name": "@variojs/cli",
-  "version": "0.1.0",
+  "version": "0.0.2",
   "description": "Vario CLI Tools - Development server, code generation, and build tools",
   "type": "module",
   "main": "./dist/index.js",
@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "postbuild": "node -e \"const fs=require('fs');const f='dist/index.js';const c=fs.readFileSync(f,'utf8');if(!c.startsWith('#!/usr/bin/env node')){fs.writeFileSync(f,'#!/usr/bin/env node\\n'+c);fs.chmodSync(f,0o755)}\"",
+    "postbuild": "node -e \"const fs=require('fs');const f='dist/index.js';const c=fs.readFileSync(f,'utf8');if(!c.startsWith('#!/usr/bin/env node')){fs.writeFileSync(f,'#!/usr/bin/env node\\n'+c);fs.chmodSync(f,0o755)}\" && node ../../scripts/minify.js",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",

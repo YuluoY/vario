@@ -193,21 +193,148 @@ async function main() {
     const pkg = JSON.parse(fs.readFileSync(pkgFile, 'utf8'))
     const newVersion = pkg.version
 
+    // 保存原始配置
     const originalDeps = pkg.dependencies ? { ...pkg.dependencies } : undefined
-    if (pkg.dependencies) {
-      for (const [depName, depVersion] of Object.entries(pkg.dependencies)) {
-        if (depVersion === 'workspace:*' && depVersionMap[depName]) {
-          pkg.dependencies[depName] = `^${depVersionMap[depName]}`
+    const originalPeerDeps = pkg.peerDependencies ? { ...pkg.peerDependencies } : undefined
+    const originalPeerDepsMeta = pkg.peerDependenciesMeta ? { ...pkg.peerDependenciesMeta } : undefined
+
+    // 定义需要转换为 peerDependencies 的包映射
+    const peerDepMap = {
+      'vario-vue': {
+        peerDeps: ['@variojs/core', '@variojs/schema', 'vue'],
+        peerDepsMeta: {
+          '@variojs/core': { optional: false },
+          '@variojs/schema': { optional: false },
+          'vue': { optional: false }
+        }
+      },
+      'vario-schema': {
+        peerDeps: ['@variojs/core'],
+        peerDepsMeta: {
+          '@variojs/core': { optional: false }
+        }
+      },
+      'vario-cli': {
+        peerDeps: ['@variojs/core', '@variojs/schema', '@variojs/vue'],
+        peerDepsMeta: {
+          '@variojs/core': { optional: false },
+          '@variojs/schema': { optional: false },
+          '@variojs/vue': { optional: false }
         }
       }
-      fs.writeFileSync(pkgFile, JSON.stringify(pkg, null, 2))
     }
 
-    const restoreDeps = () => {
-      if (originalDeps) {
-        pkg.dependencies = originalDeps
-        fs.writeFileSync(pkgFile, JSON.stringify(pkg, null, 2))
+    // 转换依赖：将 workspace 依赖移到 peerDependencies
+    if (peerDepMap[pkgName]) {
+      const { peerDeps, peerDepsMeta } = peerDepMap[pkgName]
+      
+      // 初始化 peerDependencies
+      if (!pkg.peerDependencies) {
+        pkg.peerDependencies = {}
       }
+      if (!pkg.peerDependenciesMeta) {
+        pkg.peerDependenciesMeta = {}
+      }
+
+      // 从 dependencies 中移除 workspace 依赖，添加到 peerDependencies
+      if (pkg.dependencies) {
+        for (const peerDep of peerDeps) {
+          if (pkg.dependencies[peerDep] === 'workspace:*') {
+            // 移除 from dependencies
+            delete pkg.dependencies[peerDep]
+            // 添加到 peerDependencies
+            if (depVersionMap[peerDep]) {
+              pkg.peerDependencies[peerDep] = `^${depVersionMap[peerDep]}`
+            } else {
+              // 对于 vue 等外部依赖，使用现有版本或默认版本
+              if (peerDep === 'vue') {
+                // 尝试从 devDependencies 获取版本，否则使用默认
+                const vueVersion = pkg.devDependencies?.vue || '^3.4.0'
+                pkg.peerDependencies[peerDep] = vueVersion.replace(/^\^?/, '^')
+              } else {
+                pkg.peerDependencies[peerDep] = `^${pkg.version}`
+              }
+            }
+            // 添加 meta
+            if (peerDepsMeta[peerDep]) {
+              pkg.peerDependenciesMeta[peerDep] = peerDepsMeta[peerDep]
+            }
+          }
+        }
+
+        // 清理空的 dependencies
+        if (Object.keys(pkg.dependencies).length === 0) {
+          delete pkg.dependencies
+        }
+      }
+
+      // 对于 vario-vue，vue 在 devDependencies 中，也需要移到 peerDependencies
+      if (pkgName === 'vario-vue' && pkg.devDependencies?.vue) {
+        const vueVersion = pkg.devDependencies.vue.replace(/^\^?/, '^')
+        pkg.peerDependencies['vue'] = vueVersion
+        pkg.peerDependenciesMeta['vue'] = { optional: false }
+        // vue 保留在 devDependencies 中（用于测试），但也会在 peerDependencies 中
+      }
+
+      // 对于没有在 dependencies 中找到的 peerDeps，直接添加
+      for (const peerDep of peerDeps) {
+        if (!pkg.peerDependencies[peerDep]) {
+          if (depVersionMap[peerDep]) {
+            pkg.peerDependencies[peerDep] = `^${depVersionMap[peerDep]}`
+          } else if (peerDep === 'vue') {
+            const vueVersion = pkg.devDependencies?.vue || '^3.4.0'
+            pkg.peerDependencies[peerDep] = vueVersion.replace(/^\^?/, '^')
+          } else {
+            pkg.peerDependencies[peerDep] = `^${pkg.version}`
+          }
+          if (peerDepsMeta[peerDep]) {
+            pkg.peerDependenciesMeta[peerDep] = peerDepsMeta[peerDep]
+          }
+        }
+      }
+
+      // 处理其他非 workspace 依赖（如 commander），保持原样
+      if (pkg.dependencies) {
+        for (const [depName, depVersion] of Object.entries(pkg.dependencies)) {
+          if (depVersion === 'workspace:*' && depVersionMap[depName]) {
+            pkg.dependencies[depName] = `^${depVersionMap[depName]}`
+          }
+        }
+      }
+    } else {
+      // 对于其他包（如 vario-core），只转换版本号
+      if (pkg.dependencies) {
+        for (const [depName, depVersion] of Object.entries(pkg.dependencies)) {
+          if (depVersion === 'workspace:*' && depVersionMap[depName]) {
+            pkg.dependencies[depName] = `^${depVersionMap[depName]}`
+          }
+        }
+      }
+    }
+
+    fs.writeFileSync(pkgFile, JSON.stringify(pkg, null, 2))
+
+    const restoreDeps = () => {
+      // 恢复原始配置
+      if (originalDeps !== undefined) {
+        pkg.dependencies = originalDeps
+      } else if (pkg.dependencies) {
+        delete pkg.dependencies
+      }
+      
+      if (originalPeerDeps !== undefined) {
+        pkg.peerDependencies = originalPeerDeps
+      } else if (pkg.peerDependencies) {
+        delete pkg.peerDependencies
+      }
+      
+      if (originalPeerDepsMeta !== undefined) {
+        pkg.peerDependenciesMeta = originalPeerDepsMeta
+      } else if (pkg.peerDependenciesMeta) {
+        delete pkg.peerDependenciesMeta
+      }
+      
+      fs.writeFileSync(pkgFile, JSON.stringify(pkg, null, 2))
     }
 
     console.log(chalk.bold(`\n------------------------------`))
@@ -328,4 +455,59 @@ async function main() {
   }
 }
 
-main().catch(err => { console.error(err); process.exit(1) })
+// 创建 Git tag 的辅助函数
+function createTag(version, push = false) {
+  const tag = `v${version}`
+  try {
+    // 检查 tag 是否已存在
+    try {
+      execSync(`git rev-parse ${tag}`, { stdio: 'ignore' })
+      console.log(chalk.yellow(`⚠️  Tag ${tag} already exists, skipping...`))
+      return false
+    } catch {
+      // Tag 不存在，继续创建
+    }
+    
+    const commit = execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim()
+    console.log(chalk.blue(`\n🏷️  Creating tag ${tag} at commit ${commit.substring(0, 7)}...`))
+    execSync(`git tag -a ${tag} -m "Release ${tag}"`, { stdio: 'inherit' })
+    console.log(chalk.green(`✅ Tag ${tag} created successfully`))
+    
+    if (push) {
+      console.log(chalk.blue(`📤 Pushing tag ${tag} to remote...`))
+      execSync(`git push origin ${tag}`, { stdio: 'inherit' })
+      console.log(chalk.green(`✅ Tag ${tag} pushed to remote`))
+    } else {
+      console.log(chalk.yellow(`💡 Use 'git push origin ${tag}' to push the tag`))
+    }
+    return true
+  } catch (error) {
+    console.error(chalk.red(`❌ Failed to create tag: ${error.message}`))
+    return false
+  }
+}
+
+main().then(async () => {
+  // 发布成功后，询问是否创建 tag
+  const { createTag: shouldCreateTag } = await inquirer.prompt([{
+    type: 'confirm',
+    name: 'createTag',
+    message: chalk.bold('是否创建 Git tag 并推送到远程？'),
+    default: true
+  }])
+  
+  if (shouldCreateTag) {
+    // 获取最新发布的版本（通常是所有包中的最高版本，或使用根 package.json 的版本）
+    const rootPkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'))
+    const version = rootPkg.version
+    
+    const { pushTag } = await inquirer.prompt([{
+      type: 'confirm',
+      name: 'pushTag',
+      message: chalk.bold(`是否立即推送 tag v${version} 到远程？`),
+      default: true
+    }])
+    
+    createTag(version, pushTag)
+  }
+}).catch(err => { console.error(err); process.exit(1) })

@@ -5,24 +5,35 @@
   "description": "Vario - UI Behavior IR + Runtime VM",
   "type": "module",
   "scripts": {
+    "start": "node ./scripts/start.mjs",
+    "start:dev": "node ./scripts/start.mjs --skip-build",
     "dev": "pnpm --filter './packages/*' dev",
+    "dev:play": "pnpm --filter './play' dev",
+    "dev:docs": "pnpm --filter './docs' dev",
     "build": "pnpm --filter './packages/*' build",
+    "build:docs": "pnpm --filter './docs' build",
     "test": "pnpm --filter './packages/*' test",
     "test:watch": "pnpm --filter './packages/*' test:watch",
     "test:integration": "vitest run --config vitest.config.integration.ts",
     "lint": "pnpm --filter './packages/*' lint",
     "clean": "pnpm --filter './packages/*' clean",
-    "publish": "node ./scripts/publish-all.cjs"
+    "publish": "node ./scripts/publish-all.cjs",
+    "tag": "node ./scripts/create-tag.mjs",
+    "tag:push": "node ./scripts/create-tag.mjs --push",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
+    "chalk": "^5.3.0",
+    "concurrently": "^9.2.1",
+    "esbuild": "^0.19.0",
+    "husky": "^9.1.7",
+    "inquirer": "^8.2.4",
     "tsc-alias": "^1.8.16",
     "typescript": "^5.3.3",
     "vite-tsconfig-paths": "^6.0.4",
     "vitest": "^1.2.0",
-    "vue": "^3.5.27",
-    "inquirer": "^8.2.4",
-    "chalk": "^5.3.0"
+    "vue": "^3.5.27"
   },
   "engines": {
     "node": ">=18.0.0",

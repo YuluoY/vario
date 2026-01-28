@@ -1,6 +1,6 @@
 {
   "name": "@variojs/core",
-  "version": "0.1.0",
+  "version": "0.0.2",
   "description": "Vario Core Runtime - Instruction VM, Expression System, Runtime Context",
   "type": "module",
   "main": "./dist/index.js",
@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "postbuild": "tsc-alias",
+    "postbuild": "tsc-alias && node ../../scripts/minify.js",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",

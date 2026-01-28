@@ -69,7 +69,7 @@
         </div>
         <div class="footer__links">
           <a href="https://github.com/YuluoY/vario" target="_blank" rel="noopener noreferrer">GitHub</a>
-          <a href="https://yuluoy.github.io/vario/" target="_blank" rel="noopener noreferrer">Documentation</a>
+          <a :href="docsUrl" @click.prevent="goToDocs">{{ $t('app.docsNav') }}</a>
         </div>
       </div>
     </footer>
@@ -109,6 +109,39 @@ import { useI18n } from 'vue-i18n'
 import { HomeFilled, DocumentChecked, Connection, Collection, Timer, Moon, Sunny, Edit } from '@element-plus/icons-vue'
 
 const route = useRoute()
+// 文档链接：生产环境使用构建后的静态文件，开发环境使用 VitePress dev server
+const getDocsUrl = () => {
+  if (import.meta.env.DEV) {
+    // 开发环境：优先使用环境变量配置，否则使用 VitePress dev server
+    return import.meta.env.VITE_DOCS_URL || 'http://localhost:5174/'
+  } else {
+    // 生产环境：使用相对路径
+    const base = import.meta.env.BASE_URL || '/'
+    return base + 'docs/'
+  }
+}
+const docsUrl = getDocsUrl()
+
+const goToDocs = (event?: Event) => { 
+  if (event) {
+    event.preventDefault()
+    event.stopPropagation()
+  }
+  
+  const url = getDocsUrl()
+  
+  if (import.meta.env.DEV) {
+    // 开发环境：在新窗口打开
+    const newWindow = window.open(url, '_blank')
+    if (!newWindow) {
+      // 如果弹窗被阻止，尝试在当前窗口打开
+      window.location.href = url
+    }
+  } else {
+    // 生产环境：直接跳转
+    window.location.href = url
+  }
+}
 const { locale } = useI18n()
 
 const activeRoute = computed(() => route.path)

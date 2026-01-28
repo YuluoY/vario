@@ -1,6 +1,6 @@
 {
   "name": "@variojs/vue",
-  "version": "0.1.0",
+  "version": "0.0.2",
   "description": "Vario Vue Renderer - Vue 3 integration for Vario Schema rendering",
   "type": "module",
   "main": "./dist/index.js",
@@ -14,16 +14,13 @@
   },
   "scripts": {
     "build": "tsc",
+    "postbuild": "node ../../scripts/minify.js",
     "dev": "tsc --watch",
     "test": "NODE_OPTIONS=--max-old-space-size=4096 vitest run",
     "test:perf": "NODE_OPTIONS=--max-old-space-size=8192 vitest run __tests__/performance.test.ts",
     "test:comprehensive": "NODE_OPTIONS=--max-old-space-size=4096 vitest run __tests__/model-path-comprehensive.test.ts",
     "test:watch": "vitest",
     "clean": "rm -rf dist"
-  },
-  "dependencies": {
-    "@variojs/core": "workspace:*",
-    "@variojs/schema": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.3.3",
@@ -37,5 +34,9 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "@variojs/core": "workspace:*",
+    "@variojs/schema": "workspace:*"
   }
 }
