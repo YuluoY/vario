@@ -11,7 +11,8 @@ play/public/docs/
 .claude
 .codebuddy
 .trae
-.cursor
+.cursor/*
+!.cursor/skills/
 docs/.vitepress/cache
 docs/.vitepress/dist
 
