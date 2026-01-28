@@ -6,7 +6,11 @@ import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
-const rootDir = join(__dirname, '..')
+// 如果从 play 目录调用，__dirname 是 scripts，需要回到项目根目录
+// 如果从项目根目录调用，__dirname 就是 scripts
+const rootDir = __dirname.includes('play/scripts') 
+  ? join(__dirname, '../..')
+  : join(__dirname, '..')
 const distDir = join(rootDir, 'play/dist')
 const indexHtml = join(distDir, 'index.html')
 const notFoundHtml = join(distDir, '404.html')
