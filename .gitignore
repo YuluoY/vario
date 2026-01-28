@@ -6,6 +6,7 @@ node_modules/
 dist/
 dist-ssr/
 *.local
+play/public/docs/
 
 .claude
 .codebuddy
