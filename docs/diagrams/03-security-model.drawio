@@ -1,0 +1,77 @@
+<mxGraphModel>
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+    
+    <!-- 标题 -->
+    <mxCell id="title" value="Vario Security Model: Three-Layer Boundaries" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="10" width="720" height="25" as="geometry"/>
+    </mxCell>
+    
+    <!-- Layer 3: Agent Layer -->
+    <mxCell id="layer3-bg" value="Layer 3: Agent Output Layer (Validation &amp; Sanitization)" style="rounded=1;fillColor=#FFEBEE;strokeColor=#C62828;strokeWidth=3;whiteSpace=wrap;html=1;fontSize=13;fontStyle=1;align=left;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="60" y="60" width="680" height="120" as="geometry"/>
+    </mxCell>
+    <mxCell id="agent-skill" value="Agent Skill&#xa;Schema Generation" style="rounded=1;fillColor=#FFCDD2;strokeColor=#C62828;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="100" y="90" width="140" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="agent-validator" value="Output Validator&#xa;Sanitize &amp; Validate" style="rounded=1;fillColor=#FFCDD2;strokeColor=#C62828;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="280" y="90" width="160" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="agent-guard" value="Guard Rails&#xa;Security Checks" style="rounded=1;fillColor=#FFCDD2;strokeColor=#C62828;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="480" y="90" width="140" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="agent-permissions" value="✅ Schema Validation&#xa;✅ AST Whitelist Check&#xa;✅ Expression Safety" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="640" y="90" width="80" height="50" as="geometry"/>
+    </mxCell>
+    
+    <!-- Layer 2: Method Layer -->
+    <mxCell id="layer2-bg" value="Layer 2: Method Layer (Whitelist &amp; Controlled Access)" style="rounded=1;fillColor=#E8F5E9;strokeColor=#2E7D32;strokeWidth=3;whiteSpace=wrap;html=1;fontSize=13;fontStyle=1;align=left;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="60" y="220" width="680" height="120" as="geometry"/>
+    </mxCell>
+    <mxCell id="method-registry" value="$methods Registry&#xa;Whitelist Control" style="rounded=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="100" y="250" width="160" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="method-capabilities" value="Capabilities&#xa;Global Access" style="rounded=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="300" y="250" width="140" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="method-services" value="Services&#xa;Business Logic" style="rounded=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="480" y="250" width="140" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="method-permissions" value="✅ Access Globals&#xa;✅ Side Effects&#xa;✅ Network I/O" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="640" y="250" width="80" height="50" as="geometry"/>
+    </mxCell>
+    
+    <!-- Layer 1: Expression Layer -->
+    <mxCell id="layer1-bg" value="Layer 1: Expression Layer (Strict Sandbox)" style="rounded=1;fillColor=#FFF3E0;strokeColor=#E65100;strokeWidth=3;whiteSpace=wrap;html=1;fontSize=13;fontStyle=1;align=left;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="60" y="380" width="680" height="120" as="geometry"/>
+    </mxCell>
+    <mxCell id="expr-parser" value="Expression Parser&#xa;AST Generation" style="rounded=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="100" y="410" width="160" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="expr-whitelist" value="AST Whitelist&#xa;Syntax Check" style="rounded=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="300" y="410" width="140" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="expr-evaluator" value="Safe Evaluator&#xa;Read-only" style="rounded=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="480" y="410" width="140" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="expr-permissions" value="❌ No Globals&#xa;❌ No Side Effects&#xa;✅ Read-only State" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="640" y="410" width="80" height="50" as="geometry"/>
+    </mxCell>
+    
+    <!-- 连线: Layer 3 -> Layer 2 -->
+    <mxCell id="edge3-2" value="Validated Output" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#C62828;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontSize=11;" edge="1" parent="1" source="agent-validator" target="method-registry">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    
+    <!-- 连线: Layer 2 -> Layer 1 -->
+    <mxCell id="edge2-1" value="Method Call" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#2E7D32;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontSize=11;" edge="1" parent="1" source="method-registry" target="expr-parser">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    
+    <!-- 安全边界说明 -->
+    <mxCell id="boundary-note" value="Security Boundaries:&#xa;• Expression Layer: Strict sandbox, read-only&#xa;• Method Layer: Whitelist-controlled, can access globals&#xa;• Agent Layer: Validated and sanitized before execution" style="text;html=1;strokeColor=#546E7A;fillColor=#ECEFF1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontSize=10;fontStyle=0;" vertex="1" parent="1">
+      <mxGeometry x="60" y="530" width="680" height="50" as="geometry"/>
+    </mxCell>
+  </root>
+</mxGraphModel>

@@ -1,0 +1,121 @@
+<mxGraphModel>
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+    
+    <!-- 标题 -->
+    <mxCell id="title" value="Vario Instruction Execution Flow" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="10" width="720" height="25" as="geometry"/>
+    </mxCell>
+    
+    <!-- Start -->
+    <mxCell id="start" value="Start&#xa;Execute Instructions" style="shape=ellipse;fillColor=#4CAF50;strokeColor=#2E7D32;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;fontColor=#FFFFFF;" vertex="1" parent="1">
+      <mxGeometry x="340" y="60" width="120" height="50" as="geometry"/>
+    </mxCell>
+    
+    <!-- Receive Instructions -->
+    <mxCell id="receive" value="Receive&#xa;Instruction[]" style="rounded=1;fillColor=#E1F5FE;strokeColor=#0288D1;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="340" y="150" width="120" height="50" as="geometry"/>
+    </mxCell>
+    
+    <!-- Loop Start -->
+    <mxCell id="loop-start" value="For Each&#xa;Instruction" style="rhombus;fillColor=#FFF9C4;strokeColor=#F57F17;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="320" y="240" width="160" height="60" as="geometry"/>
+    </mxCell>
+    
+    <!-- Lookup Handler -->
+    <mxCell id="lookup" value="Lookup Handler&#xa;ctx.$methods[op]" style="rounded=1;fillColor=#E1F5FE;strokeColor=#0288D1;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="340" y="340" width="120" height="50" as="geometry"/>
+    </mxCell>
+    
+    <!-- Handler Exists? -->
+    <mxCell id="handler-check" value="Handler&#xa;Exists?" style="rhombus;fillColor=#FFF9C4;strokeColor=#F57F17;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="320" y="430" width="160" height="60" as="geometry"/>
+    </mxCell>
+    
+    <!-- Parse Params -->
+    <mxCell id="parse" value="Parse Parameters&#xa;Evaluate Expressions" style="rounded=1;fillColor=#FFF3E0;strokeColor=#E65100;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="80" y="530" width="160" height="50" as="geometry"/>
+    </mxCell>
+    
+    <!-- Execute Handler -->
+    <mxCell id="execute" value="Execute Handler&#xa;handler(ctx, ins)" style="rounded=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="80" y="420" width="160" height="50" as="geometry"/>
+    </mxCell>
+    
+    <!-- Update Context -->
+    <mxCell id="update" value="Update Context&#xa;Reactive Update" style="rounded=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="80" y="310" width="160" height="50" as="geometry"/>
+    </mxCell>
+    
+    <!-- Error Handler -->
+    <mxCell id="error" value="Throw Error&#xa;Unknown op" style="rounded=1;fillColor=#FFEBEE;strokeColor=#C62828;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="560" y="430" width="160" height="50" as="geometry"/>
+    </mxCell>
+    
+    <!-- End -->
+    <mxCell id="end" value="End" style="shape=ellipse;fillColor=#4CAF50;strokeColor=#2E7D32;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;fontColor=#FFFFFF;" vertex="1" parent="1">
+      <mxGeometry x="340" y="530" width="120" height="50" as="geometry"/>
+    </mxCell>
+    
+    <!-- 连线: Start -> Receive -->
+    <mxCell id="edge-start-receive" value="" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#546E7A;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="start" target="receive">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    
+    <!-- 连线: Receive -> Loop Start -->
+    <mxCell id="edge-receive-loop" value="" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#546E7A;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="receive" target="loop-start">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    
+    <!-- 连线: Loop Start -> Lookup (Yes) -->
+    <mxCell id="edge-loop-lookup" value="Yes" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#546E7A;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontSize=11;" edge="1" parent="1" source="loop-start" target="lookup">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    
+    <!-- 连线: Loop Start -> End (No) -->
+    <mxCell id="edge-loop-end" value="No" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#546E7A;strokeWidth=2;exitX=0;exitY=0.5;entryX=0.5;entryY=1;fontSize=11;" edge="1" parent="1" source="loop-start" target="end">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="240" y="270"/>
+          <mxPoint x="400" y="555"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    
+    <!-- 连线: Lookup -> Handler Check -->
+    <mxCell id="edge-lookup-check" value="" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#546E7A;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="lookup" target="handler-check">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    
+    <!-- 连线: Handler Check -> Parse (Yes) -->
+    <mxCell id="edge-check-parse" value="Yes" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#546E7A;strokeWidth=2;exitX=0;exitY=0.5;entryX=1;entryY=0.5;fontSize=11;" edge="1" parent="1" source="handler-check" target="parse">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    
+    <!-- 连线: Handler Check -> Error (No) -->
+    <mxCell id="edge-check-error" value="No" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#C62828;strokeWidth=2;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontSize=11;" edge="1" parent="1" source="handler-check" target="error">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    
+    <!-- 连线: Parse -> Execute -->
+    <mxCell id="edge-parse-execute" value="" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#546E7A;strokeWidth=2;exitX=0.5;exitY=0;entryX=0.5;entryY=1;fontSize=11;" edge="1" parent="1" source="parse" target="execute">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    
+    <!-- 连线: Execute -> Update -->
+    <mxCell id="edge-execute-update" value="" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#546E7A;strokeWidth=2;exitX=0.5;exitY=0;entryX=0.5;entryY=1;fontSize=11;" edge="1" parent="1" source="execute" target="update">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    
+    <!-- 连线: Update -> Loop Start (循环) -->
+    <mxCell id="edge-update-loop" value="Next" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#546E7A;strokeWidth=2;exitX=0;exitY=0.5;entryX=0;entryY=0.5;fontSize=11;" edge="1" parent="1" source="update" target="loop-start">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="40" y="335"/>
+          <mxPoint x="40" y="270"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+  </root>
+</mxGraphModel>

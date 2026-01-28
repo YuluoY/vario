@@ -1,0 +1,116 @@
+<mxGraphModel>
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+    
+    <!-- 标题 -->
+    <mxCell id="title" value="Vario Data Flow: defineSchema → DOM" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="10" width="720" height="25" as="geometry"/>
+    </mxCell>
+    
+    <!-- Step 1: Developer Code -->
+    <mxCell id="step1" value="Developer Code&#xa;defineSchema({...})" style="rounded=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="80" y="60" width="160" height="60" as="geometry"/>
+    </mxCell>
+    
+    <!-- Step 2: Transform -->
+    <mxCell id="step2" value="Transform&#xa;defineSchema → Schema" style="rounded=1;fillColor=#E1F5FE;strokeColor=#0288D1;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="80" y="180" width="160" height="60" as="geometry"/>
+    </mxCell>
+    
+    <!-- Step 3: Schema JSON -->
+    <mxCell id="step3" value="Schema JSON&#xa;Pure Schema DSL" style="rounded=1;fillColor=#E1F5FE;strokeColor=#0288D1;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="80" y="300" width="160" height="60" as="geometry"/>
+    </mxCell>
+    
+    <!-- Step 4: Validator -->
+    <mxCell id="step4" value="Validator&#xa;Schema Validation" style="rounded=1;fillColor=#E1F5FE;strokeColor=#0288D1;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="80" y="420" width="160" height="60" as="geometry"/>
+    </mxCell>
+    
+    <!-- Step 5: Runtime Context -->
+    <mxCell id="step5" value="Runtime Context&#xa;Flattened State" style="rounded=1;fillColor=#FFF3E0;strokeColor=#E65100;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="320" y="300" width="160" height="60" as="geometry"/>
+    </mxCell>
+    
+    <!-- Step 6: Instruction VM -->
+    <mxCell id="step6" value="Instruction VM&#xa;Execute Instructions" style="rounded=1;fillColor=#FFF3E0;strokeColor=#E65100;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="320" y="420" width="160" height="60" as="geometry"/>
+    </mxCell>
+    
+    <!-- Step 7: Expression Evaluator -->
+    <mxCell id="step7" value="Expression Evaluator&#xa;Safe Evaluation" style="rounded=1;fillColor=#FFF3E0;strokeColor=#E65100;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="320" y="180" width="160" height="60" as="geometry"/>
+    </mxCell>
+    
+    <!-- Step 8: Renderer (Vue) -->
+    <mxCell id="step8" value="Renderer (Vue)&#xa;VNode Factory" style="rounded=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="560" y="300" width="160" height="60" as="geometry"/>
+    </mxCell>
+    
+    <!-- Step 9: DOM -->
+    <mxCell id="step9" value="DOM&#xa;Final Render" style="rounded=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="560" y="420" width="160" height="60" as="geometry"/>
+    </mxCell>
+    
+    <!-- 连线: Step 1 -> Step 2 -->
+    <mxCell id="edge1-2" value="Compile" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#0277BD;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontSize=11;" edge="1" parent="1" source="step1" target="step2">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    
+    <!-- 连线: Step 2 -> Step 3 -->
+    <mxCell id="edge2-3" value="Generate" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#0277BD;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontSize=11;" edge="1" parent="1" source="step2" target="step3">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    
+    <!-- 连线: Step 3 -> Step 4 -->
+    <mxCell id="edge3-4" value="Validate" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#0277BD;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontSize=11;" edge="1" parent="1" source="step3" target="step4">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    
+    <!-- 连线: Step 3 -> Step 5 -->
+    <mxCell id="edge3-5" value="Initialize" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#E65100;strokeWidth=2;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontSize=11;" edge="1" parent="1" source="step3" target="step5">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    
+    <!-- 连线: Step 4 -> Step 7 -->
+    <mxCell id="edge4-7" value="Parse" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#E65100;strokeWidth=2;exitX=1;exitY=0.3;entryX=0;entryY=0.5;fontSize=11;" edge="1" parent="1" source="step4" target="step7">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="320" y="450"/>
+          <mxPoint x="320" y="210"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    
+    <!-- 连线: Step 5 -> Step 6 -->
+    <mxCell id="edge5-6" value="Execute" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#E65100;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontSize=11;" edge="1" parent="1" source="step5" target="step6">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    
+    <!-- 连线: Step 7 -> Step 5 -->
+    <mxCell id="edge7-5" value="Evaluate" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#E65100;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.3;entryY=0;fontSize=11;" edge="1" parent="1" source="step7" target="step5">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    
+    <!-- 连线: Step 6 -> Step 8 -->
+    <mxCell id="edge6-8" value="Render" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#1565C0;strokeWidth=2;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontSize=11;" edge="1" parent="1" source="step6" target="step8">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    
+    <!-- 连线: Step 8 -> Step 9 -->
+    <mxCell id="edge8-9" value="Mount" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#2E7D32;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontSize=11;" edge="1" parent="1" source="step8" target="step9">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    
+    <!-- 反馈循环: Step 9 -> Step 6 (事件触发) -->
+    <mxCell id="edge9-6" value="Events" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;curved=1;strokeColor=#757575;strokeWidth=1;dashed=1;exitX=0;exitY=0.5;entryX=1;entryY=0.3;fontSize=11;" edge="1" parent="1" source="step9" target="step6">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="480" y="450"/>
+          <mxPoint x="480" y="438"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+  </root>
+</mxGraphModel>

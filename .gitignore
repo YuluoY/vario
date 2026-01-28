@@ -11,7 +11,8 @@ dist-ssr/
 .codebuddy
 .trae
 .cursor
-docs
+docs/.vitepress/cache
+docs/.vitepress/dist
 
 # Logs
 logs
