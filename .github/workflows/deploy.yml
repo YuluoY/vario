@@ -51,6 +51,8 @@ jobs:
         working-directory: ./docs
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
+          NODE_OPTIONS: --max-old-space-size=4096
+        timeout-minutes: 10
         run: pnpm build
 
       - name: Build play site

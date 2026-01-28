@@ -10,6 +10,16 @@ export default defineConfig({
   title: 'Vario',
   description: 'UI 行为中间表示（IR）+ 运行时虚拟机（VM）+ 渐进式跨框架抽象',
   outDir: '../play/public/docs',
+  vite: {
+    build: {
+      chunkSizeWarningLimit: 2000,
+      rollupOptions: {
+        output: {
+          manualChunks: undefined
+        }
+      }
+    }
+  },
   themeConfig: {
     nav: [
       { text: '介绍', link: '/' },
