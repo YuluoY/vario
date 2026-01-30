@@ -238,7 +238,7 @@ describe('Model 路径自动解析', () => {
   })
 
   describe('配置选项', () => {
-    it('应该支持 modelPath 配置（如 separator）', async () => {
+    it('应该支持 modelOptions 配置（如 separator）', async () => {
       const schema: VueSchemaNode = {
         type: 'div',
         model: { path: 'form', scope: true },
@@ -252,7 +252,7 @@ describe('Model 路径自动解析', () => {
 
       const { state, vnode } = useVario(schema, {
         state: {},
-        modelPath: { separator: '.' }
+        modelOptions: { separator: '.' }
       })
 
       await nextTick()
@@ -269,6 +269,39 @@ describe('Model 路径自动解析', () => {
 
       expect(state.form).toBeDefined()
       expect(state.form.name).toBe('Test')
+    })
+
+    it('modelOptions.lazy: true 时所有未显式 lazy 的 model 不预写 state', async () => {
+      const schema: VueSchemaNode = {
+        type: 'div',
+        model: { path: 'form', scope: true },
+        children: [
+          { type: 'input', model: 'name' },
+          { type: 'input', model: { path: 'optional', lazy: true } }
+        ]
+      }
+      const { state, vnode } = useVario(schema, { state: {}, modelOptions: { lazy: true } })
+      await nextTick()
+      expect(state.form).toBeUndefined()
+      const nameInput = (vnode.value as any)?.children?.[0]
+      if (nameInput?.props?.onInput) nameInput.props.onInput('a')
+      else if (nameInput?.props?.['onUpdate:modelValue']) nameInput.props['onUpdate:modelValue']('a')
+      await nextTick()
+      expect(state.form?.name).toBe('a')
+    })
+
+    it('modelOptions.lazy: true 时节点 lazy: false 可覆盖为预写', async () => {
+      const schema: VueSchemaNode = {
+        type: 'div',
+        model: { path: 'form', scope: true },
+        children: [
+          { type: 'input', model: { path: 'required', lazy: false } }
+        ]
+      }
+      const { state } = useVario(schema, { state: {}, modelOptions: { lazy: true } })
+      await nextTick()
+      expect(state.form).toBeDefined()
+      expect(state.form.required).toBe('')
     })
   })
 

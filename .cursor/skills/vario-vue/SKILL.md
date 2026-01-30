@@ -55,7 +55,7 @@ interface UseVarioOptions<TState> {
   app?: App                                         // Vue 应用实例
   components?: Record<string, any>                  // 全局组件映射
   exprOptions?: ExpressionOptions                   // 表达式配置
-  modelPath?: { separator?: string }                // Model 路径配置
+  modelOptions?: { separator?: string; lazy?: boolean }  // Model 绑定配置（路径分隔符、默认惰性）
 }
 ```
 
@@ -92,6 +92,7 @@ interface VueSchemaNode {
   // 或
   model: { path: 'optional', lazy: true }    // 惰性：不预写 state，仅用户修改后才写入
 }
+// 整棵 schema 默认惰性：useVario(schema, { modelOptions: { lazy: true } }) 则所有未显式设置 lazy 的 model 均不预写 state
 ```
 
 ### 循环渲染

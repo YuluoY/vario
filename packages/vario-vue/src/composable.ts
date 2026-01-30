@@ -78,12 +78,13 @@ export interface UseVarioOptions<TState extends Record<string, unknown> = Record
   /** 表达式求值配置 */
   exprOptions?: ExpressionOptions
   /** 
-   * Model 路径解析配置
-   * - object: 可选，如 { separator: '.' }
+   * Model 绑定配置（路径分隔符、默认惰性等）
+   * - separator: 路径分隔符，默认 '.'
+   * - lazy: 整棵 schema 的 model 默认惰性，true 时不预写 state
    */
-  modelPath?: {
-    /** 路径分隔符（默认 '.'） */
+  modelOptions?: {
     separator?: string
+    lazy?: boolean
   }
 }
 
@@ -198,8 +199,8 @@ export const useVario: UseVarioOverload = <TState extends Record<string, unknown
 
   const ctxRef = ref(ctx) as Ref<RuntimeContext<TState>>
 
-  // 规范化 modelPath 配置
-  const modelPathConfig = normalizeModelPathConfig(options.modelPath)
+  // 规范化 modelOptions 配置
+  const modelOptionsConfig = normalizeModelOptions(options.modelOptions)
 
   // 创建 refs 注册表（用于模板引用）
   const refsRegistry = options.rendererOptions?.refsRegistry || new RefsRegistry()
@@ -211,7 +212,10 @@ export const useVario: UseVarioOverload = <TState extends Record<string, unknown
     components: options.components ?? options.rendererOptions?.components,
     getState: () => reactiveState,
     refsRegistry,
-    modelPath: modelPathConfig
+    modelOptions: {
+      ...modelOptionsConfig,
+      lazy: options.modelOptions?.lazy ?? options.rendererOptions?.modelOptions?.lazy
+    }
   })
 
   const vnodeRef = ref<VNode | null>(null)
@@ -508,13 +512,14 @@ function isDeepEqual(a: unknown, b: unknown): boolean {
 }
 
 /**
- * 规范化 modelPath 配置
+ * 规范化 modelOptions 配置
  */
-function normalizeModelPathConfig(
-  config?: { separator?: string }
-): { separator: string } {
+function normalizeModelOptions(
+  config?: { separator?: string; lazy?: boolean }
+): { separator: string; lazy?: boolean } {
   return {
-    separator: config?.separator ?? '.'
+    separator: config?.separator ?? '.',
+    lazy: config?.lazy
   }
 }
 

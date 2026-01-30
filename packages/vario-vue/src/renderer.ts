@@ -27,10 +27,13 @@ import { LifecycleWrapper } from './features/lifecycle-wrapper.js'
 import type { VueSchemaNode } from './types.js'
 
 /**
- * Model 路径解析配置（仅保留与格式相关的选项）
+ * Model 绑定相关配置（路径分隔符、默认惰性等）
  */
-export interface ModelPathConfig {
+export interface ModelOptions {
+  /** 路径分隔符（默认 '.'） */
   separator?: string
+  /** 整棵 schema 的 model 默认惰性：true 时所有未显式设置 lazy 的 model 均不预写 state */
+  lazy?: boolean
 }
 
 /**
@@ -44,7 +47,7 @@ export interface VueRendererOptions {
   components?: Record<string, any>
   getState?: () => any  // 用于创建响应式绑定的状态获取函数
   refsRegistry?: RefsRegistry  // Refs 注册表
-  modelPath?: ModelPathConfig  // Model 路径解析配置
+  modelOptions?: ModelOptions  // Model 绑定配置（路径分隔符、默认惰性）
 }
 
 /**
@@ -68,8 +71,6 @@ export class VueRenderer {
   constructor(options: VueRendererOptions = {}) {
     this.getState = options.getState
     this.refsRegistry = options.refsRegistry || new RefsRegistry()
-    // modelPath 选项保留于 API，供后续路径解析扩展使用
-
     // 初始化功能模块
     // 优先级：components > app._context.components > instance?.appContext?.components
     const globalComponents = 
@@ -83,7 +84,12 @@ export class VueRenderer {
     this.pathResolver = new ModelPathResolver((expr, ctx) =>
       this.expressionEvaluator.evaluateExpr(expr, ctx)
     )
-    this.attrsBuilder = new AttrsBuilder(this.getState, this.pathResolver, this.eventHandler)
+    this.attrsBuilder = new AttrsBuilder(
+      this.getState,
+      this.pathResolver,
+      this.eventHandler,
+      options.modelOptions?.lazy
+    )
     this.lifecycleWrapper = new LifecycleWrapper()
     
     // LoopHandler 和 ChildrenResolver 需要 createVNode 方法，使用箭头函数绑定 this

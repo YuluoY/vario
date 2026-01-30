@@ -26,9 +26,10 @@ interface UseVarioOptions<TState> {
   /** 自定义 model 绑定配置 */
   modelBindings?: Record<string, ModelConfig>
   
-  /** Model 路径解析配置（可选，仅与格式相关如 separator） */
-  modelPath?: {
+  /** Model 绑定配置：separator 路径分隔符；lazy 整棵 schema 的 model 默认惰性 */
+  modelOptions?: {
     separator?: string  // 默认 '.'
+    lazy?: boolean       // true 时所有未显式设置 lazy 的 model 均不预写 state
   }
   
   /** 渲染器选项 */

@@ -20,8 +20,21 @@ export class AttrsBuilder {
   constructor(
     private getState: (() => any) | undefined,
     private pathResolver: ModelPathResolver,
-    private eventHandler: EventHandler
+    private eventHandler: EventHandler,
+    /** 整棵 schema 的 model 默认惰性，节点未显式设置 lazy 时使用 */
+    private modelLazy?: boolean
   ) {}
+
+  /**
+   * 解析当前节点的 model lazy：节点显式设置 lazy 时用节点值，否则用整棵 schema 的 modelLazy 默认值
+   */
+  private resolveModelLazy(model: unknown): boolean {
+    const nodeLazy =
+      model != null && typeof model === 'object' && typeof (model as { lazy?: boolean }).lazy === 'boolean'
+        ? (model as { lazy: boolean }).lazy
+        : undefined
+    return nodeLazy ?? this.modelLazy ?? false
+  }
 
   /**
    * 检查props是否完全静态（不包含表达式）
@@ -71,7 +84,7 @@ export class AttrsBuilder {
         modelPathStack
       )
       const schemaDefault = this.pathResolver.getModelDefault(schema.model)
-      const schemaLazy = this.pathResolver.getModelLazy(schema.model)
+      const schemaLazy = this.resolveModelLazy(schema.model)
       const binding = createModelBinding(
         schema.type,
         modelPath,
@@ -162,7 +175,7 @@ export class AttrsBuilder {
         modelPathStack
       )
       const schemaDefault = this.pathResolver.getModelDefault(schema.model)
-      const schemaLazy = this.pathResolver.getModelLazy(schema.model)
+      const schemaLazy = this.resolveModelLazy(schema.model)
       const binding = createModelBinding(
         schema.type,
         modelPath,

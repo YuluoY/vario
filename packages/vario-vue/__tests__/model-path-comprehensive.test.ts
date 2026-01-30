@@ -372,7 +372,7 @@ describe('Model 路径自动解析 - 全面测试', () => {
   })
 
   describe('4. 配置选项', () => {
-    it('应该支持 modelPath 对象配置（如 separator）', async () => {
+    it('应该支持 modelOptions 对象配置（如 separator）', async () => {
       const schema: VueSchemaNode = {
         type: 'div',
         model: { path: 'form', scope: true },
@@ -383,7 +383,7 @@ describe('Model 路径自动解析 - 全面测试', () => {
 
       const { state, vnode } = useVario(schema, {
         state: {},
-        modelPath: { separator: '.' }
+        modelOptions: { separator: '.' }
       })
 
       await nextTick()

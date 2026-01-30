@@ -46,6 +46,12 @@ const schema: VueSchemaNode = {
 
 适用于可选字段，希望 state 只包含用户实际填写的内容。
 
+**整棵 schema 默认惰性**：在 `useVario` 的 options 中设置 `modelOptions: { lazy: true }`，则所有未在节点上显式设置 `lazy` 的 model 均不预写 state；节点上可单独写 `lazy: false` 覆盖。
+
+```typescript
+const { vnode, state } = useVario(schema, { state: {}, modelOptions: { lazy: true } })
+```
+
 ## 明确路径与扁平路径
 
 使用完整路径时直接使用，不会拼接。容器建议用 `scope`：
@@ -87,13 +93,13 @@ const { state } = useVario(schema, { state: { items: ['', ''] } })
 // 第 1 行输入 "a" → state.items[0] === 'a'
 ```
 
-## modelPath 配置
+## modelOptions 配置
 
-仅保留与格式相关的配置（如路径分隔符）：
+路径分隔符与默认惰性等：
 
 ```typescript
 const { state } = useVario(schema, {
-  modelPath: { separator: '.' },
+  modelOptions: { separator: '.', lazy: true },
   state: {}
 })
 ```
