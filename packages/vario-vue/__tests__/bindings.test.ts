@@ -106,4 +106,35 @@ describe('createModelBinding', () => {
       expect(ctx._get('user.name')).toBe('Jane')
     })
   })
+
+  describe('schema 默认值', () => {
+    it('当状态未初始化时使用 schemaDefault 并写回状态', () => {
+      const emptyCtx = createRuntimeContext({})
+      const binding = createModelBinding(
+        'input',
+        'name',
+        emptyCtx,
+        undefined,
+        undefined,
+        undefined,
+        '默认名'
+      )
+      expect(binding.value).toBe('默认名')
+      expect(emptyCtx._get('name')).toBe('默认名')
+    })
+
+    it('状态已有值时不用 schemaDefault', () => {
+      const binding = createModelBinding(
+        'input',
+        'name',
+        ctx,
+        undefined,
+        undefined,
+        undefined,
+        '默认名'
+      )
+      expect(binding.value).toBe('Test')
+      expect(ctx._get('name')).toBe('Test')
+    })
+  })
 })

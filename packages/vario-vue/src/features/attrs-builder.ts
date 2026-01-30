@@ -58,9 +58,11 @@ export class AttrsBuilder {
   ): Record<string, any> {
     const attrs = { ...staticAttrs }
 
-    // 仅当 model 为字符串时创建绑定；model 为对象（scope）时不绑定
+    // 有 path 且非仅作用域（scope: true）时创建绑定；对象形式可带 default
     const modelPathStr = this.pathResolver.getModelPath(schema.model)
-    const shouldBindModel = modelPathStr && typeof schema.model === 'string'
+    const scopeOnly =
+      typeof schema.model === 'object' && schema.model !== null && (schema.model as { scope?: boolean }).scope === true
+    const shouldBindModel = !!modelPathStr && !scopeOnly
     if (shouldBindModel && modelPathStr) {
       const modelPath = this.pathResolver.resolveModelPath(
         modelPathStr,
@@ -68,7 +70,16 @@ export class AttrsBuilder {
         ctx,
         modelPathStack
       )
-      const binding = createModelBinding(schema.type, modelPath, ctx, component, this.getState)
+      const schemaDefault = this.pathResolver.getModelDefault(schema.model)
+      const binding = createModelBinding(
+        schema.type,
+        modelPath,
+        ctx,
+        component,
+        this.getState,
+        undefined,
+        schemaDefault
+      )
       Object.assign(attrs, binding)
     }
     
@@ -136,9 +147,11 @@ export class AttrsBuilder {
       attrsParts.push(evalProps(schema.props, ctx))
     }
     
-    // 2. 处理双向绑定（支持多 model）。仅当 model 为字符串时创建绑定
+    // 2. 处理双向绑定（支持多 model）。有 path 且非仅作用域时创建绑定，支持 model.default
     const modelPathStr = this.pathResolver.getModelPath(schema.model)
-    const shouldBindModel = modelPathStr && typeof schema.model === 'string'
+    const scopeOnly =
+      typeof schema.model === 'object' && schema.model !== null && (schema.model as { scope?: boolean }).scope === true
+    const shouldBindModel = !!modelPathStr && !scopeOnly
     if (shouldBindModel && modelPathStr) {
       const modelPath = this.pathResolver.resolveModelPath(
         modelPathStr,
@@ -146,7 +159,16 @@ export class AttrsBuilder {
         ctx,
         modelPathStack
       )
-      const binding = createModelBinding(schema.type, modelPath, ctx, component, this.getState)
+      const schemaDefault = this.pathResolver.getModelDefault(schema.model)
+      const binding = createModelBinding(
+        schema.type,
+        modelPath,
+        ctx,
+        component,
+        this.getState,
+        undefined,
+        schemaDefault
+      )
       attrsParts.push(binding)
     }
 

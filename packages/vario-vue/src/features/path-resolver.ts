@@ -37,6 +37,14 @@ export class ModelPathResolver {
   }
 
   /**
+   * 从 model（string | { path, scope?, default? }）中取出默认值，仅对象形式且含 default 时有值
+   */
+  getModelDefault(model: unknown): unknown {
+    if (model == null || typeof model !== 'object') return undefined
+    return (model as { default?: unknown }).default
+  }
+
+  /**
    * 更新 model 路径栈
    * 
    * 根据当前节点的 model 属性更新路径栈，供子级使用。

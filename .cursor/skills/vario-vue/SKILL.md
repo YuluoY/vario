@@ -1,11 +1,22 @@
 ---
 name: vario-vue
-description: Use @variojs/vue to build Vue 3 applications with declarative JSON Schema. Supports bidirectional binding, expressions, loops, Vue features (refs, lifecycle, provide/inject, teleport), and Composition API integration. Use when building Vue components with Schema-driven UI, implementing form components, creating dynamic UIs, or working with @variojs/vue.
+description: Build Vue 3 applications using @variojs/vue with declarative JSON Schema. Provides bidirectional binding, expressions, loops, Vue features (refs, lifecycle, provide/inject, teleport), and Composition API integration. Use when building Schema-driven Vue components, implementing form components, creating dynamic UIs, working with @variojs/vue, useVario composable, VueSchemaNode, or declarative UI patterns.
 ---
 
 # Vario Vue Integration
 
 使用 `@variojs/vue` 在 Vue 3 中通过声明式 JSON Schema 构建 UI。
+
+## 何时使用此技能
+
+在以下场景使用此技能：
+- 使用 `@variojs/vue` 构建 Vue 组件
+- 需要 Schema 驱动的 UI 开发
+- 实现表单组件和动态 UI
+- 使用 `useVario` composable
+- 编写 `VueSchemaNode` 定义
+- 需要双向绑定、表达式、循环渲染
+- 集成 Vue 特性（refs、生命周期、provide/inject、teleport）
 
 ## 核心 API
 
@@ -76,6 +87,8 @@ interface VueSchemaNode {
   model: 'user.name'              // 嵌套路径（自动创建对象结构）
   // 或
   model: { path: 'user.name', scope: true }  // 作用域模式
+  // 或
+  model: { path: 'name', default: '张三' }   // 带默认值（状态未初始化时使用）
 }
 ```
 
@@ -341,6 +354,29 @@ const { vnode, state, refs } = useVario(schema, {
 refs.inputRef.value?.focus()
 ```
 
+## 快速参考
+
+### 安装
+```bash
+pnpm add @variojs/vue @variojs/core @variojs/schema
+```
+
+### 最小示例
+```typescript
+import { useVario } from '@variojs/vue'
+import type { VueSchemaNode } from '@variojs/vue'
+
+const schema: VueSchemaNode = {
+  type: 'div',
+  children: [
+    { type: 'ElInput', model: 'name' },
+    { type: 'div', children: '{{ name }}' }
+  ]
+}
+
+const { vnode, state } = useVario(schema, { state: { name: '' } })
+```
+
 ## 最佳实践
 
 1. **状态管理**：使用扁平结构，通过路径访问嵌套数据
@@ -357,3 +393,9 @@ refs.inputRef.value?.focus()
 - Model 路径支持自动创建对象结构，使用 `.` 分隔符
 - 表达式使用 `{{ }}` 语法，支持完整的 JavaScript 表达式
 - 组件类型可以是原生元素（`div`, `input`）或注册的 Vue 组件（`ElInput`, `ElButton`）
+
+## 详细文档
+
+- **API 参考**：见 [references/api.md](references/api.md)
+- **Schema 指南**：见 [references/schema-guide.md](references/schema-guide.md)
+- **示例代码**：见 `assets/examples/` 目录

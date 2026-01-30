@@ -25,26 +25,22 @@ const versionTypes = [
   { name: chalk.red('重大更新 (major)'), value: 'major' }
 ]
 
-function bumpVersion(pkgPath, typeOrVersion) {
-  const pkgFile = path.join(pkgPath, 'package.json')
-  const pkg = JSON.parse(fs.readFileSync(pkgFile, 'utf8'))
-  const oldVersion = pkg.version
-
-  // If caller passed an explicit semver string, use it directly
-  if (/^\d+\.\d+\.\d+$/.test(typeOrVersion)) {
-    const newVersion = typeOrVersion
-    pkg.version = newVersion
-    fs.writeFileSync(pkgFile, JSON.stringify(pkg, null, 2))
-    return { oldVersion, newVersion }
-  }
-
-  // Otherwise treat as bump type
-  let [major, minor, patch] = oldVersion.split('.').map(Number)
+/** 仅计算新版本，不写文件（用于预览） */
+function computeNewVersion(currentVersion, typeOrVersion) {
+  if (/^\d+\.\d+\.\d+$/.test(typeOrVersion)) return typeOrVersion
+  let [major, minor, patch] = currentVersion.split('.').map(Number)
   const type = typeOrVersion
   if (type === 'patch') patch += 1
   else if (type === 'minor') { minor += 1; patch = 0 }
   else if (type === 'major') { major += 1; minor = 0; patch = 0 }
-  const newVersion = [major, minor, patch].join('.')
+  return [major, minor, patch].join('.')
+}
+
+function bumpVersion(pkgPath, typeOrVersion) {
+  const pkgFile = path.join(pkgPath, 'package.json')
+  const pkg = JSON.parse(fs.readFileSync(pkgFile, 'utf8'))
+  const oldVersion = pkg.version
+  const newVersion = computeNewVersion(oldVersion, typeOrVersion)
   pkg.version = newVersion
   fs.writeFileSync(pkgFile, JSON.stringify(pkg, null, 2))
   return { oldVersion, newVersion }
@@ -118,24 +114,80 @@ async function main() {
     toPublish = packages
   }
 
-  // First pass: bump versions and collect version map
+  const bumpArg = answers.manualVersionMode ? answers.manualVersion : answers.versionType
+
+  // 仅预览：计算将得到的新版本，不写文件
   const versionMap = {}
+  const previewLines = []
   for (const pkgName of toPublish) {
     const pkgPath = path.join(__dirname, '..', 'packages', pkgName)
     if (!fs.existsSync(pkgPath)) {
       console.log(chalk.bgRed.white(`包不存在: ${pkgName}`))
       continue
     }
-    const bumpArg = answers.manualVersionMode ? answers.manualVersion : answers.versionType
-    const { oldVersion, newVersion } = bumpVersion(pkgPath, bumpArg)
+    const pkgFile = path.join(pkgPath, 'package.json')
+    const pkg = JSON.parse(fs.readFileSync(pkgFile, 'utf8'))
+    const oldVersion = pkg.version
+    const newVersion = computeNewVersion(oldVersion, bumpArg)
     versionMap[pkgName] = newVersion
+    previewLines.push(`  ${chalk.cyan(pkgName)} ${oldVersion} → ${chalk.green(newVersion)}`)
   }
 
-  // Second pass: ensure publishConfig only（不修改 dependencies，本地始终保持 workspace:*）
+  console.log(chalk.bold('\n将执行以下操作：'))
+  console.log(chalk.gray('  1. 提升上述包版本并写回 package.json'))
+  console.log(chalk.gray('  2. 检查 npm 登录'))
+  console.log(chalk.gray('  3. 构建并执行 npm publish'))
+  previewLines.forEach(line => console.log(line))
+
+  const { confirmed } = await inquirer.prompt([{
+    type: 'confirm',
+    name: 'confirmed',
+    message: chalk.bold('确认发布？确认后才会修改版本并执行发布。'),
+    default: false
+  }])
+  if (!confirmed) {
+    console.log(chalk.yellow('已取消，未做任何修改。'))
+    return
+  }
+
+  // 保存原始 package.json，用于中途退出时还原
+  const savedPkgFiles = {}
   for (const pkgName of toPublish) {
     const pkgPath = path.join(__dirname, '..', 'packages', pkgName)
-    if (!fs.existsSync(pkgPath)) continue
-    ensurePublishConfig(pkgPath)
+    const pkgFile = path.join(pkgPath, 'package.json')
+    if (fs.existsSync(pkgFile)) {
+      savedPkgFiles[pkgFile] = fs.readFileSync(pkgFile, 'utf8')
+    }
+  }
+  const restoreAll = () => {
+    for (const [file, content] of Object.entries(savedPkgFiles)) {
+      try { fs.writeFileSync(file, content) } catch (e) {}
+    }
+    console.log(chalk.yellow('\n已还原上述包的 package.json。'))
+  }
+  const onExit = () => { restoreAll(); process.exit(1) }
+  process.on('SIGINT', onExit)
+  process.on('SIGTERM', onExit)
+
+  try {
+    // First pass: bump versions
+    for (const pkgName of toPublish) {
+      const pkgPath = path.join(__dirname, '..', 'packages', pkgName)
+      if (!fs.existsSync(pkgPath)) continue
+      bumpVersion(pkgPath, bumpArg)
+    }
+
+    // Second pass: ensure publishConfig
+    for (const pkgName of toPublish) {
+      const pkgPath = path.join(__dirname, '..', 'packages', pkgName)
+      if (!fs.existsSync(pkgPath)) continue
+      ensurePublishConfig(pkgPath)
+    }
+  } catch (err) {
+    restoreAll()
+    process.off('SIGINT', onExit)
+    process.off('SIGTERM', onExit)
+    throw err
   }
 
   const npmNameMap = {
@@ -186,6 +238,7 @@ async function main() {
 
   // Third pass: publish（发布前临时把 workspace:* 换成 ^version，发布后恢复）
   const depVersionMap = buildDepVersionMap()
+  let publishFailed = false
   for (const pkgName of toPublish) {
     const pkgPath = path.join(__dirname, '..', 'packages', pkgName)
     if (!fs.existsSync(pkgPath)) continue
@@ -397,7 +450,11 @@ async function main() {
       if (output) console.log(chalk.gray(output))
       console.log(chalk.bgGreen.black(`✓ 发布成功: ${pkg.name}@${newVersion}`))
     } catch (e) {
+      publishFailed = true
       console.log(chalk.bgRed.white(`✗ 发布失败: ${pkgName}`))
+      process.off('SIGINT', onExit)
+      process.off('SIGTERM', onExit)
+      restoreAll()
       
       // Combine stdout and stderr for error detection
       const stdout = e.stdout ? e.stdout.toString() : ''
@@ -447,12 +504,17 @@ async function main() {
         if (stderr) console.log(chalk.red('STDERR:', stderr))
         if (e.message && !errorOutput.includes(e.message)) console.log(chalk.red('ERROR:', e.message))
       }
+      process.exit(1)
     }
     finally {
-      restoreDeps()
+      if (!publishFailed) restoreDeps()
     }
     console.log(chalk.bold(`------------------------------\n`))
   }
+
+  // 发布流程已结束，取消「退出时还原」监听，避免后续 tag 询问时误还原
+  process.off('SIGINT', onExit)
+  process.off('SIGTERM', onExit)
 }
 
 // 创建 Git tag 的辅助函数

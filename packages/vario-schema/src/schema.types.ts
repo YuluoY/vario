@@ -11,11 +11,16 @@
 import type { Action, RuntimeContext } from '@variojs/core'
 
 /**
- * model 作用域配置（不绑定本节点，仅为子节点提供路径根）
+ * model 作用域/绑定配置
+ * - path: 绑定路径
+ * - scope: true 时仅作子节点路径作用域，不在本节点绑定
+ * - default: 当状态中该路径值为 undefined 时使用的默认值（仅在本节点绑定时生效）
  */
 export interface ModelScopeConfig {
   readonly path: string
   readonly scope?: boolean
+  /** 状态未初始化时使用的默认值 */
+  readonly default?: unknown
 }
 
 /**
@@ -92,10 +97,11 @@ export interface SchemaNode<TState extends Record<string, unknown> = Record<stri
    * 双向绑定路径或作用域配置（单 model）
    * 
    * - 字符串：绑定路径，在 autoResolve 时会参与路径栈并创建绑定
-   * - 对象且 scope: true：仅作为子节点路径作用域，不在本节点创建绑定
+   * - 对象：path 必填；scope: true 时仅作子节点路径作用域不绑定；default 为状态未初始化时的默认值
    * 
    * @example "user.name"
    * @example { path: "form", scope: true }
+   * @example { path: "name", default: "张三" }
    */
   readonly model?: string | ModelScopeConfig
 

@@ -8,6 +8,7 @@
 ## 2. model 与路径
 
 - **容器**用 `model: { path: 'form', scope: true }`，不在容器上绑 v-model；**叶子**用 `model: 'fieldName'` 或完整路径。
+- 状态未初始化时可用 **默认值**：`model: { path: 'name', default: '张三' }`，会写回状态。
 - 循环用 `model: { path: 'list', scope: true }` + 子节点扁平路径，或循环内需要绑定“当前项本身”时用 `model: '.'`。
 - 数组下标尽量用 **[]** 写法（如 `items[0].name`），语义更清晰，也和 Core 路径解析一致。
 

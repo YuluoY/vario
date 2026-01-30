@@ -52,13 +52,14 @@ import type { LoopConfig } from '@variojs/schema'
 ## 双向绑定 model
 
 - **字符串**：绑定到该路径，并参与路径栈（子节点可写相对路径）。
-- **对象**：`{ path: string, scope?: boolean }`。`scope: true` 表示仅作子节点路径根，本节点不绑定。
+- **对象**：`{ path: string, scope?: boolean, default?: unknown }`。`scope: true` 表示仅作子节点路径根，本节点不绑定；`default` 表示状态未初始化时使用的默认值（会写回状态）。
 
 ```typescript
 { type: 'input', model: 'user.name', props: { placeholder: '姓名' } }
 { type: 'form', model: { path: 'form', scope: true }, children: [
   { type: 'input', model: 'name' }  // 等价 form.name
 ]}
+{ type: 'input', model: { path: 'name', default: '张三' } }  // 带默认值
 ```
 
 ## 事件 events
@@ -83,7 +84,7 @@ import type { LoopConfig } from '@variojs/schema'
 
 ## ModelScopeConfig、LoopConfig
 
-- **ModelScopeConfig**：`{ path: string; scope?: boolean }`，仅用于 model 的对象形式。
+- **ModelScopeConfig**：`{ path: string; scope?: boolean; default?: unknown }`，仅用于 model 的对象形式；`default` 为状态未初始化时的默认值。
 - **LoopConfig**：`{ items: string; itemKey: string; indexKey?: string }`。
 
 在 [验证](/packages/schema/validation) 中会说明这些字段如何在运行时被校验。

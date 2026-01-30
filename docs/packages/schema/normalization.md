@@ -22,7 +22,7 @@ const normalizedNode = normalizeSchemaNode(node)
 - **events**：键名与 Action 列表保留，内部结构按需统一（如去掉空数组、合并相同 type 等，以实现为准）。
 - **cond / show**：trim。
 - **loop**：保证 `items`、`itemKey` 存在且格式正确，`indexKey` 可选。
-- **model**：字符串则 trim；对象则保证 `path` 存在，`scope` 为布尔。
+- **model**：字符串则 trim；对象则保证 `path` 存在，`scope` 为布尔，`default` 可选。
 
 具体规则以 **normalizer** 源码为准；这里强调的是“输出格式一致、便于比较与缓存”。
 
