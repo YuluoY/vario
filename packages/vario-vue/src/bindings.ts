@@ -132,6 +132,7 @@ function getDefaultValue(prop: string): unknown {
  * @param getState 获取响应式状态的函数（用于 Vue 响应式追踪）
  * @param modelName 具名 model（可选，如 "checked", "value"）
  * @param schemaDefault 当状态未初始化时使用的默认值（来自 schema model.default）
+ * @param schemaLazy true 时不预写 state，仅当用户修改该绑定值后才写入 state
  * @returns 包含 prop 和 event handler 的对象
  */
 export function createModelBinding(
@@ -141,7 +142,8 @@ export function createModelBinding(
   component?: unknown,
   getState?: () => Record<string, unknown>,
   modelName?: string,
-  schemaDefault?: unknown
+  schemaDefault?: unknown,
+  schemaLazy?: boolean
 ): Record<string, unknown> {
   // 尝试解析组件（如果未提供或者是字符串）
   let resolvedComponent = component
@@ -166,13 +168,15 @@ export function createModelBinding(
     ? getPathValue(getState(), modelPath)
     : ctx._get(modelPath)
   
-  // 如果值是 undefined，使用 schema 默认值或按 prop 推断的默认值，并写回状态
+  // 如果值是 undefined，使用 schema 默认值或按 prop 推断的默认值；lazy 时不写回 state
   if (value === undefined) {
     const defaultValue =
       schemaDefault !== undefined ? schemaDefault : getDefaultValue(config.prop)
     if (defaultValue !== undefined) {
       value = defaultValue
-      ctx._set(modelPath as any, defaultValue as any)
+      if (!schemaLazy) {
+        ctx._set(modelPath as any, defaultValue as any)
+      }
     }
   }
   

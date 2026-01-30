@@ -137,4 +137,54 @@ describe('createModelBinding', () => {
       expect(ctx._get('name')).toBe('Test')
     })
   })
+
+  describe('schema lazy', () => {
+    it('lazy 为 true 时状态未初始化不写回 state，组件仍显示默认值', () => {
+      const emptyCtx = createRuntimeContext({})
+      const binding = createModelBinding(
+        'input',
+        'optional',
+        emptyCtx,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        true
+      )
+      expect(binding.value).toBe('')
+      expect(emptyCtx._get('optional')).toBe(undefined)
+    })
+
+    it('lazy 为 true 时用户修改值后写入 state', () => {
+      const emptyCtx = createRuntimeContext({})
+      const binding = createModelBinding(
+        'input',
+        'optional',
+        emptyCtx,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        true
+      )
+      binding.onInput('用户输入')
+      expect(emptyCtx._get('optional')).toBe('用户输入')
+    })
+
+    it('lazy 为 false 时行为与默认一致，未初始化会写回', () => {
+      const emptyCtx = createRuntimeContext({})
+      const binding = createModelBinding(
+        'input',
+        'name',
+        emptyCtx,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        false
+      )
+      expect(binding.value).toBe('')
+      expect(emptyCtx._get('name')).toBe('')
+    })
+  })
 })

@@ -71,6 +71,7 @@ export class AttrsBuilder {
         modelPathStack
       )
       const schemaDefault = this.pathResolver.getModelDefault(schema.model)
+      const schemaLazy = this.pathResolver.getModelLazy(schema.model)
       const binding = createModelBinding(
         schema.type,
         modelPath,
@@ -78,7 +79,8 @@ export class AttrsBuilder {
         component,
         this.getState,
         undefined,
-        schemaDefault
+        schemaDefault,
+        schemaLazy
       )
       Object.assign(attrs, binding)
     }
@@ -160,6 +162,7 @@ export class AttrsBuilder {
         modelPathStack
       )
       const schemaDefault = this.pathResolver.getModelDefault(schema.model)
+      const schemaLazy = this.pathResolver.getModelLazy(schema.model)
       const binding = createModelBinding(
         schema.type,
         modelPath,
@@ -167,7 +170,8 @@ export class AttrsBuilder {
         component,
         this.getState,
         undefined,
-        schemaDefault
+        schemaDefault,
+        schemaLazy
       )
       attrsParts.push(binding)
     }

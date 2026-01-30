@@ -89,6 +89,8 @@ interface VueSchemaNode {
   model: { path: 'user.name', scope: true }  // 作用域模式
   // 或
   model: { path: 'name', default: '张三' }   // 带默认值（状态未初始化时使用）
+  // 或
+  model: { path: 'optional', lazy: true }    // 惰性：不预写 state，仅用户修改后才写入
 }
 ```
 

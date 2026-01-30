@@ -10,6 +10,7 @@ Vario 支持智能的 model 路径解析：自动拼接扁平路径，并自动�
 | **字符串** `model: "."` | 不压栈 | 栈非空时绑定到「当前栈路径」 | 循环中绑定到 `items[0]`、`items[1]` 等元素本身 |
 | **对象** `model: { path: "form", scope: true }` | 压栈 `path` | **不**绑定 | 仅作层级的容器（如表单根、区块） |
 | **对象** `model: { path: "name", default: "张三" }` | 压栈 | 绑定 | 状态未初始化时使用默认值并写回状态 |
+| **对象** `model: { path: "optional", lazy: true }` | 压栈 | 绑定 | 惰性：不预写 state，仅当用户修改该绑定值后才写入 |
 
 子节点的扁平路径会自动与父级路径栈拼接。
 
@@ -34,6 +35,16 @@ const schema: VueSchemaNode = {
 { type: 'ElInput', model: { path: 'name', default: '张三' } }
 { type: 'ElCheckbox', model: { path: 'agreed', default: true } }
 ```
+
+## 惰性（lazy）
+
+当使用对象形式且不设 `scope: true` 时，可加 `lazy: true`。此时不会预写 state：该路径在状态中保持未定义，组件仍显示默认值（如空字符串）；仅当用户修改该绑定值后才会写入 state。
+
+```typescript
+{ type: 'ElInput', model: { path: 'optional', lazy: true } }
+```
+
+适用于可选字段，希望 state 只包含用户实际填写的内容。
 
 ## 明确路径与扁平路径
 
@@ -96,6 +107,7 @@ const { state } = useVario(schema, {
 | 当前栈路径 | `model: "."` | 绑定到当前路径栈（循环中即元素本身） |
 | 作用域（不绑定） | `model: { path: "form", scope: true }` | 仅压栈，本节点不绑定 |
 | 默认值 | `model: { path: "name", default: "张三" }` | 状态未初始化时用默认值并写回 |
+| 惰性 | `model: { path: "optional", lazy: true }` | 不预写 state，仅用户修改后写入 |
 | 数组访问 `[]` | `model: "users[0].name"` | 明确数组索引 |
 | 混合嵌套 | `model: "data[0].items[1].value"` | 自动推断数组/对象 |
 

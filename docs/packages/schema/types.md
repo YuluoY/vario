@@ -52,7 +52,7 @@ import type { LoopConfig } from '@variojs/schema'
 ## 双向绑定 model
 
 - **字符串**：绑定到该路径，并参与路径栈（子节点可写相对路径）。
-- **对象**：`{ path: string, scope?: boolean, default?: unknown }`。`scope: true` 表示仅作子节点路径根，本节点不绑定；`default` 表示状态未初始化时使用的默认值（会写回状态）。
+- **对象**：`{ path: string, scope?: boolean, default?: unknown, lazy?: boolean }`。`scope: true` 表示仅作子节点路径根，本节点不绑定；`default` 表示状态未初始化时使用的默认值（会写回状态）；`lazy: true` 表示不预写 state，仅当用户修改该绑定值后才写入。
 
 ```typescript
 { type: 'input', model: 'user.name', props: { placeholder: '姓名' } }
@@ -60,6 +60,7 @@ import type { LoopConfig } from '@variojs/schema'
   { type: 'input', model: 'name' }  // 等价 form.name
 ]}
 { type: 'input', model: { path: 'name', default: '张三' } }  // 带默认值
+{ type: 'input', model: { path: 'optional', lazy: true } }  // 惰性：仅用户修改后写入 state
 ```
 
 ## 事件 events
@@ -84,7 +85,7 @@ import type { LoopConfig } from '@variojs/schema'
 
 ## ModelScopeConfig、LoopConfig
 
-- **ModelScopeConfig**：`{ path: string; scope?: boolean; default?: unknown }`，仅用于 model 的对象形式；`default` 为状态未初始化时的默认值。
+- **ModelScopeConfig**：`{ path: string; scope?: boolean; default?: unknown; lazy?: boolean }`，仅用于 model 的对象形式；`default` 为状态未初始化时的默认值；`lazy: true` 为惰性绑定（不预写 state，仅用户修改后写入）。
 - **LoopConfig**：`{ items: string; itemKey: string; indexKey?: string }`。
 
 在 [验证](/packages/schema/validation) 中会说明这些字段如何在运行时被校验。

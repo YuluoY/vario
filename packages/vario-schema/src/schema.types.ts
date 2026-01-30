@@ -15,12 +15,15 @@ import type { Action, RuntimeContext } from '@variojs/core'
  * - path: 绑定路径
  * - scope: true 时仅作子节点路径作用域，不在本节点绑定
  * - default: 当状态中该路径值为 undefined 时使用的默认值（仅在本节点绑定时生效）
+ * - lazy: true 时不预写 state，仅在该 model 值变化后才写入 state
  */
 export interface ModelScopeConfig {
   readonly path: string
   readonly scope?: boolean
   /** 状态未初始化时使用的默认值 */
   readonly default?: unknown
+  /** true 时不预写 state，仅当用户修改该绑定值后才写入 state */
+  readonly lazy?: boolean
 }
 
 /**
@@ -102,6 +105,7 @@ export interface SchemaNode<TState extends Record<string, unknown> = Record<stri
    * @example "user.name"
    * @example { path: "form", scope: true }
    * @example { path: "name", default: "张三" }
+   * @example { path: "optional", lazy: true }
    */
   readonly model?: string | ModelScopeConfig
 
