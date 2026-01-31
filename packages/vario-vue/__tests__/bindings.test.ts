@@ -155,7 +155,7 @@ describe('createModelBinding', () => {
       expect(emptyCtx._get('optional')).toBe(undefined)
     })
 
-    it('lazy 为 true 时用户修改值后写入 state', () => {
+    it('lazy 为 true 时用户修改值后写入 state', async () => {
       const emptyCtx = createRuntimeContext({})
       const binding = createModelBinding(
         'input',
@@ -167,6 +167,8 @@ describe('createModelBinding', () => {
         undefined,
         true
       )
+      // 等待 setTimeout 激活事件处理器
+      await new Promise(resolve => setTimeout(resolve, 10))
       binding.onInput('用户输入')
       expect(emptyCtx._get('optional')).toBe('用户输入')
     })

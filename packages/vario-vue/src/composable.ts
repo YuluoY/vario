@@ -77,9 +77,9 @@ export interface UseVarioOptions<TState extends Record<string, unknown> = Record
   components?: Record<string, any>
   /** 表达式求值配置 */
   exprOptions?: ExpressionOptions
-  /** 
-   * Model 绑定配置（路径分隔符、默认惰性等）
-   * - separator: 路径分隔符，默认 '.'
+  /**
+   * Model 绑定配置（供外部/扩展使用）
+   * - separator: 路径分隔符，默认 '.'，可供自定义路径格式
    * - lazy: 整棵 schema 的 model 默认惰性，true 时不预写 state
    */
   modelOptions?: {

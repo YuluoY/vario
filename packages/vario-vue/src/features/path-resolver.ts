@@ -45,14 +45,6 @@ export class ModelPathResolver {
   }
 
   /**
-   * 从 model（string | { path, scope?, default?, lazy? }）中取出 lazy，仅对象形式且 lazy === true 时为 true
-   */
-  getModelLazy(model: unknown): boolean {
-    if (model == null || typeof model !== 'object') return false
-    return (model as { lazy?: boolean }).lazy === true
-  }
-
-  /**
    * 更新 model 路径栈
    * 
    * 根据当前节点的 model 属性更新路径栈，供子级使用。

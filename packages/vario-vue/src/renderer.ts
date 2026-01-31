@@ -27,10 +27,10 @@ import { LifecycleWrapper } from './features/lifecycle-wrapper.js'
 import type { VueSchemaNode } from './types.js'
 
 /**
- * Model 绑定相关配置（路径分隔符、默认惰性等）
+ * Model 绑定相关配置（供外部/扩展使用）
  */
 export interface ModelOptions {
-  /** 路径分隔符（默认 '.'） */
+  /** 路径分隔符，默认 '.'，可供自定义路径格式 */
   separator?: string
   /** 整棵 schema 的 model 默认惰性：true 时所有未显式设置 lazy 的 model 均不预写 state */
   lazy?: boolean
@@ -188,13 +188,14 @@ export class VueRenderer {
     }
     
     // 构建属性（传入 component 和路径栈用于自动检测）
-    // buildAttrs 中会解析 model 路径，这里传入当前路径栈
+    // buildAttrs 中会解析 model 路径，传入父级路径栈和当前 scope 路径栈（用于具名 model）
     let attrs = this.attrsBuilder.buildAttrs(
       schema,
       ctx,
       component,
       modelPathStack,
-      (props, ctx) => this.childrenResolver.evalProps(props, ctx)
+      (props, ctx) => this.childrenResolver.evalProps(props, ctx),
+      scopePath ? currentModelPathStack : undefined
     )
     
     // 解析子节点（支持作用域插槽，传递路径栈）

@@ -163,27 +163,52 @@ export function createModelBinding(
     ? getNamedModelConfig(componentType, resolvedComponent, modelName)
     : getModelConfig(componentType, resolvedComponent)
   
-  // 获取当前值
+  // 获取当前值（从用户传入的 state 或 context 中）
   let value = getState
     ? getPathValue(getState(), modelPath)
     : ctx._get(modelPath)
   
-  // 如果值是 undefined，使用 schema 默认值或按 prop 推断的默认值；lazy 时不写回 state
-  if (value === undefined) {
+  // 检查用户传入的 state 中是否已存在该值
+  const stateExists = value !== undefined
+  
+  // 如果 state 中不存在该值，使用 schema 默认值或按 prop 推断的默认值
+  if (!stateExists) {
     const defaultValue =
       schemaDefault !== undefined ? schemaDefault : getDefaultValue(config.prop)
     if (defaultValue !== undefined) {
       value = defaultValue
+      // 非 lazy 模式时，预写默认值到 state
+      // lazy 模式时，仅使用默认值作为本地值，不写入 state
       if (!schemaLazy) {
         ctx._set(modelPath as any, defaultValue as any)
       }
     }
   }
   
+  // 标记是否已激活（用于区分挂载阶段自动触发与用户交互）
+  // lazy 模式下，使用 setTimeout 延迟激活，避免组件挂载时的自动触发写入 state
+  let isActive = !schemaLazy
+  if (schemaLazy) {
+    setTimeout(() => {
+      isActive = true
+    }, 0)
+  }
+
   return {
     [config.prop]: value,
     [toEventHandlerName(config.event)]: (newValue: unknown) => {
-      // 直接设置到运行时上下文，会触发 onStateChange 同步到 Vue 状态
+      // 如果 state 中已存在值（用户传入），直接更新
+      if (stateExists) {
+        ctx._set(modelPath, newValue)
+        return
+      }
+
+      // lazy 模式：未激活前（挂载阶段）的更新不写入 state
+      if (schemaLazy && !isActive) {
+        return
+      }
+
+      // 用户交互，写入 state
       ctx._set(modelPath, newValue)
     }
   }

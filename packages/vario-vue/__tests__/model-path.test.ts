@@ -283,6 +283,8 @@ describe('Model 路径自动解析', () => {
       const { state, vnode } = useVario(schema, { state: {}, modelOptions: { lazy: true } })
       await nextTick()
       expect(state.form).toBeUndefined()
+      // 等待 setTimeout 激活事件处理器
+      await new Promise(resolve => setTimeout(resolve, 10))
       const nameInput = (vnode.value as any)?.children?.[0]
       if (nameInput?.props?.onInput) nameInput.props.onInput('a')
       else if (nameInput?.props?.['onUpdate:modelValue']) nameInput.props['onUpdate:modelValue']('a')

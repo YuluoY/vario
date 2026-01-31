@@ -98,23 +98,30 @@ export class AttrsBuilder {
       Object.assign(attrs, binding)
     }
     
-    // 添加具名model绑定
+    // 添加具名 model 绑定（支持 path 字符串或 { path, default?, lazy? }）
     for (const key in schema) {
       if (key.startsWith('model:')) {
         const modelName = key.slice(6)
+        const namedModel = (schema as any)[key]
+        const pathStr = this.pathResolver.getModelPath(namedModel)
+        if (!pathStr) continue
         const modelPath = this.pathResolver.resolveModelPath(
-          (schema as any)[key],
+          pathStr,
           schema,
           ctx,
           modelPathStack
         )
+        const schemaDefault = this.pathResolver.getModelDefault(namedModel)
+        const schemaLazy = this.resolveModelLazy(namedModel)
         const binding = createModelBinding(
-          schema.type, 
-          modelPath, 
-          ctx, 
-          component, 
-          this.getState, 
-          modelName
+          schema.type,
+          modelPath,
+          ctx,
+          component,
+          this.getState,
+          modelName,
+          schemaDefault,
+          schemaLazy
         )
         Object.assign(attrs, binding)
       }
@@ -136,13 +143,16 @@ export class AttrsBuilder {
    * - 批量设置属性（减少Object.assign调用）
    * - 静态属性缓存（提升性能）
    * - 事件处理器缓存（避免重复创建）
+   * 
+   * @param scopePathStack 当前节点的 scope 路径栈（用于具名 model 路径解析）
    */
   buildAttrs(
     schema: SchemaNode,
     ctx: RuntimeContext,
     component: any,
     modelPathStack: PathSegment[] = [],
-    evalProps: (props: Record<string, any>, ctx: RuntimeContext) => Record<string, any>
+    evalProps: (props: Record<string, any>, ctx: RuntimeContext) => Record<string, any>,
+    scopePathStack?: PathSegment[]
   ): Record<string, any> {
     // 检查静态属性缓存（如果props中没有表达式，可以缓存）
     const hasStaticProps = this.hasStaticProps(schema)
@@ -189,23 +199,32 @@ export class AttrsBuilder {
       attrsParts.push(binding)
     }
 
-    // 处理具名 model（model:xxx）
+    // 处理具名 model（model:xxx，支持 path 字符串或 { path, default?, lazy? }）
+    // 具名 model 使用 scopePathStack（如果当前节点是 scope）或 modelPathStack 来解析路径
+    const namedModelPathStack = scopePathStack ?? modelPathStack
     for (const key in schema) {
       if (key.startsWith('model:')) {
-        const modelName = key.slice(6) // 移除 'model:' 前缀
+        const modelName = key.slice(6)
+        const namedModel = (schema as any)[key]
+        const pathStr = this.pathResolver.getModelPath(namedModel)
+        if (!pathStr) continue
         const modelPath = this.pathResolver.resolveModelPath(
-          (schema as any)[key],
+          pathStr,
           schema,
           ctx,
-          modelPathStack
+          namedModelPathStack
         )
+        const schemaDefault = this.pathResolver.getModelDefault(namedModel)
+        const schemaLazy = this.resolveModelLazy(namedModel)
         const binding = createModelBinding(
-          schema.type, 
-          modelPath, 
-          ctx, 
-          component, 
-          this.getState, 
-          modelName
+          schema.type,
+          modelPath,
+          ctx,
+          component,
+          this.getState,
+          modelName,
+          schemaDefault,
+          schemaLazy
         )
         attrsParts.push(binding)
       }
