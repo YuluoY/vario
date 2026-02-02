@@ -75,7 +75,7 @@ export class EventHandler {
               capturedParentMap
             )
           }
-          this.executeInstructions(processedActions, eventCtx)
+          return this.executeInstructions(processedActions, eventCtx)
         }
       })
     }

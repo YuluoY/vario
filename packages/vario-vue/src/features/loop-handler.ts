@@ -16,7 +16,8 @@ export type CreateVNodeFn = (
   ctx: RuntimeContext,
   modelPathStack?: PathSegment[],
   nodeContext?: { parent?: SchemaNode; siblings?: SchemaNode[]; selfIndex?: number; path?: string },
-  parentMap?: ParentMap
+  parentMap?: ParentMap,
+  path?: string
 ) => VNode | null
 
 /**
@@ -32,12 +33,14 @@ export class LoopHandler {
   /**
    * 创建循环渲染的 VNode
    * @param parentMap 节点→父节点映射，循环项父节点为带 loop 的 schema
+   * @param parentPath 父节点 path，供 path-memo 子项 path 使用（如 "0.[1]"）
    */
   createLoopVNode(
     schema: SchemaNode,
     ctx: RuntimeContext,
     modelPathStack: PathSegment[] = [],
-    parentMap?: ParentMap
+    parentMap?: ParentMap,
+    parentPath: string = ''
   ): VNode | null {
     const { loop } = schema
     if (!loop) {
@@ -117,11 +120,13 @@ export class LoopHandler {
             parentMap.set(childSchema, schema)
           }
           const loopPathStack: PathSegment[] = [...basePathStack, index]
+          const itemPath = parentPath ? `${parentPath}.[${index}]` : `[${index}]`
           const vnode = this.createVNode(childSchema, loopCtx, loopPathStack, {
             parent: schema,
             siblings: [],
-            selfIndex: index
-          }, parentMap)
+            selfIndex: index,
+            path: itemPath
+          }, parentMap, itemPath)
           
           // 生成稳定的key（基于itemKey或index）
           if (vnode && typeof vnode === 'object' && 'key' in vnode) {

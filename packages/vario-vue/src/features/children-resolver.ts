@@ -15,7 +15,8 @@ export type CreateVNodeFn = (
   ctx: RuntimeContext,
   modelPathStack?: PathSegment[],
   nodeContext?: { parent?: SchemaNode; siblings?: SchemaNode[]; selfIndex?: number; path?: string },
-  parentMap?: ParentMap
+  parentMap?: ParentMap,
+  path?: string
 ) => any
 
 /**
@@ -29,13 +30,14 @@ export class ChildrenResolver {
 
   /**
    * 解析子节点
-   * 支持插槽（template 节点）和作用域插槽；传入 parentMap 时注册父子关系供 ctx.$parent 使用
+   * 支持插槽（template 节点）和作用域插槽；传入 parentMap / parentPath 供 ctx.$parent 与 path-memo 使用
    */
   resolveChildren(
     schema: SchemaNode,
     ctx: RuntimeContext,
     modelPathStack: PathSegment[] = [],
-    parentMap?: ParentMap
+    parentMap?: ParentMap,
+    parentPath: string = ''
   ): any {
     const children = schema.children
     if (!children) {
@@ -53,17 +55,20 @@ export class ChildrenResolver {
         ctx,
         modelPathStack,
         parentMap,
-        schema
+        schema,
+        parentPath
       )
     }
     const vnodes = (children as SchemaNode[])
       .map((child: SchemaNode, i: number) => {
         try {
+          const childPath = parentPath ? `${parentPath}.${i}` : String(i)
           return this.createVNode(child, ctx, modelPathStack, {
             parent: schema,
             siblings: children as SchemaNode[],
-            selfIndex: i
-          }, parentMap)
+            selfIndex: i,
+            path: childPath
+          }, parentMap, childPath)
         } catch (error) {
           return null
         }
@@ -81,13 +86,15 @@ export class ChildrenResolver {
     ctx: RuntimeContext,
     modelPathStack: PathSegment[] = [],
     parentMap?: ParentMap,
-    parentSchema?: SchemaNode
+    parentSchema?: SchemaNode,
+    parentPath: string = ''
   ): Record<string, (scope?: any) => any> {
     const slots: Record<string, (scope?: any) => any> = {}
     const regularChildren: any[] = []
     const createVNode = this.createVNode
 
     children.forEach((child: SchemaNode, idx: number) => {
+      const childPath = parentPath ? `${parentPath}.${idx}` : String(idx)
       if (child.type === 'template' && (child as any).slot) {
         const template = child as any
         const slotName = template.slot
@@ -107,11 +114,13 @@ export class ChildrenResolver {
             return (template.children as SchemaNode[])
               .map((c: SchemaNode, i: number) => {
                 try {
+                  const cPath = childPath ? `${childPath}.${i}` : String(i)
                   return createVNode(c, slotCtx, modelPathStack, {
                     parent: template,
                     siblings: template.children as SchemaNode[],
-                    selfIndex: i
-                  }, parentMap)
+                    selfIndex: i,
+                    path: cPath
+                  }, parentMap, cPath)
                 } catch (error) {
                   return null
                 }
@@ -125,8 +134,9 @@ export class ChildrenResolver {
           const vnode = createVNode(child, ctx, modelPathStack, {
             parent: parentSchema,
             siblings: children,
-            selfIndex: idx
-          }, parentMap)
+            selfIndex: idx,
+            path: childPath
+          }, parentMap, childPath)
           if (vnode) {
             regularChildren.push(vnode)
           }

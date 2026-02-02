@@ -26,6 +26,14 @@ import { ChildrenResolver } from './features/children-resolver.js'
 import { LifecycleWrapper } from './features/lifecycle-wrapper.js'
 import type { NodeContext } from './features/node-context.js'
 import type { ParentMap } from './features/node-context.js'
+import {
+  PathMemoCache,
+  buildSchemaId,
+  buildDepsKey,
+  getCacheKey,
+  hasLoopInSubtree,
+  hasModelInSubtree
+} from './features/path-memo.js'
 import type { VueSchemaNode } from './types.js'
 
 /**
@@ -50,6 +58,8 @@ export interface VueRendererOptions {
   getState?: () => any  // 用于创建响应式绑定的状态获取函数
   refsRegistry?: RefsRegistry  // Refs 注册表
   modelOptions?: ModelOptions  // Model 绑定配置（路径分隔符、默认惰性）
+  /** 是否启用 path-memo 缓存（默认 true），设为 false 可做升级前基准对比 */
+  usePathMemo?: boolean
 }
 
 /**
@@ -59,6 +69,9 @@ export interface VueRendererOptions {
 export class VueRenderer {
   public refsRegistry: RefsRegistry
   private getState?: () => any
+  /** path-memo：按 path 缓存子树 VNode，未变分支复用 */
+  private pathMemoCache: PathMemoCache
+  private usePathMemo: boolean
 
   // 功能模块
   private pathResolver: ModelPathResolver
@@ -93,16 +106,19 @@ export class VueRenderer {
       options.modelOptions?.lazy
     )
     this.lifecycleWrapper = new LifecycleWrapper()
-    
-    // LoopHandler 和 ChildrenResolver 需要 createVNode，支持 nodeContext / parentMap（methods 中 $parent / $siblings）
+    this.pathMemoCache = new PathMemoCache()
+    this.usePathMemo = options.usePathMemo !== false
+
+    // LoopHandler 和 ChildrenResolver 需要 createVNode，支持 nodeContext / parentMap / path（path-memo）
     const createVNodeFn = (
       schema: SchemaNode,
       ctx: RuntimeContext,
       modelPathStack?: PathSegment[],
       nodeContext?: NodeContext,
-      parentMap?: ParentMap
+      parentMap?: ParentMap,
+      path?: string
     ) =>
-      this.createVNode(schema, ctx, modelPathStack ?? [], nodeContext, parentMap)
+      this.createVNode(schema, ctx, modelPathStack ?? [], nodeContext, parentMap, path ?? nodeContext?.path ?? '')
     
     this.loopHandler = new LoopHandler(
       this.pathResolver,
@@ -120,7 +136,7 @@ export class VueRenderer {
    */
   render(schema: SchemaNode, ctx: RuntimeContext): VNode | null {
     const parentMap: ParentMap = new WeakMap()
-    const vnode = this.createVNode(schema, ctx, [], undefined, parentMap)
+    const vnode = this.createVNode(schema, ctx, [], undefined, parentMap, '')
     // 如果返回 null，返回一个空的 Fragment 作为占位符
     // Vue 需要有效的 VNode，不能是 null
     if (vnode === null || vnode === undefined) {
@@ -131,18 +147,15 @@ export class VueRenderer {
 
   /**
    * 创建 VNode
-   * @param schema Schema 节点
-   * @param ctx 运行时上下文
-   * @param modelPathStack 当前 model 路径栈（用于自动路径拼接）
-   * @param nodeContext 节点上下文（父、兄弟等），供事件中 ctx.$parent / $siblings 使用
-   * @param parentMap 节点→父节点映射，供 createNodeProxy 链式 .parent；根节点时注册 schema→null
+   * @param path 节点在 schema 树中的路径（如 ""、"0"、"0.1"、"0.[2]"），供 path-memo 缓存
    */
   private createVNode(
     schema: SchemaNode | VueSchemaNode,
     ctx: RuntimeContext,
     modelPathStack: PathSegment[] = [],
     nodeContext?: NodeContext,
-    parentMap?: ParentMap
+    parentMap?: ParentMap,
+    path: string = ''
   ): VNode {
     if (!schema || typeof schema !== 'object') {
       return h('div', { style: 'color: red; padding: 10px;' }, 'Invalid schema')
@@ -165,15 +178,14 @@ export class VueRenderer {
     }
 
     // 处理条件渲染（优化：提前返回，避免不必要的处理）
+    let condValue: unknown = true
     if (schema.cond) {
       try {
-        const condition = this.expressionEvaluator.evaluateExpr(schema.cond, ctx)
-        if (!condition) {
-          // 条件不满足，返回 null（Vue 会正确处理 null VNode）
+        condValue = this.expressionEvaluator.evaluateExpr(schema.cond, ctx)
+        if (!condValue) {
           return null as any
         }
       } catch (error) {
-        // 表达式求值错误，返回错误提示节点
         const errorMessage = error instanceof Error ? error.message : String(error)
         return h('div', { 
           style: 'color: red; padding: 10px; border: 1px solid red;' 
@@ -181,9 +193,34 @@ export class VueRenderer {
       }
     }
 
+    // show 求值（用于 path-memo 依赖键，后续 attrs 也会用到）
+    let showValue: unknown = true
+    try {
+      if (schema.show) {
+        showValue = this.expressionEvaluator.evaluateExpr(schema.show, ctx)
+      }
+    } catch {
+      showValue = true
+    }
+
+    // path-memo：不含 loop/model 子树的节点且非循环项时才缓存（含 model 时缓存会返回旧 value，导致双向绑定失效）
+    const isLoopItem = path.includes('[')
+    const noLoopInSubtree = !hasLoopInSubtree(schema)
+    const noModelInSubtree = !hasModelInSubtree(schema)
+    const canMemo = this.usePathMemo && !schema.loop && !isLoopItem && noLoopInSubtree && noModelInSubtree
+    if (canMemo) {
+      const schemaId = buildSchemaId(schema)
+      const depsKey = buildDepsKey(condValue, showValue)
+      const cacheKey = getCacheKey(path, schemaId, depsKey)
+      const cached = this.pathMemoCache.get(cacheKey)
+      if (cached !== undefined) {
+        return cached
+      }
+    }
+
     // 处理列表渲染
     if (schema.loop) {
-      const loopVNode = this.loopHandler.createLoopVNode(schema, ctx, modelPathStack, parentMap)
+      const loopVNode = this.loopHandler.createLoopVNode(schema, ctx, modelPathStack, parentMap, path)
       return loopVNode || null as any
     }
 
@@ -223,18 +260,19 @@ export class VueRenderer {
       parentMap
     )
 
-    // 解析子节点（支持作用域插槽，传递路径栈与 parentMap）
+    // 解析子节点（支持作用域插槽，传递路径栈、parentMap、path 供 path-memo）
     let children = this.childrenResolver.resolveChildren(
       schema,
       ctx,
       currentModelPathStack,
-      parentMap
+      parentMap,
+      path
     )
     
-    // 处理可见性控制（v-show，优化：错误处理）
+    // 处理可见性控制（v-show，复用 path-memo 阶段求得的 showValue）
     if (schema.show) {
       try {
-        const isVisible = this.expressionEvaluator.evaluateExpr(schema.show, ctx)
+        const isVisible = !!showValue
         if (!isVisible) {
           // 确保 style 是对象格式
           const currentStyle = attrs.style
@@ -335,7 +373,15 @@ export class VueRenderer {
     if (shouldTeleport(vueSchema.teleport)) {
       vnode = createTeleport(vueSchema.teleport, vnode)
     }
-    
+
+    // path-memo：不含 loop 子树的节点且非循环项时缓存子树 VNode
+    if (canMemo) {
+      const schemaId = buildSchemaId(schema)
+      const depsKey = buildDepsKey(condValue, showValue)
+      const cacheKey = getCacheKey(path, schemaId, depsKey)
+      this.pathMemoCache.set(cacheKey, vnode)
+    }
+
     return vnode
   }
 
@@ -345,6 +391,14 @@ export class VueRenderer {
    */
   public clearComponentCache(): void {
     this.componentResolver.clearComponentCache()
+  }
+
+  /**
+   * 清除 path-memo 缓存
+   * 用于 schema 结构大变或需强制全量重算时
+   */
+  public clearPathMemoCache(): void {
+    this.pathMemoCache.clear()
   }
 
   /**
