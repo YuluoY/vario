@@ -10,6 +10,8 @@ import type { PathSegment } from '@variojs/core'
 import { createModelBinding } from '../bindings.js'
 import type { ModelPathResolver } from './path-resolver.js'
 import type { EventHandler } from './event-handler.js'
+import type { NodeContext } from './node-context.js'
+import type { ParentMap } from './node-context.js'
 
 /**
  * 属性构建器
@@ -67,7 +69,9 @@ export class AttrsBuilder {
     ctx: RuntimeContext,
     component: any,
     staticAttrs: Record<string, any>,
-    modelPathStack: PathSegment[] = []
+    modelPathStack: PathSegment[] = [],
+    nodeContext?: NodeContext,
+    parentMap?: ParentMap
   ): Record<string, any> {
     const attrs = { ...staticAttrs }
 
@@ -129,10 +133,10 @@ export class AttrsBuilder {
     
     // 添加事件处理器
     if (schema.events) {
-      const eventHandlers = this.eventHandler.getEventHandlers(schema, ctx)
+      const eventHandlers = this.eventHandler.getEventHandlers(schema, ctx, nodeContext, parentMap)
       Object.assign(attrs, eventHandlers)
     }
-    
+
     return attrs
   }
 
@@ -145,6 +149,8 @@ export class AttrsBuilder {
    * - 事件处理器缓存（避免重复创建）
    * 
    * @param scopePathStack 当前节点的 scope 路径栈（用于具名 model 路径解析）
+   * @param nodeContext 节点上下文（父、兄弟等），供事件中 ctx.$parent / $siblings 使用
+   * @param parentMap 节点→父节点映射，供 createNodeProxy 链式 .parent
    */
   buildAttrs(
     schema: SchemaNode,
@@ -152,15 +158,23 @@ export class AttrsBuilder {
     component: any,
     modelPathStack: PathSegment[] = [],
     evalProps: (props: Record<string, any>, ctx: RuntimeContext) => Record<string, any>,
-    scopePathStack?: PathSegment[]
+    scopePathStack?: PathSegment[],
+    nodeContext?: NodeContext,
+    parentMap?: ParentMap
   ): Record<string, any> {
-    // 检查静态属性缓存（如果props中没有表达式，可以缓存）
     const hasStaticProps = this.hasStaticProps(schema)
     if (hasStaticProps) {
       const cached = this.staticAttrsCache.get(schema)
       if (cached) {
-        // 合并动态部分（model绑定、事件）
-        return this.mergeDynamicAttrs(schema, ctx, component, cached, modelPathStack)
+        return this.mergeDynamicAttrs(
+          schema,
+          ctx,
+          component,
+          cached,
+          modelPathStack,
+          nodeContext,
+          parentMap
+        )
       }
     }
 
@@ -232,7 +246,7 @@ export class AttrsBuilder {
     
     // 3. 处理事件（使用缓存）
     if (schema.events) {
-      const eventHandlers = this.eventHandler.getEventHandlers(schema, ctx)
+      const eventHandlers = this.eventHandler.getEventHandlers(schema, ctx, nodeContext, parentMap)
       attrsParts.push(eventHandlers)
     }
     

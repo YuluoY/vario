@@ -141,6 +141,25 @@ export const useVario: UseVarioOverload = <TState extends Record<string, unknown
   const syncingPaths = new Set<string>()
   // 延迟引用 render 函数（因为 render 在 ctx 之后定义）
   let renderFn: (() => void) | null = null
+  
+  // 渲染调度：防止同一 tick 内多次渲染导致 VNode 不一致
+  let renderScheduled = false
+  let isRendering = false
+  const scheduleRender = () => {
+    if (renderScheduled || isRendering) return
+    renderScheduled = true
+    nextTick(() => {
+      renderScheduled = false
+      if (renderFn && !isRendering) {
+        isRendering = true
+        try {
+          renderFn()
+        } finally {
+          isRendering = false
+        }
+      }
+    })
+  }
 
   const ctx = createRuntimeContext<TState>({}, {
     onEmit: (event: string, data?: unknown) => {
@@ -171,8 +190,8 @@ export const useVario: UseVarioOverload = <TState extends Record<string, unknown
         )
         // 缓存失效
         invalidateCache(path, runtimeCtx as RuntimeContext)
-        // 触发重新渲染（确保 UI 及时更新）
-        if (renderFn) nextTick(renderFn)
+        // 触发重新渲染（使用调度器防止重复渲染）
+        scheduleRender()
       } finally {
         syncingPaths.delete(path)
         syncing = false
@@ -307,8 +326,8 @@ export const useVario: UseVarioOverload = <TState extends Record<string, unknown
   
   render()
 
-  // schema 变化重新渲染
-  watch(schemaRef, () => nextTick(render), { deep: true, immediate: false })
+  // schema 变化重新渲染（使用调度器防止重复渲染）
+  watch(schemaRef, () => scheduleRender(), { deep: true, immediate: false, flush: 'post' })
 
   // 状态变更同步到 ctx（Options/Composition 都生效）
   // 使用单独的 watchSyncing 标志，避免与 ctx._set 触发的 onStateChange 冲突
@@ -328,7 +347,7 @@ export const useVario: UseVarioOverload = <TState extends Record<string, unknown
         invalidateCache(key, ctx as RuntimeContext)
       }
       
-      nextTick(render)
+      scheduleRender()
     } finally {
       watchSyncing = false
     }

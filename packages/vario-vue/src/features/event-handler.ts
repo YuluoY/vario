@@ -1,12 +1,15 @@
 /**
  * 事件处理模块
- * 
- * 负责处理 Schema 中的事件绑定
+ *
+ * 负责处理 Schema 中的事件绑定；支持 nodeContext 时在事件执行前挂载 $self / $parent / $siblings / $children。
  */
 
 import type { RuntimeContext, Action } from '@variojs/core'
 import type { SchemaNode } from '@variojs/schema'
 import { execute } from '@variojs/core'
+import { applyNodeContextToCtx } from './node-context.js'
+import type { NodeContext } from './node-context.js'
+import type { ParentMap } from './node-context.js'
 
 /**
  * 事件处理器
@@ -28,18 +31,21 @@ export class EventHandler {
 
   /**
    * 获取事件处理器（使用缓存）
+   * @param nodeContext 节点上下文（父、兄弟等），有则事件执行前挂到 ctx 上
+   * @param parentMap 节点→父节点映射，用于 createNodeProxy 链式 .parent
    */
   getEventHandlers(
     schema: SchemaNode,
-    ctx: RuntimeContext
+    ctx: RuntimeContext,
+    nodeContext?: NodeContext,
+    parentMap?: ParentMap
   ): Record<string, (e: Event) => void> {
-    // 检查是否在循环上下文中（有 $item 或 $index）
-    // 或者作用域插槽上下文中（有 scope 变量）
     const isInLoop = '$item' in ctx || '$index' in ctx
     const isInScopedSlot = 'scope' in ctx
-    
-    // 循环上下文或作用域插槽中不使用缓存，因为每个项需要不同的上下文
-    if (!isInLoop && !isInScopedSlot) {
+    const hasNodeContext = nodeContext != null && parentMap != null
+
+    // 循环、作用域插槽、或提供了 nodeContext 时不使用缓存，保证每个位置拿到正确的上下文
+    if (!isInLoop && !isInScopedSlot && !hasNodeContext) {
       const cached = this.eventHandlerCache.get(schema)
       if (cached) {
         return cached
@@ -47,32 +53,37 @@ export class EventHandler {
     }
 
     const handlers: Record<string, (e: Event) => void> = {}
-    
+
     if (schema.events) {
       Object.entries(schema.events).forEach(([event, actions]) => {
         const eventName = this.toEventName(event)
-        
-        // 在循环或作用域插槽中，预处理 actions 中的 params，将表达式立即求值
-        // 这样事件触发时使用的是创建时的值，而不是触发时的值
-        const processedActions = (isInLoop || isInScopedSlot)
-          ? this.preprocessActionsParams(actions as Action[], ctx)
-          : actions as Action[]
-        
-        // 保存当前上下文引用，确保事件触发时使用正确的上下文
+        const processedActions =
+          isInLoop || isInScopedSlot
+            ? this.preprocessActionsParams(actions as Action[], ctx)
+            : (actions as Action[])
         const eventCtx = ctx
-        
+        const capturedNodeContext = nodeContext
+        const capturedParentMap = parentMap
+
         handlers[eventName] = (e: Event) => {
           eventCtx.$event = e
+          if (capturedNodeContext != null && capturedParentMap != null) {
+            applyNodeContextToCtx(
+              eventCtx as Record<string, unknown>,
+              schema,
+              capturedNodeContext,
+              capturedParentMap
+            )
+          }
           this.executeInstructions(processedActions, eventCtx)
         }
       })
     }
 
-    // 仅在非循环且非作用域插槽上下文中缓存
-    if (!isInLoop && !isInScopedSlot) {
+    if (!isInLoop && !isInScopedSlot && !hasNodeContext) {
       this.eventHandlerCache.set(schema, handlers)
     }
-    
+
     return handlers
   }
   

@@ -1,7 +1,7 @@
 /**
  * 循环处理模块
- * 
- * 负责处理 Schema 中的循环渲染
+ *
+ * 负责处理 Schema 中的循环渲染；支持 parentMap / nodeContext 供事件中 $parent 使用。
  */
 
 import { h, Fragment, type VNode } from 'vue'
@@ -9,6 +9,15 @@ import type { RuntimeContext } from '@variojs/core'
 import type { SchemaNode } from '@variojs/schema'
 import { createLoopContext, type PathSegment } from '@variojs/core'
 import type { ModelPathResolver } from './path-resolver.js'
+import type { ParentMap } from './node-context.js'
+
+export type CreateVNodeFn = (
+  schema: SchemaNode,
+  ctx: RuntimeContext,
+  modelPathStack?: PathSegment[],
+  nodeContext?: { parent?: SchemaNode; siblings?: SchemaNode[]; selfIndex?: number; path?: string },
+  parentMap?: ParentMap
+) => VNode | null
 
 /**
  * 循环处理器
@@ -16,21 +25,19 @@ import type { ModelPathResolver } from './path-resolver.js'
 export class LoopHandler {
   constructor(
     private pathResolver: ModelPathResolver,
-    private createVNode: (
-      schema: SchemaNode,
-      ctx: RuntimeContext,
-      modelPathStack: PathSegment[]
-    ) => VNode | null,
+    private createVNode: CreateVNodeFn,
     private evaluateExpr: (expr: string, ctx: RuntimeContext) => any
   ) {}
 
   /**
    * 创建循环渲染的 VNode
+   * @param parentMap 节点→父节点映射，循环项父节点为带 loop 的 schema
    */
   createLoopVNode(
     schema: SchemaNode,
     ctx: RuntimeContext,
-    modelPathStack: PathSegment[] = []
+    modelPathStack: PathSegment[] = [],
+    parentMap?: ParentMap
   ): VNode | null {
     const { loop } = schema
     if (!loop) {
@@ -104,17 +111,17 @@ export class LoopHandler {
             }
           }
           
-          // 递归设置 __loopItems 到所有子节点，确保 model 绑定可以正确解析
           this.markLoopSchema(childSchema, loop.items)
 
-          // 循环中的路径栈处理：
-          // 将循环索引加入路径栈，子级的扁平路径会拼接到这个路径上
-          // 例如：basePathStack = ['users'], index = 0
-          //       loopPathStack = ['users', 0]
-          //       子级 model: 'name' → 'users.0.name'
+          if (parentMap != null) {
+            parentMap.set(childSchema, schema)
+          }
           const loopPathStack: PathSegment[] = [...basePathStack, index]
-          
-          const vnode = this.createVNode(childSchema, loopCtx, loopPathStack)
+          const vnode = this.createVNode(childSchema, loopCtx, loopPathStack, {
+            parent: schema,
+            siblings: [],
+            selfIndex: index
+          }, parentMap)
           
           // 生成稳定的key（基于itemKey或index）
           if (vnode && typeof vnode === 'object' && 'key' in vnode) {

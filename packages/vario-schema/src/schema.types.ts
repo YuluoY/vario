@@ -126,6 +126,26 @@ export interface SchemaNode<TState extends Record<string, unknown> = Record<stri
    * @example { type: 'template', slot: 'default', props: { scope: 'scope' }, children: '...' }
    */
   readonly slot?: string
+
+  /**
+   * 自定义扩展属性
+   * 
+   * 允许挂载任意自定义属性，用于元数据、调试信息、扩展功能或特定业务需求。
+   * 这些属性会被核心渲染器忽略，不会参与渲染，但可以在自定义处理器中使用。
+   * 
+   * 注意：属性名应避免与标准属性冲突（如 type、props、model 等）。
+   * 建议使用命名空间前缀（如 myLib_xxx）来避免冲突。
+   * 
+   * @example
+   * { 
+   *   type: 'div', 
+   *   raw: { source: 'api', id: 123 },
+   *   debug: true,
+   *   meta: { author: 'team-a' },
+   *   myPlugin_config: { animate: true }
+   * }
+   */
+  readonly [key: string]: unknown
 }
 
 /**

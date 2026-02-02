@@ -177,7 +177,7 @@ export function createModelBinding(
       schemaDefault !== undefined ? schemaDefault : getDefaultValue(config.prop)
     if (defaultValue !== undefined) {
       value = defaultValue
-      // 非 lazy 模式时，预写默认值到 state
+      // 非 lazy 模式时，预写默认值到 state（触发 onStateChange 以同步到 Vue reactiveState）
       // lazy 模式时，仅使用默认值作为本地值，不写入 state
       if (!schemaLazy) {
         ctx._set(modelPath as any, defaultValue as any)

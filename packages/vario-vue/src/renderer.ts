@@ -24,6 +24,8 @@ import { AttrsBuilder } from './features/attrs-builder.js'
 import { LoopHandler } from './features/loop-handler.js'
 import { ChildrenResolver } from './features/children-resolver.js'
 import { LifecycleWrapper } from './features/lifecycle-wrapper.js'
+import type { NodeContext } from './features/node-context.js'
+import type { ParentMap } from './features/node-context.js'
 import type { VueSchemaNode } from './types.js'
 
 /**
@@ -92,9 +94,15 @@ export class VueRenderer {
     )
     this.lifecycleWrapper = new LifecycleWrapper()
     
-    // LoopHandler 和 ChildrenResolver 需要 createVNode 方法，使用箭头函数绑定 this
-    const createVNodeFn = (schema: SchemaNode, ctx: RuntimeContext, modelPathStack?: PathSegment[]) => 
-      this.createVNode(schema, ctx, modelPathStack || [])
+    // LoopHandler 和 ChildrenResolver 需要 createVNode，支持 nodeContext / parentMap（methods 中 $parent / $siblings）
+    const createVNodeFn = (
+      schema: SchemaNode,
+      ctx: RuntimeContext,
+      modelPathStack?: PathSegment[],
+      nodeContext?: NodeContext,
+      parentMap?: ParentMap
+    ) =>
+      this.createVNode(schema, ctx, modelPathStack ?? [], nodeContext, parentMap)
     
     this.loopHandler = new LoopHandler(
       this.pathResolver,
@@ -111,7 +119,8 @@ export class VueRenderer {
    * 渲染 Schema 为 VNode
    */
   render(schema: SchemaNode, ctx: RuntimeContext): VNode | null {
-    const vnode = this.createVNode(schema, ctx)
+    const parentMap: ParentMap = new WeakMap()
+    const vnode = this.createVNode(schema, ctx, [], undefined, parentMap)
     // 如果返回 null，返回一个空的 Fragment 作为占位符
     // Vue 需要有效的 VNode，不能是 null
     if (vnode === null || vnode === undefined) {
@@ -125,21 +134,36 @@ export class VueRenderer {
    * @param schema Schema 节点
    * @param ctx 运行时上下文
    * @param modelPathStack 当前 model 路径栈（用于自动路径拼接）
+   * @param nodeContext 节点上下文（父、兄弟等），供事件中 ctx.$parent / $siblings 使用
+   * @param parentMap 节点→父节点映射，供 createNodeProxy 链式 .parent；根节点时注册 schema→null
    */
   private createVNode(
     schema: SchemaNode | VueSchemaNode,
     ctx: RuntimeContext,
-    modelPathStack: PathSegment[] = []
+    modelPathStack: PathSegment[] = [],
+    nodeContext?: NodeContext,
+    parentMap?: ParentMap
   ): VNode {
-    // 验证 schema 基本结构
     if (!schema || typeof schema !== 'object') {
       return h('div', { style: 'color: red; padding: 10px;' }, 'Invalid schema')
     }
-    
     if (!schema.type) {
       return h('div', { style: 'color: red; padding: 10px;' }, 'Schema missing type property')
     }
-    
+
+    if (parentMap != null) {
+      if (nodeContext == null) {
+        parentMap.set(schema, null)
+      } else {
+        parentMap.set(schema, nodeContext.parent ?? null)
+        const siblings = nodeContext.siblings ?? []
+        const parent = nodeContext.parent
+        if (parent != null) {
+          siblings.forEach(s => parentMap!.set(s, parent))
+        }
+      }
+    }
+
     // 处理条件渲染（优化：提前返回，避免不必要的处理）
     if (schema.cond) {
       try {
@@ -159,7 +183,7 @@ export class VueRenderer {
 
     // 处理列表渲染
     if (schema.loop) {
-      const loopVNode = this.loopHandler.createLoopVNode(schema, ctx, modelPathStack)
+      const loopVNode = this.loopHandler.createLoopVNode(schema, ctx, modelPathStack, parentMap)
       return loopVNode || null as any
     }
 
@@ -187,19 +211,25 @@ export class VueRenderer {
       )
     }
     
-    // 构建属性（传入 component 和路径栈用于自动检测）
-    // buildAttrs 中会解析 model 路径，传入父级路径栈和当前 scope 路径栈（用于具名 model）
+    // 构建属性（传入 component、路径栈、nodeContext、parentMap）
     let attrs = this.attrsBuilder.buildAttrs(
       schema,
       ctx,
       component,
       modelPathStack,
       (props, ctx) => this.childrenResolver.evalProps(props, ctx),
-      scopePath ? currentModelPathStack : undefined
+      scopePath ? currentModelPathStack : undefined,
+      nodeContext,
+      parentMap
     )
-    
-    // 解析子节点（支持作用域插槽，传递路径栈）
-    let children = this.childrenResolver.resolveChildren(schema, ctx, currentModelPathStack)
+
+    // 解析子节点（支持作用域插槽，传递路径栈与 parentMap）
+    let children = this.childrenResolver.resolveChildren(
+      schema,
+      ctx,
+      currentModelPathStack,
+      parentMap
+    )
     
     // 处理可见性控制（v-show，优化：错误处理）
     if (schema.show) {

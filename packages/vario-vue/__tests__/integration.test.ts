@@ -130,6 +130,67 @@ describe('useVario 集成测试', () => {
   })
 
   describe('事件处理', () => {
+    it('点击子节点时 ctx 上应有 $self / $parent / $siblings / $children（node-context）', async () => {
+      const captured: {
+        called?: boolean
+        $self?: { type: string }
+        $parent?: { type: string } | null
+        $siblings?: { type: string }[]
+        $children?: unknown
+      } = {}
+      const schema: Schema = {
+        type: 'div',
+        children: [
+          { type: 'span', children: 'A' },
+          {
+            type: 'button',
+            children: 'Click',
+            events: {
+              click: [
+                {
+                  type: 'call',
+                  method: 'services.captureNodeContext',
+                  params: {}
+                }
+              ]
+            }
+          }
+        ]
+      }
+      const { vnode, ctx } = useVario(schema, {
+        methods: {
+          captureNodeContext(methodCtx: { ctx?: typeof ctx.value; state?: unknown; params?: unknown; event?: Event }, _params: Record<string, unknown>) {
+            const c = methodCtx?.ctx
+            captured.called = true
+            captured.$self = c?.$self ? { type: (c.$self as { type: string }).type } : undefined
+            captured.$parent = c?.$parent == null
+              ? c?.$parent
+              : { type: (c.$parent as { type: string }).type }
+            captured.$siblings = Array.isArray(c?.$siblings)
+              ? (c.$siblings as { type: string }[]).map(s => ({ type: s.type }))
+              : undefined
+            captured.$children = c?.$children
+          }
+        }
+      })
+      const rootChildren = (vnode.value as any).children
+      expect(Array.isArray(rootChildren) && rootChildren.length >= 2).toBe(true)
+      const buttonVNode = Array.isArray(rootChildren)
+        ? rootChildren.find((c: any) => c?.props?.onClick) ?? rootChildren[1]
+        : null
+      const onClick = buttonVNode?.props?.onClick
+      expect(onClick).toBeDefined()
+      const p = onClick!(new Event('click'))
+      if (p && typeof p.then === 'function') await p
+      await nextTick()
+      expect(captured.called).toBe(true)
+      expect(captured.$self?.type).toBe('button')
+      expect(captured.$parent?.type).toBe('div')
+      expect(captured.$siblings).toHaveLength(1)
+      expect(captured.$siblings?.[0].type).toBe('span')
+      expect(captured.$children).toBeUndefined()
+    })
+
     it('应该触发 onEvent 回调', async () => {
       const onEvent = vi.fn()
 

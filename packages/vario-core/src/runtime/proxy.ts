@@ -17,9 +17,17 @@ import type { RuntimeContext } from '../types.js'
  * @returns 受保护的 Proxy 包装的上下文
  */
 export function createProxy<T extends RuntimeContext>(ctx: T): T {
-  // 允许设置和删除的特殊变量（循环/事件上下文变量）
+  // 允许设置和删除的特殊变量（循环/事件上下文变量；vario-vue 节点关系扩展）
   // 注意：$methods 不在此列表中，不允许被整体覆盖
-  const allowedSpecialVars = ['$event', '$item', '$index']
+  const allowedSpecialVars = [
+    '$event',
+    '$item',
+    '$index',
+    '$self',
+    '$parent',
+    '$siblings',
+    '$children'
+  ]
   
   return new Proxy(ctx, {
     set(target, prop, value) {
