@@ -26,10 +26,18 @@ export {
   setPathValue,
   matchPath,
   getParentPath,
-  getLastSegment
+  getLastSegment,
+  traverseSchema,
+  type TraversalCallback
 } from './runtime/index.js'
-export type { RuntimeContext, CreateContextOptions, OnStateChangeCallback } from './types.js'
-export type { PathSegment } from './runtime/path.js'
+export type { 
+  RuntimeContext, 
+  CreateContextOptions, 
+  MethodsRegistry,
+  MethodHandler,
+  ActionHandler 
+} from '@variojs/types'
+export type { PathSegment } from '@variojs/types'
 
 // Expression
 export {
@@ -59,14 +67,27 @@ export {
   BatchError,
   VarioError,
   ErrorCodes,
-  type ErrorContext,
   type ErrorCode
 } from './errors.js'
+
+// Schema utilities
+export {
+  analyzeSchema,
+  findNodes,
+  findNode,
+  findPathById,
+  createQueryEngine,
+  type SchemaStats,
+  type SchemaIndex,
+  type AnalysisResult,
+  type QueryEngineOptions,
+  type NodeResult
+} from './schema/index.js'
+
 export type { 
-  Action, 
+  Action,
   ActionMap,
-  ActionHandler,
   ExpressionCache, 
-  MethodsRegistry, 
-  ExpressionOptions 
-} from './types.js'
+  ExpressionOptions,
+  ErrorContext
+} from '@variojs/types'

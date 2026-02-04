@@ -13,7 +13,7 @@
  * - 内存友好：WeakMap + LRU 淘汰
  */
 
-import type { RuntimeContext, ExpressionCache } from '../types.js'
+import type { RuntimeContext, ExpressionCache } from '@variojs/types'
 import { matchPath } from '../runtime/path.js'
 
 /**

@@ -10,16 +10,16 @@
  * - 表达式求值
  */
 
-import { h, type VNode, Fragment, ComponentInternalInstance, Transition, KeepAlive, type App } from 'vue'
+import { h, withDirectives, type VNode, type Directive, Fragment, ComponentInternalInstance, Transition, KeepAlive, type App } from 'vue'
 import type { SchemaNode } from '@variojs/schema'
-import type { RuntimeContext } from '@variojs/core'
-import type { PathSegment } from '@variojs/core'
+import type { RuntimeContext, PathSegment } from '@variojs/types'
 import { attachRef, RefsRegistry } from './features/refs.js'
 import { createTeleport, shouldTeleport } from './features/teleport.js'
 import { ModelPathResolver } from './features/path-resolver.js'
 import { ComponentResolver } from './features/component-resolver.js'
 import { ExpressionEvaluator } from './features/expression-evaluator.js'
 import { EventHandler } from './features/event-handler.js'
+import { DirectiveHandler } from './features/directive-handler.js'
 import { AttrsBuilder } from './features/attrs-builder.js'
 import { LoopHandler } from './features/loop-handler.js'
 import { ChildrenResolver } from './features/children-resolver.js'
@@ -32,8 +32,11 @@ import {
   buildDepsKey,
   getCacheKey,
   hasLoopInSubtree,
-  hasModelInSubtree
+  hasModelInSubtree,
+  hasExpressionInSubtree
 } from './features/path-memo.js'
+import { shouldComponentize, type VarioNodeRenderer, createVarioNodeVNode } from './features/vario-node.js'
+import { createSchemaStore, type SchemaStore } from './features/schema-store.js'
 import type { VueSchemaNode } from './types.js'
 
 /**
@@ -55,29 +58,58 @@ export interface VueRendererOptions {
   app?: App | null
   /** 全局组件映射（用于获取全局组件，优先级最高） */
   components?: Record<string, any>
+  /** 自定义指令映射（支持用户注册指令） */
+  directives?: Record<string, Directive>
   getState?: () => any  // 用于创建响应式绑定的状态获取函数
   refsRegistry?: RefsRegistry  // Refs 注册表
   modelOptions?: ModelOptions  // Model 绑定配置（路径分隔符、默认惰性）
   /** 是否启用 path-memo 缓存（默认 true），设为 false 可做升级前基准对比 */
   usePathMemo?: boolean
+  /** 是否对 loop 每项使用独立 Vue 组件（列表项组件化），默认 false；开启后仅该项 props 变化时 re-render */
+  loopItemAsComponent?: boolean
+  /** 方案 C：子树组件化配置 */
+  subtreeComponent?: {
+    /** 是否启用子树组件化（默认 false） */
+    enabled?: boolean
+    /** 组件化粒度：'all' 所有节点 | 'boundary' 仅组件边界 */
+    granularity?: 'all' | 'boundary'
+    /** 最大深度（超过后不再组件化） */
+    maxDepth?: number
+  }
+  /** 方案 D：Schema 碎片化配置 */
+  schemaFragment?: {
+    /** 是否启用碎片化（默认 false） */
+    enabled?: boolean
+    /** 碎片粒度：'node' 每个节点 | 'component' 仅组件边界 */
+    granularity?: 'node' | 'component'
+  }
 }
 
 /**
  * Vue 渲染器
  * 将 Vario Schema 转换为 Vue VNode
  */
-export class VueRenderer {
+export class VueRenderer implements VarioNodeRenderer {
   public refsRegistry: RefsRegistry
   private getState?: () => any
   /** path-memo：按 path 缓存子树 VNode，未变分支复用 */
   private pathMemoCache: PathMemoCache
   private usePathMemo: boolean
+  private loopItemAsComponent: boolean
+  /** 方案 C：子树组件化配置 */
+  public readonly subtreeComponentOptions: { enabled: boolean; granularity: 'all' | 'boundary'; maxDepth?: number }
+  /** 方案 D：Schema 碎片化配置 */
+  public readonly schemaFragmentOptions: { enabled: boolean; granularity: 'node' | 'component' }
+  /** 方案 D：Schema Store（用于精确失效） */
+  private schemaStore?: SchemaStore
 
   // 功能模块
   private pathResolver: ModelPathResolver
   private componentResolver: ComponentResolver
   private expressionEvaluator: ExpressionEvaluator
   private eventHandler: EventHandler
+  private directiveHandler: DirectiveHandler
+  private directiveMap: Map<string, Directive>
   private attrsBuilder: AttrsBuilder
   private loopHandler: LoopHandler
   private childrenResolver: ChildrenResolver
@@ -96,6 +128,19 @@ export class VueRenderer {
     this.componentResolver = new ComponentResolver(globalComponents)
     this.expressionEvaluator = new ExpressionEvaluator()
     this.eventHandler = new EventHandler((expr, ctx) => this.expressionEvaluator.evaluateExpr(expr, ctx))
+    this.directiveHandler = new DirectiveHandler((expr, ctx) => this.expressionEvaluator.evaluateExpr(expr, ctx))
+    
+    // 初始化指令映射表并注册内置指令
+    this.directiveMap = new Map()
+    DirectiveHandler.registerBuiltInDirectives(this.directiveMap)
+    
+    // 注册用户自定义指令
+    if (options.directives) {
+      Object.entries(options.directives).forEach(([name, directive]) => {
+        this.directiveMap.set(name, directive)
+      })
+    }
+    
     this.pathResolver = new ModelPathResolver((expr, ctx) =>
       this.expressionEvaluator.evaluateExpr(expr, ctx)
     )
@@ -108,6 +153,20 @@ export class VueRenderer {
     this.lifecycleWrapper = new LifecycleWrapper()
     this.pathMemoCache = new PathMemoCache()
     this.usePathMemo = options.usePathMemo !== false
+    this.loopItemAsComponent = options.loopItemAsComponent === true
+    
+    // 方案 C：子树组件化配置
+    this.subtreeComponentOptions = {
+      enabled: options.subtreeComponent?.enabled === true,
+      granularity: options.subtreeComponent?.granularity ?? 'boundary',
+      maxDepth: options.subtreeComponent?.maxDepth
+    }
+    
+    // 方案 D：Schema 碎片化配置
+    this.schemaFragmentOptions = {
+      enabled: options.schemaFragment?.enabled === true,
+      granularity: options.schemaFragment?.granularity ?? 'node'
+    }
 
     // LoopHandler 和 ChildrenResolver 需要 createVNode，支持 nodeContext / parentMap / path（path-memo）
     const createVNodeFn = (
@@ -119,11 +178,19 @@ export class VueRenderer {
       path?: string
     ) =>
       this.createVNode(schema, ctx, modelPathStack ?? [], nodeContext, parentMap, path ?? nodeContext?.path ?? '')
-    
+    const getRenderNodeForLoopItem = (parentMap: ParentMap) => (
+      s: SchemaNode,
+      c: RuntimeContext,
+      stack: PathSegment[],
+      nc: NodeContext | undefined,
+      p: string
+    ) => this.createVNode(s, c, stack, nc, parentMap, p)
     this.loopHandler = new LoopHandler(
       this.pathResolver,
       createVNodeFn,
-      (expr, ctx) => this.expressionEvaluator.evaluateExpr(expr, ctx)
+      (expr, ctx) => this.expressionEvaluator.evaluateExpr(expr, ctx),
+      this.loopItemAsComponent,
+      getRenderNodeForLoopItem
     )
     this.childrenResolver = new ChildrenResolver(
       createVNodeFn,
@@ -148,6 +215,7 @@ export class VueRenderer {
   /**
    * 创建 VNode
    * @param path 节点在 schema 树中的路径（如 ""、"0"、"0.1"、"0.[2]"），供 path-memo 缓存
+   * @param depth 当前节点深度（从 0 开始），用于方案 C 子树组件化
    */
   private createVNode(
     schema: SchemaNode | VueSchemaNode,
@@ -155,7 +223,8 @@ export class VueRenderer {
     modelPathStack: PathSegment[] = [],
     nodeContext?: NodeContext,
     parentMap?: ParentMap,
-    path: string = ''
+    path: string = '',
+    depth: number = 0
   ): VNode {
     if (!schema || typeof schema !== 'object') {
       return h('div', { style: 'color: red; padding: 10px;' }, 'Invalid schema')
@@ -203,11 +272,14 @@ export class VueRenderer {
       showValue = true
     }
 
-    // path-memo：不含 loop/model 子树的节点且非循环项时才缓存（含 model 时缓存会返回旧 value，导致双向绑定失效）
+    // path-memo：不含 loop/model/expression 子树的节点且非循环项时才缓存
+    // - 含 model 时缓存会返回旧 value，导致双向绑定失效
+    // - 含表达式时缓存会返回旧 VNode，导致 state 变化后 props/children 无法更新
     const isLoopItem = path.includes('[')
     const noLoopInSubtree = !hasLoopInSubtree(schema)
     const noModelInSubtree = !hasModelInSubtree(schema)
-    const canMemo = this.usePathMemo && !schema.loop && !isLoopItem && noLoopInSubtree && noModelInSubtree
+    const noExpressionInSubtree = !hasExpressionInSubtree(schema)
+    const canMemo = this.usePathMemo && !schema.loop && !isLoopItem && noLoopInSubtree && noModelInSubtree && noExpressionInSubtree
     if (canMemo) {
       const schemaId = buildSchemaId(schema)
       const depsKey = buildDepsKey(condValue, showValue)
@@ -216,6 +288,18 @@ export class VueRenderer {
       if (cached !== undefined) {
         return cached
       }
+    }
+
+    // 方案 C：子树组件化 - 符合条件时使用 VarioNode 渲染
+    // 这样每个组件化的子树都是独立的 Vue 组件，props 不变时跳过 re-render
+    if (shouldComponentize(schema, depth, this.subtreeComponentOptions)) {
+      return createVarioNodeVNode(schema, ctx, path, this, {
+        modelPathStack,
+        nodeContext,
+        parentMap,
+        depth,
+        key: path || undefined
+      })
     }
 
     // 处理列表渲染
@@ -345,6 +429,18 @@ export class VueRenderer {
       vnode = attachRef(vnode, vueSchema, this.refsRegistry)
     }
     
+    // 处理自定义指令（使用 withDirectives）
+    if (schema.directives) {
+      const directiveArgs = this.directiveHandler.toVueDirectiveArguments(
+        schema.directives,
+        ctx,
+        this.directiveMap
+      )
+      if (directiveArgs && directiveArgs.length > 0) {
+        vnode = withDirectives(vnode, directiveArgs)
+      }
+    }
+    
     // 处理 keep-alive
     if (vueSchema.keepAlive) {
       const keepAliveProps = typeof vueSchema.keepAlive === 'object' 
@@ -383,6 +479,137 @@ export class VueRenderer {
     }
 
     return vnode
+  }
+
+  // ============================================================================
+  // VarioNodeRenderer 接口实现（方案 C 需要）
+  // ============================================================================
+
+  /**
+   * 解析组件类型
+   */
+  resolveComponent(type: string): any {
+    return this.componentResolver.resolveComponent(type)
+  }
+
+  /**
+   * 求值表达式
+   */
+  evaluateExpr(expr: string, ctx: RuntimeContext): unknown {
+    return this.expressionEvaluator.evaluateExpr(expr, ctx)
+  }
+
+  /**
+   * 构建属性
+   */
+  buildAttrs(
+    schema: SchemaNode,
+    ctx: RuntimeContext,
+    component: any,
+    modelPathStack: PathSegment[],
+    nodeContext?: NodeContext,
+    parentMap?: ParentMap
+  ): Record<string, any> {
+    const scopePath = this.pathResolver.getScopePath(schema.model)
+    let currentModelPathStack = modelPathStack
+    if (scopePath) {
+      currentModelPathStack = this.pathResolver.updateModelPathStack(
+        scopePath,
+        modelPathStack,
+        ctx,
+        schema
+      )
+    }
+    return this.attrsBuilder.buildAttrs(
+      schema,
+      ctx,
+      component,
+      modelPathStack,
+      (props, ctx) => this.childrenResolver.evalProps(props, ctx),
+      scopePath ? currentModelPathStack : undefined,
+      nodeContext,
+      parentMap
+    )
+  }
+
+  /**
+   * 解析子节点
+   */
+  resolveChildren(
+    schema: SchemaNode,
+    ctx: RuntimeContext,
+    modelPathStack: PathSegment[],
+    parentMap?: ParentMap,
+    path?: string
+  ): any {
+    return this.childrenResolver.resolveChildren(schema, ctx, modelPathStack, parentMap, path)
+  }
+
+  /**
+   * 处理生命周期包装
+   */
+  createComponentWithLifecycle(
+    component: any,
+    attrs: Record<string, any>,
+    children: any,
+    vueSchema: VueSchemaNode,
+    ctx: RuntimeContext
+  ): VNode {
+    return this.lifecycleWrapper.createComponentWithLifecycle(component, attrs, children, vueSchema, ctx)
+  }
+
+  /**
+   * 附加 ref
+   */
+  attachRef(vnode: VNode, vueSchema: VueSchemaNode): VNode {
+    return attachRef(vnode, vueSchema, this.refsRegistry)
+  }
+
+  /**
+   * 获取更新后的 model 路径栈
+   */
+  getUpdatedModelPathStack(
+    schema: SchemaNode,
+    modelPathStack: PathSegment[],
+    ctx: RuntimeContext
+  ): PathSegment[] {
+    const scopePath = this.pathResolver.getScopePath(schema.model)
+    if (scopePath) {
+      return this.pathResolver.updateModelPathStack(scopePath, modelPathStack, ctx, schema)
+    }
+    return modelPathStack
+  }
+
+  // ============================================================================
+  // 方案 D：Schema Store 相关方法
+  // ============================================================================
+
+  /**
+   * 获取 Schema Store（方案 D）
+   */
+  getSchemaStore(): SchemaStore | undefined {
+    return this.schemaStore
+  }
+
+  /**
+   * 初始化 Schema Store（方案 D）
+   */
+  initSchemaStore(schema: SchemaNode): void {
+    if (this.schemaFragmentOptions.enabled) {
+      this.schemaStore = createSchemaStore()
+      this.schemaStore.fromTree(schema)
+    }
+  }
+
+  /**
+   * 精确更新 Schema 节点（方案 D）
+   */
+  patchSchemaNode(path: string, patch: Partial<SchemaNode>): void {
+    if (this.schemaStore) {
+      this.schemaStore.patch(path, patch)
+      // 清除相关 path-memo 缓存
+      this.pathMemoCache.clear()
+    }
   }
 
   /**

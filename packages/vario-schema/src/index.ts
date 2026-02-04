@@ -18,7 +18,10 @@ export type {
   VarioView,
   InferStateType,
   InferStateFromConfig,
-  InferServicesFromConfig
+  InferServicesFromConfig,
+  DirectiveConfig,
+  DirectiveObject,
+  DirectiveArray
 } from './schema.types.js'
 
 // 错误类型

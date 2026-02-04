@@ -11,7 +11,7 @@
  */
 
 import { provide, inject, type InjectionKey } from 'vue'
-import type { RuntimeContext } from '@variojs/core'
+import type { RuntimeContext } from '@variojs/types'
 import { evaluate } from '@variojs/core'
 import type { VueSchemaNode } from '../types.js'
 

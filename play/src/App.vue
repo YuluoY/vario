@@ -1,7 +1,7 @@
 <template>
-  <div id="app" class="app">
+  <div id="app" class="app" :class="{ 'app--immersive': isHomePage }">
     <!-- Navigation -->
-    <nav class="nav">
+    <nav class="nav" v-if="!isHomePage">
       <div class="nav__content">
         <div class="nav__left">
           <router-link to="/" class="nav__brand">
@@ -50,8 +50,8 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="main">
-      <div class="main__container">
+    <main :class="['main', { 'main--immersive': isHomePage }]">
+      <div :class="isHomePage ? 'main__container--immersive' : 'main__container'">
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
             <component :is="Component" />
@@ -61,7 +61,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="footer">
+    <footer class="footer" v-if="!isHomePage">
       <div class="footer__content">
         <div class="footer__left">
           <p>{{ $t('app.copyright') }}</p>
@@ -112,8 +112,8 @@ const route = useRoute()
 // 文档链接：生产环境使用构建后的静态文件，开发环境使用 VitePress dev server
 const getDocsUrl = () => {
   if (import.meta.env.DEV) {
-    // 开发环境：优先使用环境变量配置，否则使用 VitePress dev server
-    return import.meta.env.VITE_DOCS_URL || 'http://localhost:5174/'
+    // 开发环境：使用 VitePress dev server (运行在 5174 端口)
+    return import.meta.env.VITE_DOCS_URL || 'http://localhost:5174/docs/'
   } else {
     // 生产环境：使用相对路径
     const base = import.meta.env.BASE_URL || '/'
@@ -146,6 +146,8 @@ const { locale } = useI18n()
 
 const activeRoute = computed(() => route.path)
 
+const isHomePage = computed(() => route.path === '/')
+
 const isDark = ref(false)
 
 // 当前语言代码（CN/EN）
@@ -153,13 +155,20 @@ const currentLanguageCode = computed(() => {
   return locale.value === 'zh-CN' ? 'CN' : 'EN'
 })
 
-// 从localStorage读取主题设置
+// 从localStorage读取主题设置，如果没有则跟随系统
 onMounted(() => {
-  const savedTheme = localStorage.getItem('theme') || 'light'
+  let theme = localStorage.getItem('theme')
+  
+  // 如果没有保存的主题设置，检测系统主题偏好
+  if (!theme) {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    theme = prefersDark ? 'dark' : 'light'
+  }
+  
   const html = document.documentElement
-  isDark.value = savedTheme === 'dark'
-  html.setAttribute('data-theme', savedTheme)
-  if (savedTheme === 'dark') {
+  isDark.value = theme === 'dark'
+  html.setAttribute('data-theme', theme)
+  if (theme === 'dark') {
     html.classList.add('dark')
   }
 })
@@ -288,5 +297,28 @@ const handleThemeChange = () => {
       }
     }
   }
+}
+
+// Immersive Home Styles overrides
+#app.app--immersive {
+  max-width: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100%;
+}
+
+.main--immersive {
+  padding: 0;
+  max-width: none;
+  flex: 1;
+  display: block; 
+}
+
+.main__container--immersive {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  max-width: none;
 }
 </style>

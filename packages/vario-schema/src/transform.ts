@@ -18,7 +18,7 @@ import type {
   Schema,
   SchemaNode
 } from './schema.types.js'
-import type { MethodsRegistry, RuntimeContext } from '@variojs/core'
+import type { MethodsRegistry, RuntimeContext } from '@variojs/types'
 import { createRuntimeContext } from '@variojs/core'
 import { validateSchema } from './validator.js'
 import { SchemaValidationError } from './schema.types.js'

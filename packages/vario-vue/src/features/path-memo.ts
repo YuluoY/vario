@@ -4,10 +4,71 @@
  * 缓存 key = path + schema 标识 + 依赖值（cond/show 等），
  * 再次渲染时若输入未变则直接返回缓存 VNode，不递归子节点。
  * 含 loop 或 model 绑定的节点（及子树）不缓存（依赖 state，缓存会返回旧 VNode 导致双向绑定失效）。
+ * 含表达式引用（{{ }} 或 ${}）的节点（及子树）也不缓存，否则 state 变化后无法触发重新渲染。
  */
 
 import type { SchemaNode } from '@variojs/schema'
 import type { VNode } from 'vue'
+
+/**
+ * 检查字符串是否包含表达式引用（{{ }} 或 ${} 格式）
+ */
+function containsExpression(value: unknown): boolean {
+  if (typeof value !== 'string') return false
+  return value.includes('{{') || value.includes('${')
+}
+
+/**
+ * 检查对象中是否包含表达式引用（递归检查所有字符串值）
+ */
+function objectContainsExpression(obj: unknown): boolean {
+  if (obj == null) return false
+  if (typeof obj === 'string') return containsExpression(obj)
+  if (Array.isArray(obj)) {
+    return obj.some(item => objectContainsExpression(item))
+  }
+  if (typeof obj === 'object') {
+    return Object.values(obj as Record<string, unknown>).some(value => objectContainsExpression(value))
+  }
+  return false
+}
+
+/**
+ * 当前节点是否有表达式引用（props/children/events 中包含 {{ }} 或 ${} 格式）
+ * 这些表达式依赖 state，缓存后 state 变化将无法触发重新渲染
+ */
+function hasExpressionBinding(schema: SchemaNode): boolean {
+  // 检查 cond 和 show（这些虽然也是表达式，但它们的值已经包含在 depsKey 中，所以不需要在这里检查）
+  // 这里主要检查 props、children 和 events 中的表达式
+  
+  // 检查 props
+  if (schema.props && objectContainsExpression(schema.props)) {
+    return true
+  }
+  
+  // 检查 children（如果是字符串，可能包含文本插值）
+  if (typeof schema.children === 'string' && containsExpression(schema.children)) {
+    return true
+  }
+  
+  // 检查 events（事件处理器的 params 可能包含表达式，如 {{ scope.row }}）
+  if (schema.events && objectContainsExpression(schema.events)) {
+    return true
+  }
+  
+  return false
+}
+
+/**
+ * 是否包含表达式引用的子节点（含自身），含则不应缓存
+ * 否则 state 变化后缓存返回旧 VNode，导致 props/children 中的表达式无法更新
+ */
+export function hasExpressionInSubtree(schema: SchemaNode): boolean {
+  if (hasExpressionBinding(schema)) return true
+  const children = schema.children
+  if (!Array.isArray(children)) return false
+  return (children as SchemaNode[]).some((c: SchemaNode) => hasExpressionInSubtree(c))
+}
 
 /** 是否包含 loop 子节点（含自身），含则不应缓存 */
 export function hasLoopInSubtree(schema: SchemaNode): boolean {

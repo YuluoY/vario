@@ -6,7 +6,7 @@
  * 示例：{ "type": "push", "path": "todos", "items": [{ text: "{{ newTodo }}", done: false }] }
  */
 
-import type { RuntimeContext, Action } from '@/types.js'
+import type { RuntimeContext, Action } from '@variojs/types'
 import { ActionError, ErrorCodes } from '@/errors.js'
 import { invalidateCache } from '@/expression/cache.js'
 import { evaluateExpressionsRecursively } from './utils.js'

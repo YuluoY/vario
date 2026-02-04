@@ -4,9 +4,9 @@
  * 负责处理 model 路径的解析、拼接和转换
  */
 
-import type { RuntimeContext } from '@variojs/core'
+import type { RuntimeContext, PathSegment, ModelModifiers } from '@variojs/types'
 import type { SchemaNode } from '@variojs/schema'
-import { parsePath, type PathSegment } from '@variojs/core'
+import { parsePath } from '@variojs/core'
 
 /**
  * Model 路径解析器
@@ -42,6 +42,25 @@ export class ModelPathResolver {
   getModelDefault(model: unknown): unknown {
     if (model == null || typeof model !== 'object') return undefined
     return (model as { default?: unknown }).default
+  }
+
+  /**
+   * 获取 model 的修饰符
+   * @returns 修饰符对象 { trim: true, lazy: true, number: true }
+   */
+  getModelModifiers(model: unknown): Record<string, boolean> {
+    if (model == null || typeof model !== 'object') return {}
+    const modifiers = (model as { modifiers?: ModelModifiers }).modifiers
+    if (!modifiers) return {}
+    
+    // 如果是数组，转换为对象
+    if (Array.isArray(modifiers)) {
+      const result: Record<string, boolean> = {}
+      modifiers.forEach(m => { result[m] = true })
+      return result
+    }
+    
+    return modifiers as Record<string, boolean>
   }
 
   /**

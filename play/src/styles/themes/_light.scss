@@ -6,25 +6,25 @@
 :root,
 [data-theme="light"] {
   // Background Colors (semantic tokens)
-  --bg-base: #FFFFFF;
-  --bg-card: #F9FAFB;
-  --bg-hover: #F3F4F6;
-  --bg-active: #E5E7EB;
-  
+  --bg-base: #FAFAFA;
+  --bg-card: #FFFFFF;
+  --bg-hover: #F5F5F5;
+  --bg-active: #EEEEEE;
+
   // Text Colors (semantic tokens)
-  --text-primary: #111827;
-  --text-secondary: #6B7280;
+  --text-primary: #1A1A2E;
+  --text-secondary: #4A4A68;
   --text-disabled: #9CA3AF;
-  
+
   // Border Colors (semantic tokens)
-  --border-default: #E5E7EB;
+  --border-default: rgba(0, 0, 0, 0.1);
   --border-focus: #3B82F6;
-  
-  // Primary Colors
+
+  // Primary Colors (Blue)
   --primary-base: #3B82F6;
   --primary-hover: #2563EB;
   --primary-active: #1D4ED8;
-  
+
   // Semantic Colors
   --success-base: #10B981;
   --success-hover: #059669;
@@ -34,7 +34,7 @@
   --error-hover: #DC2626;
   --info-base: #3B82F6;
   --info-hover: #2563EB;
-  
+
   // Legacy compatibility (for existing code)
   --color-primary: var(--primary-base);
   --color-primary-hover: var(--primary-hover);
@@ -49,4 +49,97 @@
   --color-success-light: #D1FAE5;
   --color-error: var(--error-base);
   --color-error-light: #FEE2E2;
+
+  // ============================================
+  // Element Plus complete theme variables override
+  // ============================================
+
+  // Base colors
+  --el-bg-color: var(--bg-base);
+  --el-bg-color-page: var(--bg-base);
+  --el-bg-color-overlay: var(--bg-card);
+
+  // Text colors
+  --el-text-color-primary: var(--text-primary);
+  --el-text-color-regular: var(--text-secondary);
+  --el-text-color-secondary: var(--text-secondary);
+  --el-text-color-placeholder: var(--text-disabled);
+  --el-text-color-disabled: var(--text-disabled);
+
+  // Border colors
+  --el-border-color: var(--border-default);
+  --el-border-color-light: #E5E7EB;
+  --el-border-color-lighter: #EEEEEE;
+  --el-border-color-extra-light: #F5F5F5;
+  --el-border-color-dark: #4A4A68;
+  --el-border-color-darker: var(--text-primary);
+
+  // Fill colors
+  --el-fill-color: var(--bg-hover);
+  --el-fill-color-light: var(--bg-active);
+  --el-fill-color-lighter: var(--bg-hover);
+  --el-fill-color-extra-light: var(--bg-card);
+  --el-fill-color-dark: var(--bg-active);
+  --el-fill-color-darker: var(--bg-hover);
+  --el-fill-color-blank: var(--bg-card);
+
+  // Primary color (Blue)
+  --el-color-primary: var(--primary-base);
+  --el-color-primary-light-3: #60A5FA;
+  --el-color-primary-light-5: #93C5FD;
+  --el-color-primary-light-7: #BFDBFE;
+  --el-color-primary-light-8: #DBEAFE;
+  --el-color-primary-light-9: #EFF6FF;
+  --el-color-primary-dark-2: var(--primary-hover);
+
+  // Success color
+  --el-color-success: var(--success-base);
+  --el-color-success-light-3: #6DD3C2;
+  --el-color-success-light-5: #8EDDD0;
+  --el-color-success-light-7: #AFE7DE;
+  --el-color-success-light-8: #C0EBE4;
+  --el-color-success-light-9: #D1EFEA;
+  --el-color-success-dark-2: var(--success-hover);
+
+  // Warning color
+  --el-color-warning: var(--warning-base);
+  --el-color-warning-light-3: #F7B84D;
+  --el-color-warning-light-5: #F9CA77;
+  --el-color-warning-light-7: #FBDCA1;
+  --el-color-warning-light-8: #FCE5B8;
+  --el-color-warning-light-9: #FDEECF;
+  --el-color-warning-dark-2: var(--warning-hover);
+
+  // Danger/Error color
+  --el-color-danger: var(--error-base);
+  --el-color-danger-light-3: #F88484;
+  --el-color-danger-light-5: #FAA3A3;
+  --el-color-danger-light-7: #FCC2C2;
+  --el-color-danger-light-8: #FDD1D1;
+  --el-color-danger-light-9: #FEE0E0;
+  --el-color-danger-dark-2: var(--error-hover);
+
+  // Info color (Blue)
+  --el-color-info: var(--info-base);
+  --el-color-info-light-3: #60A5FA;
+  --el-color-info-light-5: #93C5FD;
+  --el-color-info-light-7: #BFDBFE;
+  --el-color-info-light-8: #DBEAFE;
+  --el-color-info-light-9: #EFF6FF;
+  --el-color-info-dark-2: var(--info-hover);
+
+  // Mask layer
+  --el-mask-color: rgba(0, 0, 0, 0.5);
+  --el-mask-color-extra-light: rgba(0, 0, 0, 0.1);
+
+  // Disabled state
+  --el-disabled-bg-color: var(--bg-hover);
+  --el-disabled-text-color: var(--text-disabled);
+  --el-disabled-border-color: var(--border-default);
+
+  // Shadows
+  --el-box-shadow: 0px 4px 16px 4px rgba(0, 0, 0, 0.08), 0px 8px 20px rgba(0, 0, 0, 0.12);
+  --el-box-shadow-light: 0px 0px 8px rgba(0, 0, 0, 0.08);
+  --el-box-shadow-lighter: 0px 0px 4px rgba(0, 0, 0, 0.04);
+  --el-box-shadow-dark: 0px 8px 32px 8px rgba(0, 0, 0, 0.12), 0px 12px 32px rgba(0, 0, 0, 0.08);
 }

@@ -72,7 +72,12 @@ export type RuntimeContext<TState extends Record<string, unknown> = Record<strin
     $emit: (event: string, data?: unknown) => void
     $methods: MethodsRegistry
     $exprOptions?: ExpressionOptions
-    $event?: Event  // 事件对象（在事件处理中可用）
+    /** 
+     * 事件值（在事件处理中可用）
+     * - 对于 DOM 原生事件：Event 对象
+     * - 对于 Vue 组件 emit：emit 的参数值（如 string[]、number 等）
+     */
+    $event?: unknown
     $item?: TState[keyof TState]  // 循环当前项（在 Table/loop 中可用）
     $index?: number  // 循环索引（在 Table/loop 中可用）
     // 内部方法（路径解析，不对外暴露）
@@ -163,7 +168,13 @@ export type ActionMap = {
   log: { level?: 'info' | 'warn' | 'error'; message: string }
   if: { cond: string; then?: Action[]; else?: Action[] }
   loop: { var: string; in: string; body: Action[] }
-  call: { method: string; params?: Record<string, unknown>; resultTo?: string }
+  call: { 
+    method: string; 
+    params?: Record<string, unknown>; 
+    args?: unknown[];  // 位置参数（事件数组简写格式）
+    resultTo?: string;
+    modifiers?: Record<string, boolean>  // 事件修饰符
+  }
   batch: { actions: Action[] }
   push: { path: string; value: string | unknown }
   pop: { path: string }

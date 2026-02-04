@@ -5,7 +5,7 @@
  * 示例：{ "type": "pop", "path": "items" }
  */
 
-import type { RuntimeContext, Action } from '@/types.js'
+import type { RuntimeContext, Action } from '@variojs/types'
 import { ActionError, ErrorCodes } from '@/errors.js'
 import { invalidateCache } from '@/expression/cache.js'
 

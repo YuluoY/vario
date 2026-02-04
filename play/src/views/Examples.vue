@@ -20,8 +20,32 @@
     <!-- 资源卡片 -->
     <div class="resources-section">
       <el-row :gutter="24">
-        <el-col :xs="24" :sm="8">
-          <el-card class="resource-card">
+        <el-col :xs="24" :sm="12" :md="6">
+          <el-card class="resource-card" @click="$router.push('/schema-query-demo')" style="cursor: pointer;">
+            <template #header>
+              <div class="card-header">
+                <el-icon><Search /></el-icon>
+                <span>Schema 查询演示</span>
+              </div>
+            </template>
+            <p>体验 Schema 查询功能的交互式演示</p>
+            <el-button type="primary" link>查看演示 →</el-button>
+          </el-card>
+        </el-col>
+        <el-col :xs="24" :sm="12" :md="6">
+          <el-card class="resource-card" @click="$router.push('/unit-tests')" style="cursor: pointer;">
+            <template #header>
+              <div class="card-header">
+                <el-icon><DocumentChecked /></el-icon>
+                <span>单元测试</span>
+              </div>
+            </template>
+            <p>查看 Schema 查询和性能优化的测试结果</p>
+            <el-button type="success" link>查看测试 →</el-button>
+          </el-card>
+        </el-col>
+        <el-col :xs="24" :sm="12" :md="6">
+          <el-card class="resource-card" @click="goToDocs" style="cursor: pointer;">
             <template #header>
               <div class="card-header">
                 <el-icon><Link /></el-icon>
@@ -32,8 +56,8 @@
             <el-button type="primary" link>{{ $t('examples.viewDocs') }} →</el-button>
           </el-card>
         </el-col>
-        <el-col :xs="24" :sm="8">
-          <el-card class="resource-card">
+        <el-col :xs="24" :sm="12" :md="6">
+          <el-card class="resource-card" @click="goToGithub" style="cursor: pointer;">
             <template #header>
               <div class="card-header">
                 <el-icon><Link /></el-icon>
@@ -42,18 +66,6 @@
             </template>
             <p>{{ $t('examples.sourceCodeAndContributions') }}</p>
             <el-button type="primary" link>{{ $t('examples.viewRepo') }} →</el-button>
-          </el-card>
-        </el-col>
-        <el-col :xs="24" :sm="8">
-          <el-card class="resource-card">
-            <template #header>
-              <div class="card-header">
-                <el-icon><Link /></el-icon>
-                <span>{{ $t('examples.community') }}</span>
-              </div>
-            </template>
-            <p>{{ $t('examples.joinDiscussionsAndHelp') }}</p>
-            <el-button type="primary" link>{{ $t('examples.join') }} →</el-button>
           </el-card>
         </el-col>
       </el-row>
@@ -71,7 +83,8 @@ import {
   DocumentCopy,
   View,
   Document,
-  Link
+  Link,
+  Search
 } from '@element-plus/icons-vue'
 import { ElCard, ElButton, ElIcon, ElMessage } from 'element-plus'
 import hljs from 'highlight.js'
@@ -106,6 +119,16 @@ import {
   shoppingCartExample,
   searchFilterExample
 } from '@src/examples/examples.vario'
+import {
+  eventNameModifiersExample,
+  eventArrayModifiersExample,
+  eventObjectModifiersExample,
+  modalSelfModifierExample,
+  onceModifierExample,
+  mixedModifiersExample,
+  directiveFocusExample,
+  directiveArrayExample
+} from '@src/examples/event-modifiers-demo.vario'
 import type { ExampleItem } from '@src/examples/examples.vario'
 
 // 示例卡片组件
@@ -307,7 +330,21 @@ const ExampleCard = defineComponent({
 // @ts-ignore
 const { t } = useI18n()
 
+// 跳转到文档
+const goToDocs = () => {
+  const docsUrl = import.meta.env.DEV 
+    ? 'http://localhost:5174/docs/' 
+    : (import.meta.env.BASE_URL || '/') + 'docs/'
+  window.open(docsUrl, '_blank')
+}
+
+// 跳转到 GitHub
+const goToGithub = () => {
+  window.open('https://github.com/YuluoY/vario', '_blank')
+}
+
 const examples = computed<ExampleItem[]>(() => [
+  // Schema 示例
   buttonExample,
   inputExample,
   listExample,
@@ -317,12 +354,28 @@ const examples = computed<ExampleItem[]>(() => [
   tableExample,
   dialogExample,
   tabsExample,
+  
+  // 事件修饰符示例（新增 v0.4.0）
+  eventNameModifiersExample,
+  eventArrayModifiersExample,
+  eventObjectModifiersExample,
+  modalSelfModifierExample,
+  onceModifierExample,
+  mixedModifiersExample,
+  
+  // 指令示例（新增 v0.4.0）
+  directiveFocusExample,
+  directiveArrayExample,
+  
+  // 指令示例
   setInstructionExample,
   ifInstructionExample,
   loopInstructionExample,
   emitInstructionExample,
   batchInstructionExample,
   waitInstructionExample,
+  
+  // 表达式示例
   accessExpressionExample,
   mathExpressionExample,
   arrayExpressionExample,
@@ -330,6 +383,8 @@ const examples = computed<ExampleItem[]>(() => [
   functionExpressionExample,
   nestedExpressionExample,
   logicalExpressionExample,
+  
+  // 应用示例
   calculatorExample,
   todoExample,
   shoppingCartExample,

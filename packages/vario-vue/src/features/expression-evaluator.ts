@@ -4,7 +4,7 @@
  * 负责求值 Schema 中的表达式
  */
 
-import type { RuntimeContext } from '@variojs/core'
+import type { RuntimeContext } from '@variojs/types'
 import { evaluate, extractExpression } from '@variojs/core'
 
 /**

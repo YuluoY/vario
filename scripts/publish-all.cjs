@@ -8,6 +8,7 @@ const _chalk = require('chalk')
 const chalk = _chalk && _chalk.default ? _chalk.default : _chalk
 
 const packages = [
+  'vario-types',
   'vario-core',
   'vario-schema',
   'vario-vue',
@@ -191,6 +192,7 @@ async function main() {
   }
 
   const npmNameMap = {
+    'vario-types': '@variojs/types',
     'vario-core': '@variojs/core',
     'vario-schema': '@variojs/schema',
     'vario-vue': '@variojs/vue',
@@ -253,18 +255,26 @@ async function main() {
 
     // 定义需要转换为 peerDependencies 的包映射
     const peerDepMap = {
-      'vario-vue': {
-        peerDeps: ['@variojs/core', '@variojs/schema', 'vue'],
+      'vario-core': {
+        peerDeps: ['@variojs/types'],
         peerDepsMeta: {
-          '@variojs/core': { optional: false },
-          '@variojs/schema': { optional: false },
-          'vue': { optional: false }
+          '@variojs/types': { optional: false }
         }
       },
       'vario-schema': {
-        peerDeps: ['@variojs/core'],
+        peerDeps: ['@variojs/types', '@variojs/core'],
         peerDepsMeta: {
+          '@variojs/types': { optional: false },
           '@variojs/core': { optional: false }
+        }
+      },
+      'vario-vue': {
+        peerDeps: ['@variojs/types', '@variojs/core', '@variojs/schema', 'vue'],
+        peerDepsMeta: {
+          '@variojs/types': { optional: false },
+          '@variojs/core': { optional: false },
+          '@variojs/schema': { optional: false },
+          'vue': { optional: false }
         }
       },
       'vario-cli': {

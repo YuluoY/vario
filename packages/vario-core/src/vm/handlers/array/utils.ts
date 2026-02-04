@@ -2,7 +2,7 @@
  * 数组指令工具函数
  */
 
-import type { RuntimeContext } from '@/types.js'
+import type { RuntimeContext } from '@variojs/types'
 import { evaluate } from '@/expression/evaluate.js'
 
 /**

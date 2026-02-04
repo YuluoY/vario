@@ -5,7 +5,7 @@
  */
 
 import { h, defineComponent, onMounted, onUnmounted, onUpdated, onBeforeMount, onBeforeUnmount, onBeforeUpdate, type VNode } from 'vue'
-import type { RuntimeContext } from '@variojs/core'
+import type { RuntimeContext } from '@variojs/types'
 import type { VueSchemaNode } from '../types.js'
 import { setupProvideInject } from './provide-inject.js'
 

@@ -65,7 +65,124 @@ interface UseVarioResult<TState> {
   /** 当前错误（如果有） */
   error: Ref<Error | null>
   
+  /** Schema 统计信息（惰性计算） */
+  stats: Ref<{
+    nodeCount: number  // 节点总数
+    maxDepth: number   // 最大深度
+  }>
+  
   /** 手动触发重新渲染 */
   retry: () => void
+  
+  // === Schema 查询 API ===
+  
+  /** 查找第一个匹配的节点 */
+  find: (predicate: (node: SchemaNode) => boolean) => NodeWrapper | null
+  
+  /** 查找所有匹配的节点 */
+  findAll: (predicate: (node: SchemaNode) => boolean) => NodeWrapper[]
+  
+  /** 通过 ID 查找节点（O(1) 索引查找） */
+  findById: (id: string) => NodeWrapper | null
+}
+
+interface NodeWrapper {
+  /** 节点路径 */
+  path: string
+  
+  /** 节点对象（响应式） */
+  node: SchemaNode
+  
+  /** 修改节点属性 */
+  patch: (partial: Partial<SchemaNode>) => void
+  
+  /** 获取节点属性 */
+  get: (key: string) => any
+  
+  /** 获取父节点包装器 */
+  parent: () => NodeWrapper | null
 }
 ```
+## 使用示例
+
+### 基础渲染
+
+```typescript
+import { useVario } from '@variojs/vue'
+
+const schema = {
+  type: 'div',
+  children: [
+    {
+      type: 'el-button',
+      id: 'submit-btn',
+      props: { type: 'primary' },
+      children: '提交'
+    }
+  ]
+}
+
+const { vnode, state } = useVario(schema, {
+  state: { count: 0 }
+})
+```
+
+### Schema 查询
+
+```typescript
+const { findById, find, findAll, stats } = useVario(schema, {
+  state: { /* ... */ }
+})
+
+// 通过 ID 查找（最快）
+const submitBtn = findById('submit-btn')
+if (submitBtn) {
+  submitBtn.patch({ props: { disabled: true } })
+}
+
+// 条件查找
+const firstInput = find(node => node.type === 'el-input')
+
+// 查找所有匹配节点
+const allButtons = findAll(node => node.type === 'el-button')
+allButtons.forEach(btn => {
+  btn.patch({ props: { size: 'small' } })
+})
+
+// 获取统计信息
+watchEffect(() => {
+  console.log(`节点数: ${stats.value.nodeCount}`)
+  console.log(`深度: ${stats.value.maxDepth}`)
+})
+```
+
+### 节点操作
+
+```typescript
+const node = findById('my-input')
+if (node) {
+  // 读取属性
+  console.log(node.path)  // 'children.0.children.1'
+  console.log(node.get('props').placeholder)
+  
+  // 修改属性
+  node.patch({
+    props: {
+      placeholder: '新的提示文本',
+      disabled: false
+    }
+  })
+  
+  // 获取父节点
+  const parent = node.parent()
+  if (parent) {
+    console.log('父节点类型:', parent.node.type)
+  }
+}
+```
+
+## 相关文档
+
+- [Schema 查询指南](/guide/schema-query) - 完整的查询功能说明
+- [Core Schema API](/packages/core/schema-utilities) - 框架无关的核心 API
+- [类型定义](/api/types) - 完整的 TypeScript 类型

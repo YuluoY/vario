@@ -4,9 +4,8 @@
  * 负责构建 Vue 组件的属性对象，包括 props、model 绑定、事件等
  */
 
-import type { RuntimeContext } from '@variojs/core'
+import type { RuntimeContext, PathSegment } from '@variojs/types'
 import type { SchemaNode } from '@variojs/schema'
-import type { PathSegment } from '@variojs/core'
 import { createModelBinding } from '../bindings.js'
 import type { ModelPathResolver } from './path-resolver.js'
 import type { EventHandler } from './event-handler.js'
@@ -89,6 +88,7 @@ export class AttrsBuilder {
       )
       const schemaDefault = this.pathResolver.getModelDefault(schema.model)
       const schemaLazy = this.resolveModelLazy(schema.model)
+      const schemaModifiers = this.pathResolver.getModelModifiers(schema.model)
       const binding = createModelBinding(
         schema.type,
         modelPath,
@@ -97,12 +97,13 @@ export class AttrsBuilder {
         this.getState,
         undefined,
         schemaDefault,
-        schemaLazy
+        schemaLazy,
+        schemaModifiers
       )
       Object.assign(attrs, binding)
     }
     
-    // 添加具名 model 绑定（支持 path 字符串或 { path, default?, lazy? }）
+    // 添加具名 model 绑定（支持 path 字符串或 { path, default?, lazy?, modifiers? }）
     for (const key in schema) {
       if (key.startsWith('model:')) {
         const modelName = key.slice(6)
@@ -117,6 +118,7 @@ export class AttrsBuilder {
         )
         const schemaDefault = this.pathResolver.getModelDefault(namedModel)
         const schemaLazy = this.resolveModelLazy(namedModel)
+        const schemaModifiers = this.pathResolver.getModelModifiers(namedModel)
         const binding = createModelBinding(
           schema.type,
           modelPath,
@@ -125,7 +127,8 @@ export class AttrsBuilder {
           this.getState,
           modelName,
           schemaDefault,
-          schemaLazy
+          schemaLazy,
+          schemaModifiers
         )
         Object.assign(attrs, binding)
       }
@@ -200,6 +203,7 @@ export class AttrsBuilder {
       )
       const schemaDefault = this.pathResolver.getModelDefault(schema.model)
       const schemaLazy = this.resolveModelLazy(schema.model)
+      const schemaModifiers = this.pathResolver.getModelModifiers(schema.model)
       const binding = createModelBinding(
         schema.type,
         modelPath,
@@ -208,7 +212,8 @@ export class AttrsBuilder {
         this.getState,
         undefined,
         schemaDefault,
-        schemaLazy
+        schemaLazy,
+        schemaModifiers
       )
       attrsParts.push(binding)
     }
@@ -230,6 +235,7 @@ export class AttrsBuilder {
         )
         const schemaDefault = this.pathResolver.getModelDefault(namedModel)
         const schemaLazy = this.resolveModelLazy(namedModel)
+        const schemaModifiers = this.pathResolver.getModelModifiers(namedModel)
         const binding = createModelBinding(
           schema.type,
           modelPath,
@@ -238,7 +244,8 @@ export class AttrsBuilder {
           this.getState,
           modelName,
           schemaDefault,
-          schemaLazy
+          schemaLazy,
+          schemaModifiers
         )
         attrsParts.push(binding)
       }

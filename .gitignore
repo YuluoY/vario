@@ -8,6 +8,9 @@ dist-ssr/
 *.local
 play/public/docs/
 
+# Documentation
+packages/vario-vue/docs/
+
 .claude
 .codebuddy
 .trae

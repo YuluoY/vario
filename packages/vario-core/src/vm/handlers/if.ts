@@ -6,7 +6,7 @@
  * 示例：{ "type": "if", "cond": "{{ counter < 10 }}", "then": [...], "else": [...] }
  */
 
-import type { RuntimeContext, Action } from '@/types.js'
+import type { RuntimeContext, Action } from '@variojs/types'
 import { ActionError, ErrorCodes } from '@/errors.js'
 import { evaluate, extractExpression } from '@/expression/index.js'
 import { execute } from '../executor.js'

@@ -1,29 +1,29 @@
 // Global Styles
 
 :root {
-  // Color System
+  // Color System (Blue Theme)
   --color-primary: #3B82F6;
   --color-primary-hover: #2563EB;
   --color-primary-light: #DBEAFE;
-  
-  --color-secondary: #8B5CF6;
-  --color-secondary-hover: #7C3AED;
-  --color-secondary-light: #EDE9FE;
-  
+
+  --color-secondary: #3B82F6;
+  --color-secondary-hover: #2563EB;
+  --color-secondary-light: #DBEAFE;
+
   --color-success: #10B981;
   --color-success-light: #D1FAE5;
   --color-warning: #F59E0B;
   --color-warning-light: #FEF3C7;
   --color-error: #EF4444;
   --color-error-light: #FEE2E2;
-  
-  --color-text-primary: #111827;
-  --color-text-secondary: #6B7280;
+
+  --color-text-primary: #1A1A2E;
+  --color-text-secondary: #4A4A68;
   --color-text-tertiary: #9CA3AF;
-  --color-bg-primary: #FFFFFF;
-  --color-bg-secondary: #F9FAFB;
-  --color-bg-tertiary: #F3F4F6;
-  --color-border: #E5E7EB;
+  --color-bg-primary: #FAFAFA;
+  --color-bg-secondary: #FFFFFF;
+  --color-bg-tertiary: #F5F5F5;
+  --color-border: rgba(0, 0, 0, 0.1);
   
   // Typography
   --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -92,23 +92,32 @@
   --color-text-primary: #F9FAFB;
   --color-text-secondary: #D1D5DB;
   --color-text-tertiary: #9CA3AF;
-  --color-bg-primary: #111827;
-  --color-bg-secondary: #1F2937;
-  --color-bg-tertiary: #374151;
-  --color-border: #4B5563;
-  
+  --color-bg-primary: #0F1419;
+  --color-bg-secondary: #1A1F2E;
+  --color-bg-tertiary: #252B3A;
+  --color-border: rgba(255, 255, 255, 0.08);
+
   --color-primary-light: #1E3A8A;
-  --color-secondary-light: #5B21B6;
+  --color-secondary-light: #1E40AF;
   --color-success-light: #065F46;
   --color-warning-light: #92400E;
   --color-error-light: #991B1B;
-  
+
   // Element Plus dark theme adjustments
   --el-bg-color: var(--color-bg-primary);
   --el-text-color-primary: var(--color-text-primary);
   --el-text-color-regular: var(--color-text-secondary);
   --el-border-color: var(--color-border);
   --el-fill-color-blank: var(--color-bg-secondary);
+
+  // Dark theme background with subtle blue glow
+  body {
+    background-image:
+      radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 85% 30%, rgba(56, 189, 248, 0.1) 0%, transparent 40%),
+      radial-gradient(circle at 15% 70%, rgba(59, 130, 246, 0.08) 0%, transparent 40%);
+    background-attachment: fixed;
+  }
 }
 
 // Base Reset
@@ -128,6 +137,17 @@ body {
   background-color: var(--color-bg-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+// Light theme subtle background pattern (blue)
+:root:not(.dark) {
+  body {
+    background-image:
+      radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+      radial-gradient(circle at 85% 30%, rgba(56, 189, 248, 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 15% 70%, rgba(59, 130, 246, 0.03) 0%, transparent 40%);
+    background-attachment: fixed;
+  }
 }
 
 #app {

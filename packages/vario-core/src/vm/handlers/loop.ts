@@ -5,7 +5,7 @@
  * 示例：{ "type": "loop", "var": "item", "in": "items", "body": [...] }
  */
 
-import type { RuntimeContext, Action } from '@/types.js'
+import type { RuntimeContext, Action } from '@variojs/types'
 import { ActionError, ErrorCodes } from '@/errors.js'
 import { evaluate } from '@/expression/evaluate.js'
 import { invalidateCache } from '@/expression/cache.js'

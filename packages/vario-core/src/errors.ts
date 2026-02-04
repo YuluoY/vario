@@ -4,7 +4,7 @@
  * 统一的错误基类和错误码系统
  */
 
-import type { Action } from './types.js'
+import type { Action } from '@variojs/types'
 
 /**
  * 错误上下文信息

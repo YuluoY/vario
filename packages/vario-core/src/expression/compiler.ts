@@ -8,7 +8,7 @@
  */
 
 import type * as ESTree from '@babel/types'
-import type { RuntimeContext } from '../types.js'
+import type { RuntimeContext } from '@variojs/types'
 
 /**
  * 编译后的表达式函数类型

@@ -8,7 +8,7 @@
  * 框架集成层应在创建上下文时注册该钩子
  */
 
-import type { RuntimeContext, Action } from '@/types.js'
+import type { RuntimeContext, Action } from '@variojs/types'
 import { ActionError, ErrorCodes } from '@/errors.js'
 import { evaluate } from '@/expression/evaluate.js'
 

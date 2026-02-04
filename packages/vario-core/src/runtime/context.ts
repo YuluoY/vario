@@ -5,4 +5,4 @@
  */
 
 export { createRuntimeContext } from './create-context.js'
-export type { RuntimeContext } from '../types.js'
+export type { RuntimeContext } from '@variojs/types'

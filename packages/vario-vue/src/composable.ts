@@ -29,7 +29,7 @@ import {
   type App
 } from 'vue'
 import type { Schema, SchemaNode } from '@variojs/schema'
-import type { RuntimeContext, MethodsRegistry, ExpressionOptions, OnStateChangeCallback } from '@variojs/core'
+import type { RuntimeContext, MethodsRegistry, ExpressionOptions, OnStateChangeCallback } from '@variojs/types'
 import {
   createRuntimeContext,
   invalidateCache,
@@ -39,12 +39,75 @@ import {
 import { VueRenderer, type VueRendererOptions } from './renderer.js'
 import { registerModelConfig } from './bindings.js'
 import { RefsRegistry } from './features/refs.js'
+import { createSchemaAnalyzer, type SchemaStats } from './features/schema-analyzer.js'
+import { useSchemaQuery, type SchemaQueryApi } from './composables/useSchemaQuery.js'
 
-export interface MethodContext<TState extends Record<string, unknown> = Record<string, unknown>> {
+export interface MethodContext<TState extends Record<string, unknown> = Record<string, unknown>, TEvent = unknown> {
+  /** 响应式状态对象 */
   state: TState
+  /** Schema 中定义的 params 参数 */
   params: any
-  event?: Event
+  /** 
+   * 事件值（Vue 组件 emit 的参数或原生 DOM 事件）
+   * 这是推荐的事件值访问方式，符合 Vue 开发者的直觉
+   * 
+   * @example
+   * // 使用 defineMethod 辅助函数获得类型推导
+   * methods: {
+   *   onCollapseChange: defineMethod<string[]>(({ value }) => {
+   *     // value 自动推导为 string[]
+   *     activeNames.value = value
+   *   })
+   * }
+   * 
+   * // 或者手动指定类型
+   * methods: {
+   *   onClick: (ctx: MethodContext<MyState, MouseEvent>) => {
+   *     ctx.value.preventDefault()
+   *   }
+   * }
+   */
+  value: TEvent
+  /** @deprecated 请使用 value 代替，此属性保留仅为向后兼容 */
+  event?: TEvent
+  /** 完整的运行时上下文（包含 state、$methods 等） */
   ctx: RuntimeContext<TState>
+}
+
+/**
+ * 定义带类型推导的方法处理函数
+ * 
+ * @template TEvent - 事件值类型
+ * @template TState - 状态类型
+ * @param handler - 方法处理函数
+ * @returns 原函数（仅用于类型推导）
+ * 
+ * @example
+ * ```typescript
+ * const { } = useVario(schema, {
+ *   methods: {
+ *     // value 自动推导为 string[]
+ *     onCollapseChange: defineMethod<string[]>(({ value }) => {
+ *       activeNames.value = value
+ *     }),
+ *     
+ *     // value 自动推导为 MouseEvent
+ *     onClick: defineMethod<MouseEvent>(({ value }) => {
+ *       console.log(value.clientX, value.clientY)
+ *     }),
+ *     
+ *     // 同时访问 state 和 value
+ *     onSubmit: defineMethod<FormData>(({ value, state }) => {
+ *       state.formData = value
+ *     })
+ *   }
+ * })
+ * ```
+ */
+export function defineMethod<TEvent = unknown, TState extends Record<string, unknown> = Record<string, unknown>>(
+  handler: (ctx: MethodContext<TState, TEvent>) => any
+): (ctx: MethodContext<TState, any>) => any {
+  return handler
 }
 
 export interface UseVarioOptions<TState extends Record<string, unknown> = Record<string, unknown>> {
@@ -53,7 +116,7 @@ export interface UseVarioOptions<TState extends Record<string, unknown> = Record
   /** 计算属性（Options 风格：函数）或 Composition 风格（ComputedRef） */
   computed?: Record<string, ((state: TState) => any) | ComputedRef<any>>
   /** 方法（统一注册到 $methods） */
-  methods?: Record<string, (ctx: MethodContext<TState>) => any>
+  methods?: Record<string, (ctx: MethodContext<TState, any>) => any>
   /** 双向绑定配置（非标准组件） */
   modelBindings?: Record<string, any>
   /** 事件处理 */
@@ -88,7 +151,7 @@ export interface UseVarioOptions<TState extends Record<string, unknown> = Record
   }
 }
 
-export interface UseVarioResult<TState extends Record<string, unknown>> {
+export interface UseVarioResult<TState extends Record<string, unknown>> extends SchemaQueryApi {
   vnode: Ref<VNode | null>
   state: TState
   ctx: Ref<RuntimeContext<TState>>
@@ -96,6 +159,8 @@ export interface UseVarioResult<TState extends Record<string, unknown>> {
   refs: Record<string, Ref<any>>
   /** 当前错误（如果有） */
   error: Ref<Error | null>
+  /** Schema 统计信息 */
+  stats: Ref<SchemaStats>
   /** 手动触发重新渲染（用于错误恢复） */
   retry: () => void
 }
@@ -118,6 +183,11 @@ export const useVario: UseVarioOverload = <TState extends Record<string, unknown
   options: UseVarioOptions<TState> = {}
 ): UseVarioResult<TState> => {
   const schemaRef = resolveSchema(schema)
+
+  // 1. 初始化 Schema 分析器 (Lazy)
+  const analyzer = createSchemaAnalyzer(schemaRef, {
+    lazy: true
+  })
 
   // 获取组件实例（如果可用）
   const instance = getCurrentInstance()
@@ -237,6 +307,11 @@ export const useVario: UseVarioOverload = <TState extends Record<string, unknown
     }
   })
 
+  // 2. 初始化 Query API
+  const queryApi = useSchemaQuery(schemaRef, analyzer, {
+    patchNode: (path, patch) => renderer.patchSchemaNode(path, patch)
+  })
+
   const vnodeRef = ref<VNode | null>(null)
   const errorRef = ref<Error | null>(null)
   const errorBoundaryEnabled = options.errorBoundary?.enabled !== false
@@ -331,6 +406,7 @@ export const useVario: UseVarioOverload = <TState extends Record<string, unknown
 
   // 状态变更同步到 ctx（Options/Composition 都生效）
   // 使用单独的 watchSyncing 标志，避免与 ctx._set 触发的 onStateChange 冲突
+  // 重要：使用 flush: 'sync' 确保状态同步在渲染之前完成
   let watchSyncing = false
   watch(reactiveState, () => {
     // 如果正在同步（watch 自身触发），跳过
@@ -351,7 +427,7 @@ export const useVario: UseVarioOverload = <TState extends Record<string, unknown
     } finally {
       watchSyncing = false
     }
-  }, { deep: true, flush: 'post', immediate: false })
+  }, { deep: true, flush: 'sync' })
 
   return {
     vnode: vnodeRef,
@@ -359,6 +435,8 @@ export const useVario: UseVarioOverload = <TState extends Record<string, unknown
     ctx: ctxRef,
     refs: refsRegistry.getAll(),
     error: errorRef,
+    stats: analyzer.stats,
+    ...queryApi,
     /** 手动触发重新渲染（用于错误恢复） */
     retry: () => {
       errorRef.value = null
@@ -409,7 +487,8 @@ function buildMethodsRegistry<TState extends Record<string, unknown>>(
         // ctx 的类型是 RuntimeContext，但 MethodContext 需要 RuntimeContext<TState>
         // 由于 RuntimeContext 是泛型类型，这里使用类型断言是安全的
         const methodCtx = ctx as RuntimeContext<TState>
-        const result = fn({ state: reactiveState, params, event: (ctx as any).$event, ctx: methodCtx })
+        const eventValue = (ctx as any).$event
+        const result = fn({ state: reactiveState, params, value: eventValue, event: eventValue, ctx: methodCtx })
         
         // 自动检测是否为 Promise
         if (result && typeof result === 'object' && 'then' in result && typeof (result as Promise<unknown>).then === 'function') {

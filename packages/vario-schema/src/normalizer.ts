@@ -13,8 +13,7 @@
  * - 使用深度克隆避免副作用
  */
 
-import type { ModelScopeConfig, SchemaNode } from './schema.types.js'
-import type { Action } from '@variojs/core'
+import type { ModelScopeConfig, SchemaNode, EventHandler } from './schema.types.js'
 
 /**
  * 规范化结果缓存（基于对象引用）
@@ -42,7 +41,7 @@ export function normalizeSchemaNode<TState extends Record<string, unknown>>(
     type: string
     props?: Readonly<Record<string, unknown>>
     children?: string | ReadonlyArray<SchemaNode<TState>>
-    events?: Readonly<Record<string, ReadonlyArray<Action>>>
+    events?: Readonly<Record<string, EventHandler>>
     cond?: string
     show?: string
     loop?: Readonly<{ items: string; itemKey: string; indexKey?: string }>
@@ -67,7 +66,7 @@ export function normalizeSchemaNode<TState extends Record<string, unknown>>(
     const normalizedEvents = normalizeEvents(node.events)
     // 只有当规范化后仍有事件时才添加
     if (Object.keys(normalizedEvents).length > 0) {
-      normalized.events = normalizedEvents as Readonly<Record<string, ReadonlyArray<Action>>>
+      normalized.events = normalizedEvents
     }
   }
 
@@ -191,17 +190,22 @@ function normalizeExpressionString(str: string): string {
  * - 移除空数组
  */
 function normalizeEvents(
-  events: Readonly<Record<string, ReadonlyArray<unknown>>>
-): Readonly<Record<string, ReadonlyArray<unknown>>> {
-  const normalized: Record<string, ReadonlyArray<unknown>> = {}
+  events: Readonly<Record<string, EventHandler>>
+): Readonly<Record<string, EventHandler>> {
+  const normalized: Record<string, EventHandler> = {}
 
-  for (const [eventName, instructions] of Object.entries(events)) {
+  for (const [eventName, handler] of Object.entries(events)) {
+    // 跳过 undefined 或 null
+    if (handler == null) {
+      continue
+    }
+    
     // 跳过空数组
-    if (instructions.length === 0) {
+    if (Array.isArray(handler) && handler.length === 0) {
       continue
     }
 
-    normalized[eventName] = instructions
+    normalized[eventName] = handler
   }
 
   return normalized

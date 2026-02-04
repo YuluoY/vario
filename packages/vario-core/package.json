@@ -1,6 +1,6 @@
 {
   "name": "@variojs/core",
-  "version": "0.0.2",
+  "version": "0.1.1",
   "description": "Vario Core Runtime - Instruction VM, Expression System, Runtime Context",
   "type": "module",
   "main": "./dist/index.js",
@@ -13,18 +13,20 @@
     }
   },
   "scripts": {
-    "build": "tsc",
-    "postbuild": "tsc-alias && node ../../scripts/minify.js",
-    "dev": "tsc --watch",
+    "build": "tsup",
+    "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "clean": "rm -rf dist"
   },
   "dependencies": {
     "@babel/parser": "^7.23.6",
-    "@babel/types": "^7.23.6"
+    "@babel/types": "^7.23.6",
+    "@variojs/types": "workspace:*",
+    "@variojs/schema": "workspace:*"
   },
   "devDependencies": {
+    "tsc-alias": "^1.8.8",
     "typescript": "^5.3.3",
     "vitest": "^1.2.0"
   },

@@ -6,7 +6,7 @@
  * - 拦截属性设置操作
  */
 
-import type { RuntimeContext } from '../types.js'
+import type { RuntimeContext } from '@variojs/types'
 
 /**
  * 创建受保护的 Proxy 上下文

@@ -558,6 +558,177 @@ export default {
 
   // Home View - 首页
   home: {
+    // Hero Section
+    hero: {
+      eyebrow: '开源 DSL 框架',
+      title: 'VARIO',
+      subtitle: '声明式 UI 行为框架',
+      desc: '用 JSON Schema 描述 UI 结构、状态绑定与事件，由框架无关的核心运行时执行，实现逻辑与实现的真正解耦',
+      docs: '文档',
+      github: 'GitHub',
+      demo: '在线演示',
+      docsUrl: 'https://yuluoy.github.io/vario/docs',
+      githubUrl: 'https://github.com/YuluoY/vario',
+      playground: '开始演练',
+      examples: '浏览示例',
+      scroll: '滚动探索',
+      startProject: '开始项目',
+      readDocs: '阅读文档',
+      stat1Value: '精准局部',
+      stat1Label: 'Path Memo 渲染',
+      stat2Value: '<1ms',
+      stat2Label: '表达式执行',
+      stat3Value: 'O(1)',
+      stat3Label: 'Schema 查询'
+    },
+
+    // Why Section
+    why: {
+      title: '为什么需要 Vario',
+      painTitle: '传统方案问题',
+      painLabel: '传统方案',
+      pain1: '业务逻辑与 UI 实现强耦合，代码难以维护和演进',
+      pain2: '表单行为、验证规则分散在组件中，难以复用',
+      pain3: '复杂交互需要反复手写状态绑定和事件处理',
+      varioTitle: 'Vario 解法',
+      vario1: 'Schema 统一描述结构、校验规则与交互行为',
+      vario2: 'Action VM 提供安全、确定性的执行引擎',
+      vario3: '三层架构解耦，同一 DSL 跨框架复用'
+    },
+
+    // Skills Section
+    skills: {
+      title: '核心能力',
+      schema: {
+        title: 'Schema 驱动 UI',
+        desc: 'JSON 即文档，结构、校验与行为统一描述，代码即设计'
+      },
+      vm: {
+        title: '行为虚拟机',
+        desc: 'Action VM 提供确定性的指令执行，无需 eval，安全可控'
+      },
+      runtime: {
+        title: '框架无关 Runtime',
+        desc: 'Core 层零依赖，同一 DSL 运行于 Vue、React 或自定义渲染器'
+      },
+      memo: {
+        title: '高性能 Path Memo',
+        desc: '按路径缓存子树 VNode，状态更新时精准重渲染，性能提升 2-88 倍'
+      },
+      sandbox: {
+        title: '安全执行沙箱',
+        desc: 'AST 白名单验证 + 执行步数限制，杜绝恶意代码注入'
+      },
+      expression: {
+        title: '智能表达式系统',
+        desc: '自动依赖追踪与缓存，支持双大括号模板语法，状态变更时精准更新'
+      }
+    },
+
+    // Architecture Section
+    arch: {
+      title: '架构分层',
+      core: {
+        title: 'Core 引擎',
+        desc: 'RuntimeContext 状态管理 + 表达式系统 + Action VM 指令执行，框架无关的基础设施',
+        features: 'RuntimeContext,表达式系统,Action VM'
+      },
+      schema: {
+        title: 'Schema 层',
+        desc: '类型定义、验证、规范化与 defineSchema API，提供完整的类型推导支持',
+        features: '类型定义,验证与规范化,defineSchema API'
+      },
+      renderer: {
+        title: 'Renderer 渲染器',
+        desc: '将 Schema 映射到 Vue、React 或自定义渲染器，实现真正的跨框架复用',
+        features: 'Vue 3 渲染器,React 支持规划中,自定义渲染器 API'
+      }
+    },
+
+    // Usage Section
+    usage: {
+      title: '使用方式',
+      feature1: 'TypeScript 原生支持，完整类型推导',
+      feature2: '渐进式集成，无需重写现有代码',
+      feature3: '统一的事件与状态变更出口'
+    },
+
+    // Scenarios Section
+    scenarios: {
+      title: '适用场景',
+      lowcode: '低代码平台',
+      lowcodeDesc: '拖拽生成 Schema，动态渲染表单与工作流',
+      editor: '可视化编辑器',
+      editorDesc: '配置即界面，实时预览与导出代码',
+      form: '表单引擎',
+      formDesc: '复杂表单验证与联动，逻辑与表现分离',
+      ai: 'AI + DSL',
+      aiDesc: 'AI 生成 Schema，人机协同构建界面'
+    },
+
+    // Ecosystem Section
+    eco: {
+      title: '生态与行动',
+      desc: '文档、示例与源码已准备好。Vario 是 MIT 协议开源项目，欢迎贡献与反馈。',
+      github: 'GitHub',
+      docs: '文档',
+      examples: '示例',
+      githubUrl: 'https://github.com/YuluoY/vario',
+      docsUrl: 'https://yuluoy.github.io/vario/docs'
+    },
+
+    // Code Examples - 代码示例文案
+    codeExamples: {
+      placeholder: '请输入用户名',
+      submit: '提交',
+      counterTitle: '计数器示例'
+    },
+
+    // Theme
+    switchToLight: '切换到浅色模式',
+    switchToDark: '切换到深色模式',
+
+    // Core Section
+    core: {
+      title: '核心引擎',
+      reactive: {
+        title: '响应式引擎',
+        desc: '专为极致性能打造的下一代响应式系统'
+      },
+      typeSafe: {
+        title: '类型安全',
+        desc: '原生 TypeScript 支持，提供深度类型推导'
+      },
+      universal: {
+        title: '全平台通用',
+        desc: '随处运行：浏览器、Node.js 及边缘计算环境'
+      },
+      security: {
+        title: '企业级安全',
+        desc: '内置 AST 白名单与沙箱机制，拒绝恶意代码'
+      }
+    },
+
+    // Performance Section
+    performance: {
+      title: '极致性能',
+      metric1: 'OPS',
+      metric1Label: '每秒操作数',
+      metric2: 'KB',
+      metric2Label: '超轻量体积',
+      metric3: 'ms',
+      metric3Label: '冷启动时间',
+      desc: '比传统方案快 10 倍的编译与执行速度'
+    },
+
+    // Ecosystem Section
+    ecosystem: {
+      title: '无缝集成',
+      vue: '完美支持 Vue 3',
+      react: '即将支持 React',
+      desc: '与现代前端生态完美融合，即插即用'
+    },
+
     welcomeTitle: '欢迎来到 Vario 测试平台',
     welcomeSubtitle: 'Vario - UI 行为中间表示 + 运行时 VM 综合测试平台',
     startTesting: '开始测试',
@@ -575,10 +746,10 @@ export default {
     feature5Desc: '可扩展架构，支持自定义功能和集成',
     feature6Title: '类型安全',
     feature6Desc: '完整的 TypeScript 支持，提供全面的类型定义',
-    stat1Label: '核心模块',
-    stat2Label: '测试用例',
+    stat1Label: '核心包',
+    stat2Label: '测试文件',
     stat3Label: '示例',
-    stat4Label: '文档',
+    stat4Label: '代码覆盖率',
     gettingStarted: '快速开始',
     step1Timestamp: '步骤 1',
     step1Title: '探索单元测试',
@@ -650,8 +821,43 @@ export default {
     todoApp: '待办事项应用',
     shoppingCartApp: '购物车应用',
     searchFilterApp: '搜索过滤应用',
+    
+    // 事件修饰符示例（v0.4.0 新增）
+    eventNameModifiers: '事件名修饰符',
+    eventArrayModifiers: '数组简写修饰符',
+    eventObjectModifiers: '对象修饰符',
+    modalSelfModifier: '模态框 .self 修饰符',
+    onceModifier: '.once 修饰符',
+    mixedModifiers: '混合使用修饰符',
+    
+    // 指令示例（v0.4.0 新增）
+    directiveFocus: 'focus 指令',
+    directiveArray: '数组简写指令',
+    
     copy: '复制',
-    copied: '已复制'
+    copied: '已复制',
+    
+    // ECharts 配置示例（新增）
+    echartsConfig: {
+      title: 'ECharts 配置演示',
+      description: '使用 Vario-Vue 完整特性构建 ECharts 配置界面，支持表格/JSON视图切换、动态调整 series、类型切换等功能',
+      configuration: '配置',
+      tableView: '表格视图',
+      jsonView: 'JSON 视图',
+      seriesCount: 'Series 数量',
+      seriesConfiguration: 'Series 配置',
+      name: '名称',
+      type: '类型',
+      stack: '堆叠',
+      stackPlaceholder: '留空表示不堆叠',
+      smooth: '平滑曲线',
+      typeBar: '柱状图',
+      typeLine: '折线图',
+      typePie: '饼图',
+      typeScatter: '散点图',
+      fullOptions: '完整 Options 配置',
+      preview: '图表预览'
+    }
   },
 
   // Integration Tests View - 集成测试页
@@ -813,7 +1019,8 @@ export default {
     defaultCodeComment2: '编写 Schema 定义，点击"运行"查看效果',
     counterLabel: '计数器',
     increment: '增加',
-    decrement: '减少'
+    decrement: '减少',
+    autoRun: '自动运行'
   },
 
   // App - 应用导航

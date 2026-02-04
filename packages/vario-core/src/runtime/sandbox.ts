@@ -6,7 +6,7 @@
  * - 方法层：白名单控制，可访问全局对象
  */
 
-import type { RuntimeContext } from '../types.js'
+import type { RuntimeContext } from '@variojs/types'
 
 /**
  * 创建表达式沙箱上下文

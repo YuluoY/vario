@@ -10,7 +10,7 @@
  * 参考架构图：vario-core/vm - Action VM
  */
 
-import type { RuntimeContext, Action } from '../types.js'
+import type { RuntimeContext, Action } from '@variojs/types'
 import { ActionError, ServiceError, ErrorCodes } from '../errors.js'
 
 /**

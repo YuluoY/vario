@@ -4,7 +4,7 @@
  * 整合解析、验证、缓存、求值流程
  */
 
-import type { RuntimeContext, ExpressionOptions } from '../types.js'
+import type { RuntimeContext, ExpressionOptions } from '@variojs/types'
 import { ExpressionError, ErrorCodes } from '../errors.js'
 import { parseExpression } from './parser.js'
 import { validateAST } from './whitelist.js'

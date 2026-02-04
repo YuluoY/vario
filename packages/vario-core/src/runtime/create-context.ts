@@ -8,11 +8,11 @@
 import type {
   RuntimeContext,
   CreateContextOptions,
-  OnStateChangeCallback,
   MethodsRegistry,
   GetPathValue,
   SetPathValue,
-} from '../types.js'
+  OnStateChangeCallback
+} from '@variojs/types'
 import { createProxy } from './proxy.js'
 import { registerBuiltinMethods } from '../vm/handlers/index.js'
 import { getPathValue as getPath, setPathValue as setPath } from './path.js'

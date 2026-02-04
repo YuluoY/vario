@@ -6,8 +6,9 @@
     "baseUrl": "./src",
     "paths": {
       "@/*": ["./*"],
-      "@vario/core": ["../../vario-core/dist/index.d.ts"],
-      "@vario/schema": ["../../vario-schema/dist/index.d.ts"]
+      "@variojs/types": ["../vario-types/src/index.ts"],
+      "@variojs/core": ["../vario-core/src/index.ts"],
+      "@variojs/schema": ["../vario-schema/src/index.ts"]
     },
     "types": ["node"],
     "moduleResolution": "node",

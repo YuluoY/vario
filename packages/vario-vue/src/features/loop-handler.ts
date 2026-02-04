@@ -2,6 +2,7 @@
  * 循环处理模块
  *
  * 负责处理 Schema 中的循环渲染；支持 parentMap / nodeContext 供事件中 $parent 使用。
+ * 可选列表项组件化（loopItemAsComponent）：每项独立 Vue 组件，仅该项 props 变化时 re-render。
  */
 
 import { h, Fragment, type VNode } from 'vue'
@@ -10,6 +11,7 @@ import type { SchemaNode } from '@variojs/schema'
 import { createLoopContext, type PathSegment } from '@variojs/core'
 import type { ModelPathResolver } from './path-resolver.js'
 import type { ParentMap } from './node-context.js'
+import { LoopItemCell } from './loop-item-cell.js'
 
 export type CreateVNodeFn = (
   schema: SchemaNode,
@@ -20,6 +22,14 @@ export type CreateVNodeFn = (
   path?: string
 ) => VNode | null
 
+export type RenderNodeForLoopItemFn = (
+  schema: SchemaNode,
+  ctx: RuntimeContext,
+  modelPathStack: PathSegment[],
+  nodeContext: { parent?: SchemaNode; siblings?: SchemaNode[]; selfIndex?: number; path?: string } | undefined,
+  path: string
+) => VNode | null
+
 /**
  * 循环处理器
  */
@@ -27,7 +37,9 @@ export class LoopHandler {
   constructor(
     private pathResolver: ModelPathResolver,
     private createVNode: CreateVNodeFn,
-    private evaluateExpr: (expr: string, ctx: RuntimeContext) => any
+    private evaluateExpr: (expr: string, ctx: RuntimeContext) => any,
+    private loopItemAsComponent: boolean = false,
+    private getRenderNodeForLoopItem?: (parentMap: ParentMap) => RenderNodeForLoopItemFn
   ) {}
 
   /**
@@ -87,25 +99,21 @@ export class LoopHandler {
       )
     }
 
+    const useLoopItemComponent =
+      this.loopItemAsComponent &&
+      this.getRenderNodeForLoopItem != null &&
+      parentMap != null
+    const renderNodeForItem = useLoopItemComponent
+      ? this.getRenderNodeForLoopItem!(parentMap!)
+      : null
+
     // 创建循环子节点（优化：稳定的key生成）
     const children = items
       .map((item: any, index: number) => {
         try {
-          // 创建循环上下文（使用 Object.create 保持原型链，继承 _get/_set 等方法）
-          const loopCtx = createLoopContext(ctx, item, index)
-          
-          // 设置 itemKey 对应的变量名
-          loopCtx[loop.itemKey] = item
-
-          // 添加indexKey（如果指定）
-          if (loop.indexKey) {
-            loopCtx[loop.indexKey] = index
-          }
-
-          // 创建子节点（排除 loop 和已处理的 model 属性，避免递归和重复处理）
+          // 创建子节点 schema（排除 loop 和已处理的 model 属性）
           const childSchema = { ...schema }
           delete (childSchema as any).loop
-          // 若 model 的 path 与 loop.items 相同，子节点不再带 model，避免重复压栈
           const modelPathVal = this.pathResolver.getModelPath(schema.model)
           if (modelPathVal) {
             const extracted = this.pathResolver.extractModelPath(modelPathVal)
@@ -113,35 +121,55 @@ export class LoopHandler {
               delete (childSchema as any).model
             }
           }
-          
           this.markLoopSchema(childSchema, loop.items)
+
+          const loopPathStack: PathSegment[] = [...basePathStack, index]
+          const itemPath = parentPath ? `${parentPath}.[${index}]` : `[${index}]`
+          const keyValue = this.getLoopItemKey(item, loop.itemKey, index)
+
+          if (useLoopItemComponent && renderNodeForItem) {
+            return h(LoopItemCell, {
+              key: keyValue,
+              item,
+              index,
+              childSchema,
+              parentSchema: schema,
+              parentCtx: ctx,
+              modelPathStack: basePathStack,
+              parentPath,
+              itemPath,
+              itemKey: loop.itemKey,
+              indexKey: loop.indexKey,
+              loop,
+              renderNode: renderNodeForItem,
+              getLoopItemKey: (i: any, k: string, idx: number) => this.getLoopItemKey(i, k, idx)
+            })
+          }
 
           if (parentMap != null) {
             parentMap.set(childSchema, schema)
           }
-          const loopPathStack: PathSegment[] = [...basePathStack, index]
-          const itemPath = parentPath ? `${parentPath}.[${index}]` : `[${index}]`
+          const loopCtx = createLoopContext(ctx, item, index)
+          ;(loopCtx as Record<string, unknown>)[loop.itemKey] = item
+          if (loop.indexKey) {
+            ;(loopCtx as Record<string, unknown>)[loop.indexKey] = index
+          }
           const vnode = this.createVNode(childSchema, loopCtx, loopPathStack, {
             parent: schema,
             siblings: [],
             selfIndex: index,
             path: itemPath
           }, parentMap, itemPath)
-          
-          // 生成稳定的key（基于itemKey或index）
           if (vnode && typeof vnode === 'object' && 'key' in vnode) {
-            const keyValue = this.getLoopItemKey(item, loop.itemKey, index)
             ;(vnode as any).key = keyValue
           }
-          
           return vnode
         } catch (error) {
-          // 单个项渲染错误，返回错误节点
           const errorMessage = error instanceof Error ? error.message : String(error)
           console.warn(`Loop item render error at index ${index}:`, errorMessage)
-          return h('div', { 
+          return h('div', {
             key: `error-${index}`,
-            style: 'color: red; padding: 5px;' 
+            style: 'color: red; padding: 5px;'
           }, `Render error: ${errorMessage}`)
         }
       })

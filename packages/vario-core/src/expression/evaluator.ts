@@ -8,7 +8,7 @@
  */
 
 import type * as ESTree from '@babel/types'
-import type { RuntimeContext, ExpressionOptions } from '../types.js'
+import type { RuntimeContext, ExpressionOptions } from '@variojs/types'
 import { ExpressionError, ErrorCodes } from '../errors.js'
 import { isSafePropertyAccess } from '../runtime/sandbox.js'
 

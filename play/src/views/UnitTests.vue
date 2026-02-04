@@ -36,6 +36,11 @@
       <el-tab-pane :label="$t('unitTests.securityNav')" name="security">
         <SecurityTests />
       </el-tab-pane>
+
+      <!-- Schema Query Tests -->
+      <el-tab-pane label="Schema 查询" name="schema-query">
+        <SchemaQueryTests />
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
@@ -49,6 +54,7 @@ import InstructionTests from '@src/components/InstructionTests.vue'
 import SchemaTests from '@src/components/SchemaTests.vue'
 import PerformanceTests from '@src/components/PerformanceTests.vue'
 import SecurityTests from '@src/components/SecurityTests.vue'
+import SchemaQueryTests from '@src/components/SchemaQueryTests.vue'
 
 const activeTab = ref('vue')
 </script>

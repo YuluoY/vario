@@ -5,7 +5,7 @@
  * 示例：{ "type": "batch", "actions": [...] }
  */
 
-import type { RuntimeContext, Action } from '@/types.js'
+import type { RuntimeContext, Action } from '@variojs/types'
 import { ActionError, BatchError, ErrorCodes } from '@/errors.js'
 import { execute } from '../executor.js'
 

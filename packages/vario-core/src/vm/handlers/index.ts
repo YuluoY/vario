@@ -4,7 +4,7 @@
  * 所有内置动作统一注册到 ctx.$methods
  */
 
-import type { RuntimeContext, MethodHandler } from '@/types.js'
+import type { RuntimeContext, MethodHandler } from '@variojs/types'
 import { handleSet } from './set.js'
 import { handleEmit } from './emit.js'
 import { handleIf } from './if.js'

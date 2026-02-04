@@ -8,7 +8,13 @@
             {{ $t('playground.run') }}
           </el-button>
           <el-button :icon="Refresh" @click="resetCode">{{ $t('playground.reset') }}</el-button>
+          <el-button @click="formatCode">{{ $t('playground.format') }}</el-button>
         </el-button-group>
+        <el-switch
+          v-model="autoRun"
+          :active-text="$t('playground.autoRun')"
+          style="margin-left: 16px;"
+        />
       </div>
       <div class="playground__toolbar-right">
         <el-button-group>
@@ -74,11 +80,21 @@
               :closable="false"
             />
           </div>
-          <div v-else-if="!vnode" class="playground__empty">
-            <el-empty :description="$t('playground.writeCodeHint')" />
+          <div v-else-if="!component" class="playground__empty">
+            <el-empty description="编写 Schema 和方法来测试 Vario">
+              <template #extra>
+                <div class="playground__shortcuts">
+                  <p><kbd>Ctrl/Cmd + S</kbd> 或 <kbd>Ctrl/Cmd + Enter</kbd> 运行代码</p>
+                  <p><kbd>Ctrl/Cmd + Shift + F</kbd> 格式化代码</p>
+                  <p style="margin-top: 12px; color: var(--text-secondary);">
+                    💡 提示：定义 schema、initialState 和 methods，点击运行查看效果
+                  </p>
+                </div>
+              </template>
+            </el-empty>
           </div>
           <div v-else class="playground__render">
-            <component v-if="vnode" :is="vnode" />
+            <component v-if="component" :is="component" />
           </div>
         </div>
         <!-- 运行时状态面板 -->
@@ -98,14 +114,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, getCurrentInstance, type VNode } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, getCurrentInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { VideoPlay, Refresh, Document, FullScreen, Aim, View, Hide } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import MonacoEditor from 'monaco-editor-vue3'
 import * as monaco from 'monaco-editor'
 import { useVario } from '@variojs/vue'
-import type { Schema } from '@variojs/schema'
+
 
 const { t } = useI18n()
 const instance = getCurrentInstance()
@@ -149,14 +165,34 @@ const editorOptions = {
   formatOnType: true,
   readOnly: false,
   cursorStyle: 'line' as const,
-  fontFamily: "'JetBrains Mono', 'Fira Code', monospace"
+  fontFamily: "'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', monospace",
+  suggestOnTriggerCharacters: true,
+  quickSuggestions: {
+    other: true,
+    comments: false,
+    strings: false
+  },
+  parameterHints: {
+    enabled: true
+  },
+  acceptSuggestionOnEnter: 'on' as const,
+  bracketPairColorization: {
+    enabled: true
+  },
+  guides: {
+    bracketPairs: true,
+    indentation: true
+  },
+  folding: true,
+  foldingStrategy: 'indentation' as const,
+  showFoldingControls: 'always' as const,
+  matchBrackets: 'always' as const,
+  snippetSuggestions: 'inline' as const
 }
 
 // 默认代码模板
 function getDefaultCode(): string {
-  return `// ${t('playground.defaultCodeComment1')}
-// ${t('playground.defaultCodeComment2')}
-
+  return `// 定义 Schema
 const schema = {
   type: 'div',
   props: {
@@ -178,7 +214,7 @@ const schema = {
         {
           type: 'div',
           props: { style: 'font-size: 18px; margin-bottom: 16px;' },
-          children: '${t('playground.counterLabel')}: {{ count }}'
+          children: '计数器: {{ count }}'
         },
         {
           type: 'ElSpace',
@@ -190,7 +226,7 @@ const schema = {
               events: {
                 click: [{ type: 'call', method: 'increment' }]
               },
-              children: '${t('playground.increment')}'
+              children: '增加'
             },
             {
               type: 'ElButton',
@@ -198,7 +234,7 @@ const schema = {
               events: {
                 click: [{ type: 'call', method: 'decrement' }]
               },
-              children: '${t('playground.decrement')}'
+              children: '减少'
             }
           ]
         }
@@ -207,10 +243,12 @@ const schema = {
   ]
 }
 
+// 定义初始状态
 const initialState = {
   count: 0
 }
 
+// 定义方法
 const methods = {
   increment: ({ state }) => {
     state.count++
@@ -228,10 +266,22 @@ const error = ref<string | null>(null)
 const isFullscreen = ref(false)
 const showEditor = ref(true)
 const showState = ref(true)
-const vnode = ref<VNode | null>(null)
+const vnodeRef = ref<any>(null) // 存储 useVario 返回的 vnode Ref
 const runtimeState = ref<any>(null)
 const monacoEditorRef = ref<any>(null)
 const editorInstance = ref<any>(null)
+const autoRun = ref(false)
+
+// 计算属性：将 vnodeRef（可能是 Ref<VNode>）转换为渲染用的组件
+// vnodeRef.value 本身是一个 Ref，所以需要解包两层
+const component = computed(() => {
+  if (!vnodeRef.value) return null
+  // vnodeRef.value 是 useVario 返回的 vnode Ref，它的 .value 才是实际的 VNode
+  return vnodeRef.value.value ?? vnodeRef.value
+})
+
+// 防抖定时器
+let autoRunTimer: ReturnType<typeof setTimeout> | null = null
 
 // 状态类型和文本
 const statusType = computed(() => {
@@ -246,30 +296,39 @@ const statusText = computed(() => {
   return t('playground.ready')
 })
 
-
 // 代码变化处理
 function onCodeChange(value: string) {
   code.value = value
+  
+  // 自动运行
+  if (autoRun.value) {
+    if (autoRunTimer) {
+      clearTimeout(autoRunTimer)
+    }
+    autoRunTimer = setTimeout(() => {
+      runCode()
+    }, 1000) // 1秒防抖
+  }
 }
 
 // 运行代码
 async function runCode() {
   isRunning.value = true
   error.value = null
-  vnode.value = null
+  vnodeRef.value = null
   runtimeState.value = null
 
   try {
-    // 解析代码
-    const result = parseCode(code.value)
-    if (!result) {
-      throw new Error(t('playground.parseError'))
+    // 解析代码获取 schema, state, methods
+    const parsed = parseCode(code.value)
+    if (!parsed) {
+      throw new Error('无法解析代码')
     }
 
-    const { schema, state, methods: userMethods } = result
+    const { schema, state, methods: userMethods } = parsed
 
     // 使用 useVario 渲染
-    const { vnode: renderedVnode, state: reactiveState } = useVario(schema, {
+    const result = useVario(schema, {
       app: instance?.appContext.app || null,
       state: state || {},
       methods: userMethods || {},
@@ -279,107 +338,82 @@ async function runCode() {
       }
     })
 
-    // vnode 是 Ref，需要监听其变化
-    watch(
-      renderedVnode,
-      (newVnode) => {
-        vnode.value = newVnode
-      },
-      { immediate: true }
-    )
+    // 保存 vnode ref（用于渲染）
+    vnodeRef.value = result.vnode
 
     // 监听状态变化
     watch(
-      reactiveState,
+      () => result.state,
       (newState) => {
-        runtimeState.value = JSON.parse(JSON.stringify(newState))
+        try {
+          runtimeState.value = JSON.parse(JSON.stringify(newState))
+        } catch (e) {
+          // 忽略循环引用等错误
+        }
       },
       { deep: true, immediate: true }
     )
 
-    ElMessage.success(t('playground.runSuccess'))
+    if (!autoRun.value) {
+      ElMessage.success(t('playground.runSuccess'))
+    }
   } catch (err: any) {
     error.value = err.message || t('playground.parseError')
     console.error('[Playground] Parse error:', err)
-    ElMessage.error(err.message || t('playground.parseError'))
+    if (!autoRun.value) {
+      ElMessage.error(err.message || t('playground.parseError'))
+    }
   } finally {
     isRunning.value = false
   }
 }
 
 // 解析代码
-function parseCode(codeStr: string): { schema: Schema; state?: any; methods?: any } | null {
+function parseCode(codeStr: string): { schema: any; state?: any; methods?: any } | null {
   try {
-    // 简单的代码处理：只移除 export 和 import，保留其他语法
+    // 处理代码：移除类型注解和 import/export
     let processedCode = codeStr
-      // 移除 export 关键字（行首匹配）
+      // 移除 import 语句
+      .replace(/^import\s+.*?from\s+['"].*?['"];?\s*$/gm, '')
+      // 移除 export 关键字
       .replace(/^(\s*)export\s+const\s+/gm, '$1const ')
       .replace(/^(\s*)export\s+default\s+/gm, '$1')
-      // 移除 import 语句（整行）
-      .replace(/^import\s+.*?from\s+['"].*?['"];?\s*$/gm, '')
-      // 移除简单的类型注解（只匹配常见的）
-      .replace(/:\s*Schema\s*/g, ' ')
-      .replace(/:\s*App\s*/g, ' ')
-      .replace(/:\s*Record<string,\s*unknown>\s*/g, ' ')
-      // 移除函数参数中的 : any
-      .replace(/\(([^)]*?):\s*any\s*([^)]*?)\)/g, '($1$2)')
-      // 移除变量声明中的 : any（但不在对象字面量中）
-      .replace(/\bconst\s+(\w+):\s*any\s*=/g, 'const $1 =')
-      .replace(/\blet\s+(\w+):\s*any\s*=/g, 'let $1 =')
-      .replace(/\bvar\s+(\w+):\s*any\s*=/g, 'var $1 =')
+      // 移除类型注解
+      .replace(/:\s*Schema\b/g, '')
+      .replace(/:\s*any\b/g, '')
       // 清理多余的空行
       .replace(/\n{3,}/g, '\n\n')
       .trim()
 
-    // 创建一个安全的执行环境
-    const exports: any = {}
-    const module = { exports }
-
-    // 提取 schema, initialState, methods
-    const func = new Function(
-      'exports',
-      'module',
-      `
+    // 创建执行环境
+    const result: any = {}
+    
+    // 使用 Function 构造器执行代码
+    const executor = new Function('result', `
       ${processedCode}
       
-      // 支持多种导出方式
-      let result = null
+      // 收集变量
+      if (typeof schema !== 'undefined') result.schema = schema
+      if (typeof initialState !== 'undefined') result.state = initialState
+      if (typeof state !== 'undefined' && !result.state) result.state = state
+      if (typeof methods !== 'undefined') result.methods = methods
       
-      if (typeof schema !== 'undefined') {
-        result = { 
-          schema: schema, 
-          initialState: typeof initialState !== 'undefined' ? initialState : (typeof state !== 'undefined' ? state : {}),
-          methods: typeof methods !== 'undefined' ? methods : {}
-        }
-      } else if (typeof exports.schema !== 'undefined') {
-        result = exports
-      } else if (module.exports && module.exports.schema) {
-        result = module.exports
-      }
-      
-      if (!result || !result.schema) {
-        throw new Error(t('playground.schemaNotFound'))
-      }
-      
-      module.exports = result
-    `
-    )
-
-    func(exports, module)
-
-    const result = module.exports
-    if (!result || !result.schema) {
+      return result
+    `)
+    
+    const parsed = executor(result)
+    
+    if (!parsed || !parsed.schema) {
       throw new Error(t('playground.noSchemaFound'))
     }
 
     return {
-      schema: result.schema,
-      state: result.initialState || result.state || {},
-      methods: result.methods || {}
+      schema: parsed.schema,
+      state: parsed.state || {},
+      methods: parsed.methods || {}
     }
   } catch (err: any) {
     console.error('[Playground] Parse error:', err)
-    console.error('[Playground] Code snippet:', codeStr.substring(0, 200))
     throw new Error(`${t('playground.codeParseFailed')}: ${err.message}`)
   }
 }
@@ -388,9 +422,26 @@ function parseCode(codeStr: string): { schema: Schema; state?: any; methods?: an
 function resetCode() {
   code.value = getDefaultCode()
   error.value = null
-  vnode.value = null
+  vnodeRef.value = null
   runtimeState.value = null
   ElMessage.success(t('playground.codeReset'))
+}
+
+// 格式化代码
+function formatCode() {
+  const editor = getEditorInstance()
+  if (!editor) {
+    ElMessage.warning('编辑器未就绪')
+    return
+  }
+  
+  try {
+    editor.getAction('editor.action.formatDocument')?.run()
+    ElMessage.success('代码已格式化')
+  } catch (err) {
+    console.error('[Playground] Format error:', err)
+    ElMessage.error('格式化失败')
+  }
 }
 
 // 全屏功能
@@ -512,13 +563,30 @@ function setupMonacoShortcuts() {
   }
   
   try {
-    // 添加 Ctrl+S / Cmd+S 快捷键，保存并自动运行
+    // Ctrl+S / Cmd+S - 保存并运行
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
-      // 自动运行代码
       if (!isRunning.value) {
         runCode()
       }
     })
+    
+    // Ctrl+Enter / Cmd+Enter - 运行代码
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+      if (!isRunning.value) {
+        runCode()
+      }
+    })
+    
+    // Ctrl+Shift+F / Cmd+Shift+F - 格式化代码
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyF, () => {
+      editor.getAction('editor.action.formatDocument')?.run()
+    })
+    
+    // Ctrl+/ / Cmd+/ - 切换注释（这个已经内置，只是确保可用）
+    // editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Slash, () => {
+    //   editor.getAction('editor.action.commentLine')?.run()
+    // })
+    
   } catch (err) {
     console.warn('[Playground] Failed to setup shortcuts:', err)
   }
@@ -550,6 +618,11 @@ onMounted(() => {
       }, 100)
     }
   })
+  
+  // 初始自动运行一次
+  setTimeout(() => {
+    runCode()
+  }, 800)
 })
 
 onUnmounted(() => {
@@ -628,18 +701,19 @@ onUnmounted(() => {
     display: flex;
     flex: 1;
     overflow: hidden;
-    gap: 1px;
-    background: var(--border-default);
+    background: var(--bg-base);
     min-height: 0;
+    position: relative;
   }
 
   // 编辑器区域
   &__editor {
-    flex: 1;
+    flex: 0 0 50%;
     display: flex;
     flex-direction: column;
-    background: var(--bg-base);
-    min-width: 0;
+    background: var(--bg-card);
+    min-width: 300px;
+    border-right: 1px solid var(--border-default);
     transition: all $transition-base;
 
     &--hidden {
@@ -683,8 +757,9 @@ onUnmounted(() => {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background: var(--bg-base);
-    min-width: 0;
+    background: var(--bg-card);
+    min-width: 300px;
+    overflow: hidden;
     transition: all $transition-base;
 
     &--full {
@@ -731,6 +806,29 @@ onUnmounted(() => {
     height: 100%;
     min-height: 300px;
     color: var(--text-secondary);
+  }
+  
+  &__shortcuts {
+    margin-top: $spacing-md;
+    font-size: $font-size-small-desktop;
+    color: var(--text-secondary);
+    
+    p {
+      margin: $spacing-xs 0;
+      line-height: 1.8;
+    }
+    
+    kbd {
+      display: inline-block;
+      padding: 2px 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: $radius-sm;
+      font-family: var(--font-family-mono);
+      font-size: $font-size-aux-desktop;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      margin: 0 2px;
+    }
   }
 
   // 渲染区域

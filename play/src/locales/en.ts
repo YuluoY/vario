@@ -558,6 +558,177 @@ export default {
 
   // Home View
   home: {
+    // Hero Section
+    hero: {
+      eyebrow: 'Open Source DSL Framework',
+      title: 'VARIO',
+      subtitle: 'Declarative UI Behavior Framework',
+      desc: 'Describe UI structure, state bindings, and events using JSON Schema. Executed by a framework-agnostic runtime for true decoupling of logic and implementation.',
+      docs: 'Docs',
+      github: 'GitHub',
+      demo: 'Demo',
+      docsUrl: 'https://yuluoy.github.io/vario/docs',
+      githubUrl: 'https://github.com/YuluoY/vario',
+      playground: 'Start Playground',
+      examples: 'View Examples',
+      scroll: 'Scroll to Explore',
+      startProject: 'Start Project',
+      readDocs: 'Read Docs',
+      stat1Value: 'Precise',
+      stat1Label: 'Path Memo',
+      stat2Value: '<1ms',
+      stat2Label: 'Expression',
+      stat3Value: 'O(1)',
+      stat3Label: 'Query'
+    },
+
+    // Why Section
+    why: {
+      title: 'Why Vario',
+      painTitle: 'Traditional Problems',
+      painLabel: 'Traditional',
+      pain1: 'Business logic tightly coupled with UI, hard to maintain',
+      pain2: 'Form behaviors scattered in components, difficult to reuse',
+      pain3: 'Complex interactions require repetitive state bindings',
+      varioTitle: 'Vario Solution',
+      vario1: 'Schema unifies structure, validation, and interaction',
+      vario2: 'Action VM provides safe, deterministic execution',
+      vario3: 'Three-layer architecture decouples DSL from frameworks'
+    },
+
+    // Skills Section
+    skills: {
+      title: 'Core Skills',
+      schema: {
+        title: 'Schema-driven UI',
+        desc: 'Structure, validation, and behavior live in one source'
+      },
+      vm: {
+        title: 'Action VM',
+        desc: 'Deterministic behavior execution without eval'
+      },
+      runtime: {
+        title: 'Framework-agnostic runtime',
+        desc: 'Same DSL runs in Vue, React, or custom renderers'
+      },
+      memo: {
+        title: 'Path Memo',
+        desc: 'High-performance bindings with cached dependency paths'
+      },
+      sandbox: {
+        title: 'Secure sandbox',
+        desc: 'AST whitelist and isolation for safe execution'
+      },
+      expression: {
+        title: 'Smart Expression',
+        desc: 'Automatic dependency tracking and caching, support template syntax, precise updates on state change'
+      }
+    },
+
+    // Architecture Section
+    arch: {
+      title: 'Architecture',
+      core: {
+        title: 'Core Engine',
+        desc: 'RuntimeContext state management + expression system + Action VM instruction execution, framework-agnostic infrastructure',
+        features: 'RuntimeContext,Expression System,Action VM'
+      },
+      schema: {
+        title: 'Schema Layer',
+        desc: 'Type definitions, validation, normalization and defineSchema API with complete type inference support',
+        features: 'Type Definitions,Validation & Normalization,defineSchema API'
+      },
+      renderer: {
+        title: 'Renderer',
+        desc: 'Map Schema to Vue, React or custom renderers for true cross-framework reusability',
+        features: 'Vue 3 Renderer,React Coming Soon,Custom Renderer API'
+      }
+    },
+
+    // Usage Section
+    usage: {
+      title: 'How It Feels To Use',
+      feature1: 'Native TypeScript support with complete type inference',
+      feature2: 'Progressive integration, no rewrite needed',
+      feature3: 'Unified events and state change handlers'
+    },
+
+    // Scenarios Section
+    scenarios: {
+      title: 'Where It Fits',
+      lowcode: 'Low-code Platform',
+      lowcodeDesc: 'Generate schema via drag-and-drop, render forms and workflows dynamically',
+      editor: 'Visual Editor',
+      editorDesc: 'Config is UI, real-time preview and code export',
+      form: 'Form Engine',
+      formDesc: 'Complex form validation and linkages, logic decoupled from presentation',
+      ai: 'AI + DSL Pipeline',
+      aiDesc: 'AI generates schema, human-machine collaboration to build interfaces'
+    },
+
+    // Ecosystem Section
+    eco: {
+      title: 'Ecosystem & Actions',
+      desc: 'Docs, examples, and source are ready for engineers to start fast.',
+      github: 'GitHub',
+      docs: 'Docs',
+      examples: 'Examples',
+      githubUrl: 'https://github.com/YuluoY/vario',
+      docsUrl: 'https://yuluoy.github.io/vario/docs'
+    },
+
+    // Code Examples - Code example text
+    codeExamples: {
+      placeholder: 'Please enter username',
+      submit: 'Submit',
+      counterTitle: 'Counter Example'
+    },
+
+    // Theme
+    switchToLight: 'Switch to Light Mode',
+    switchToDark: 'Switch to Dark Mode',
+
+    // Core Section
+    core: {
+      title: 'The Core Engine',
+      reactive: {
+        title: 'Reactive Engine',
+        desc: 'Next-generation reactivity built for extreme performance'
+      },
+      typeSafe: {
+        title: 'Type Safe',
+        desc: 'Native TypeScript support with deep type inference'
+      },
+      universal: {
+        title: 'Universal',
+        desc: 'Runs everywhere: Browser, Node.js, and Edge'
+      },
+      security: {
+        title: 'Values Security',
+        desc: 'Built-in AST whitelist and sandbox to block malicious code'
+      }
+    },
+
+    // Performance Section
+    performance: {
+      title: 'Extreme Performance',
+      metric1: 'OPS',
+      metric1Label: 'Ops Per Second',
+      metric2: 'KB',
+      metric2Label: 'Ultra Light',
+      metric3: 'ms',
+      metric3Label: 'Cold Start',
+      desc: '10x faster compilation and execution than traditional solutions'
+    },
+
+    // Ecosystem Section
+    ecosystem: {
+      title: 'Seamless Integration',
+      vue: 'Vue 3 Ready',
+      react: 'React Planned',
+      desc: 'Blends perfectly with the modern frontend ecosystem'
+    },
+
     welcomeTitle: 'Welcome to Vario Test Platform',
     welcomeSubtitle: 'A comprehensive testing platform for Vario - UI Behavior Intermediate Representation + Runtime VM',
     startTesting: 'Start Testing',
@@ -575,10 +746,10 @@ export default {
     feature5Desc: 'Extensible architecture for custom capabilities and integrations',
     feature6Title: 'Type Safety',
     feature6Desc: 'Full TypeScript support with comprehensive type definitions',
-    stat1Label: 'Core Modules',
-    stat2Label: 'Test Cases',
+    stat1Label: 'Core Packages',
+    stat2Label: 'Test Files',
     stat3Label: 'Examples',
-    stat4Label: 'Documentation',
+    stat4Label: 'Code Coverage',
     gettingStarted: 'Getting Started',
     step1Timestamp: 'Step 1',
     step1Title: 'Explore Unit Tests',
@@ -650,8 +821,43 @@ export default {
     todoApp: 'Todo App',
     shoppingCartApp: 'Shopping Cart App',
     searchFilterApp: 'Search & Filter App',
+    
+    // Event Modifiers Examples (v0.4.0)
+    eventNameModifiers: 'Event Name Modifiers',
+    eventArrayModifiers: 'Array Shorthand Modifiers',
+    eventObjectModifiers: 'Object Modifiers',
+    modalSelfModifier: 'Modal .self Modifier',
+    onceModifier: '.once Modifier',
+    mixedModifiers: 'Mixed Modifiers',
+    
+    // Directive Examples (v0.4.0)
+    directiveFocus: 'focus Directive',
+    directiveArray: 'Array Shorthand Directive',
+    
     copy: 'Copy',
-    copied: 'Copied'
+    copied: 'Copied',
+    
+    // ECharts Configuration Demo
+    echartsConfig: {
+      title: 'ECharts Configuration Demo',
+      description: 'Build ECharts configuration interface using full Vario-Vue features, supporting table/JSON view switching, dynamic series adjustment, type switching, etc.',
+      configuration: 'Configuration',
+      tableView: 'Table View',
+      jsonView: 'JSON View',
+      seriesCount: 'Series Count',
+      seriesConfiguration: 'Series Configuration',
+      name: 'Name',
+      type: 'Type',
+      stack: 'Stack',
+      stackPlaceholder: 'Leave empty for no stacking',
+      smooth: 'Smooth',
+      typeBar: 'Bar',
+      typeLine: 'Line',
+      typePie: 'Pie',
+      typeScatter: 'Scatter',
+      fullOptions: 'Full Options',
+      preview: 'Chart Preview'
+    }
   },
 
   // Integration Tests View
@@ -784,6 +990,7 @@ export default {
     format: 'Format',
     run: 'Run',
     reset: 'Reset',
+    autoRun: 'Auto Run',
     hasError: 'Error',
     running: 'Running',
     ready: 'Ready',

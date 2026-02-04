@@ -35,6 +35,11 @@ const routes: RouteRecordRaw[] = [
     path: '/playground',
     name: 'Playground',
     component: () => import('@src/views/Playground.vue')
+  },
+  {
+    path: '/schema-query-demo',
+    name: 'SchemaQueryDemo',
+    component: () => import('@src/views/SchemaQueryDemo.vue')
   }
 ]
 

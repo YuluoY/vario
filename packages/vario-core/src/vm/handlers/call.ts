@@ -7,7 +7,7 @@
  * 参考文档：action-reference.md - call 动作
  */
 
-import type { RuntimeContext, Action } from '@/types.js'
+import type { RuntimeContext, Action } from '@variojs/types'
 import { ActionError, ServiceError, ErrorCodes } from '@/errors.js'
 import { evaluate } from '@/expression/evaluate.js'
 import { invalidateCache } from '@/expression/cache.js'
@@ -20,7 +20,7 @@ export async function handleCall(
   action: Action
 ): Promise<unknown> {
   const method = action.method as string | undefined
-  const params = (action.params || {}) as Record<string, unknown>
+  const rawParams = action.params
   const resultTo = action.resultTo as string | undefined
   
   if (!method || typeof method !== 'string') {
@@ -46,16 +46,30 @@ export async function handleCall(
   }
   
   // 求值参数（支持表达式）
-  const finalParams: Record<string, unknown> = {}
+  // rawParams 可能是：
+  // 1. undefined/null（默认为空对象）
+  // 2. 对象（需要遍历求值每个属性）
+  // 3. 已经求值过的值（直接使用）
+  // 4. 字符串表达式（需要求值）
+  let finalParams: unknown = rawParams ?? {}
   
   try {
-    for (const [key, value] of Object.entries(params)) {
-      if (typeof value === 'string' && value.startsWith('{{') && value.endsWith('}}')) {
-        const expr = value.slice(2, -2).trim()
-        finalParams[key] = evaluate(expr, ctx)
-      } else {
-        finalParams[key] = value
+    // 如果 params 是字符串表达式，先求值
+    if (typeof rawParams === 'string' && rawParams.startsWith('{{') && rawParams.endsWith('}}')) {
+      const expr = rawParams.slice(2, -2).trim()
+      finalParams = evaluate(expr, ctx)
+    } else if (rawParams != null && typeof rawParams === 'object' && !Array.isArray(rawParams)) {
+      // params 是对象，遍历其属性求值
+      const evaluatedParams: Record<string, unknown> = {}
+      for (const [key, value] of Object.entries(rawParams as Record<string, unknown>)) {
+        if (typeof value === 'string' && value.startsWith('{{') && value.endsWith('}}')) {
+          const expr = value.slice(2, -2).trim()
+          evaluatedParams[key] = evaluate(expr, ctx)
+        } else {
+          evaluatedParams[key] = value
+        }
       }
+      finalParams = evaluatedParams
     }
     
     // 调用 method

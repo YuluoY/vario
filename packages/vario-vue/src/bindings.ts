@@ -14,7 +14,7 @@
  */
 
 import { resolveComponent } from 'vue'
-import type { RuntimeContext } from '@variojs/core'
+import type { RuntimeContext } from '@variojs/types'
 import { getPathValue } from '@variojs/core'
 
 /**
@@ -133,6 +133,7 @@ function getDefaultValue(prop: string): unknown {
  * @param modelName 具名 model（可选，如 "checked", "value"）
  * @param schemaDefault 当状态未初始化时使用的默认值（来自 schema model.default）
  * @param schemaLazy true 时不预写 state，仅当用户修改该绑定值后才写入 state
+ * @param modifiers v-model 修饰符（可选，如 { trim: true, lazy: true, number: true }）
  * @returns 包含 prop 和 event handler 的对象
  */
 export function createModelBinding(
@@ -143,7 +144,8 @@ export function createModelBinding(
   getState?: () => Record<string, unknown>,
   modelName?: string,
   schemaDefault?: unknown,
-  schemaLazy?: boolean
+  schemaLazy?: boolean,
+  modifiers: Record<string, boolean> = {}
 ): Record<string, unknown> {
   // 尝试解析组件（如果未提供或者是字符串）
   let resolvedComponent = component
@@ -194,23 +196,57 @@ export function createModelBinding(
     }, 0)
   }
 
+  /**
+   * 应用修饰符转换
+   */
+  const applyModifiers = (value: unknown): unknown => {
+    let result = value
+    
+    // .trim - 去除首尾空格
+    if (modifiers.trim && typeof result === 'string') {
+      result = result.trim()
+    }
+    
+    // .number - 转换为数字
+    if (modifiers.number) {
+      if (typeof result === 'string') {
+        const parsed = parseFloat(result)
+        result = isNaN(parsed) ? result : parsed
+      }
+    }
+    
+    return result
+  }
+
+  const updateHandler = (newValue: unknown) => {
+    // 应用修饰符
+    const transformed = applyModifiers(newValue)
+    
+    // 如果 state 中已存在值（用户传入），直接更新
+    if (stateExists) {
+      ctx._set(modelPath, transformed)
+      return
+    }
+
+    // lazy 模式：未激活前（挂载阶段）的更新不写入 state
+    if (schemaLazy && !isActive) {
+      return
+    }
+
+    // 用户交互，写入 state
+    ctx._set(modelPath, transformed)
+  }
+
+  // .lazy 修饰符 - 改用 change/blur 事件而不是 input/update 事件
+  const eventName = modifiers.lazy && config.event.includes('input')
+    ? config.event.replace('input', 'change')
+    : modifiers.lazy && config.event.includes('update')
+      ? config.event.replace('update', 'change')
+      : config.event
+
   return {
     [config.prop]: value,
-    [toEventHandlerName(config.event)]: (newValue: unknown) => {
-      // 如果 state 中已存在值（用户传入），直接更新
-      if (stateExists) {
-        ctx._set(modelPath, newValue)
-        return
-      }
-
-      // lazy 模式：未激活前（挂载阶段）的更新不写入 state
-      if (schemaLazy && !isActive) {
-        return
-      }
-
-      // 用户交互，写入 state
-      ctx._set(modelPath, newValue)
-    }
+    [toEventHandlerName(eventName)]: updateHandler
   }
 }
 

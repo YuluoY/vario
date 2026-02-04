@@ -11,7 +11,7 @@ export {
   getLoopContextPool,
   clearLoopContextPool
 } from './loop-context-pool.js'
-export type { RuntimeContext } from '../types.js'
+export type { RuntimeContext } from '@variojs/types'
 
 // 路径工具（供框架集成层使用）
 export {
@@ -26,3 +26,5 @@ export {
   getLastSegment,
   type PathSegment
 } from './path.js'
+
+export { traverseSchema, type TraversalCallback } from './traversal.js'

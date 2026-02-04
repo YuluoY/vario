@@ -81,7 +81,74 @@ const { vnode, state, methods } = useVario(schema, {
 
 `methods.submit` 会在点击时被 VM 的 `call` 动作调用，参数里的 `ctx` 即 **@vario/core** 的 RuntimeContext。
 
-## 5. 接下来学什么？
+**事件的多种写法**：
+
+```typescript
+// 字符串简写（调用方法）
+events: { click: 'submit' }
+
+// 数组简写
+events: { click: ['call', 'submit'] }
+
+// 带参数
+events: { click: ['call', 'submit', { args: ['{{name}}'] }] }
+
+// 事件名带修饰符（推荐）
+events: { 'click.stop.prevent': 'submit' }
+```
+
+更多事件用法请查看 [事件处理](/guide/events)。
+
+## 5. 使用指令（Directives）
+
+Vario 支持 Vue 风格的指令，可用于 DOM 操作、绑定等场景：
+
+```typescript
+const schema: VueSchemaNode = {
+  type: 'div',
+  children: [
+    {
+      type: 'input',
+      model: 'name',
+      directives: { focus: true }, // 对象映射形式
+      props: { placeholder: '姓名' }
+    },
+    {
+      type: 'div',
+      directives: [
+        ['show', '{{name}}'] // 数组简写形式
+      ],
+      children: 'Hello, {{name}}!'
+    }
+  ]
+}
+```
+
+**指令的多种写法**：
+
+```typescript
+// 对象映射（简单指令）
+directives: { focus: true, loading: '{{isLoading}}' }
+
+// 完整对象
+directives: {
+  name: 'custom',
+  value: '{{someValue}}',
+  arg: 'foo',
+  modifiers: { bar: true }
+}
+
+// 数组简写（类似 Vue 的 withDirectives）
+directives: [
+  ['focus', true],
+  ['show', '{{visible}}'],
+  ['custom', '{{value}}', 'arg', { modifier: true }]
+]
+```
+
+更多指令用法请查看 [指令](/guide/directives)。
+
+## 6. 接下来学什么？
 
 - **只写 Vue 页面**：继续 [状态管理](/guide/state)、[Model 与路径](/guide/model-path)、[事件处理](/guide/events)。
 - **想搞懂“状态与表达式从哪来”**：看 [@vario/core 概述](/packages/core/overview) 和 [RuntimeContext](/packages/core/runtime-context)。

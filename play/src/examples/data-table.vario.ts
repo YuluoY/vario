@@ -31,6 +31,8 @@ interface DataTableState extends Record<string, unknown> {
   paginatedProducts?: Product[]
   totalPages?: number
   totalCount?: number
+  editDialogVisible: boolean
+  editingProduct: Product | null
 }
 
 export function createDataTable(app?: App | null) {
@@ -96,6 +98,101 @@ export function createDataTable(app?: App | null) {
         ]
       },
 
+      // 编辑对话框
+      {
+        type: 'ElDialog',
+        model: 'editDialogVisible',
+        props: { title: '编辑产品', width: '500px' },
+        children: [
+          {
+            type: 'ElForm',
+            props: { labelWidth: '80px' },
+            children: [
+              {
+                type: 'ElFormItem',
+                props: { label: '产品名称' },
+                children: [
+                  {
+                    type: 'ElInput',
+                    model: 'editingProduct.name',
+                    props: { placeholder: '请输入产品名称' }
+                  }
+                ]
+              },
+              {
+                type: 'ElFormItem',
+                props: { label: '分类' },
+                children: [
+                  {
+                    type: 'ElSelect',
+                    model: 'editingProduct.category',
+                    props: { placeholder: '请选择分类', style: 'width: 100%;' },
+                    children: [
+                      { type: 'ElOption', props: { value: 'electronics', label: '电子产品' } },
+                      { type: 'ElOption', props: { value: 'clothing', label: '服装' } },
+                      { type: 'ElOption', props: { value: 'food', label: '食品' } }
+                    ]
+                  }
+                ]
+              },
+              {
+                type: 'ElFormItem',
+                props: { label: '价格' },
+                children: [
+                  {
+                    type: 'ElInputNumber',
+                    model: 'editingProduct.price',
+                    props: { min: 0, precision: 0, style: 'width: 100%;' }
+                  }
+                ]
+              },
+              {
+                type: 'ElFormItem',
+                props: { label: '库存' },
+                children: [
+                  {
+                    type: 'ElInputNumber',
+                    model: 'editingProduct.stock',
+                    props: { min: 0, precision: 0, style: 'width: 100%;' }
+                  }
+                ]
+              },
+              {
+                type: 'ElFormItem',
+                props: { label: '状态' },
+                children: [
+                  {
+                    type: 'ElRadioGroup',
+                    model: 'editingProduct.status',
+                    children: [
+                      { type: 'ElRadio', props: { value: 'active', label: 'active' }, children: '启用' },
+                      { type: 'ElRadio', props: { value: 'inactive', label: 'inactive' }, children: '禁用' }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            type: 'template',
+            slot: 'footer',
+            children: [
+              {
+                type: 'ElButton',
+                events: { click: [{ type: 'call', method: 'cancelEdit' }] },
+                children: '取消'
+              },
+              {
+                type: 'ElButton',
+                props: { type: 'primary' },
+                events: { click: [{ type: 'call', method: 'saveEdit' }] },
+                children: '保存'
+              }
+            ]
+          }
+        ]
+      },
+
       // 数据表格
       {
         type: 'ElCard',
@@ -104,6 +201,9 @@ export function createDataTable(app?: App | null) {
           {
             type: 'ElTable',
             props: { data: '{{ paginatedProducts }}', style: 'width: 100%;' },
+            events: {
+              'selection-change': [{ type: 'call', method: 'handleSelectionChange', params: '{{ $event }}' }]
+            },
             children: [
               { type: 'ElTableColumn', props: { type: 'selection', width: '55' } },
               { type: 'ElTableColumn', props: { prop: 'name', label: '产品名称', sortable: true, minWidth: '150' } },
@@ -141,8 +241,35 @@ export function createDataTable(app?: App | null) {
                     slot: 'default',
                     props: { scope: 'scope' },
                     children: [
-                      { type: 'ElButton', props: { type: 'primary', size: 'small', link: true }, events: { click: [{ type: 'call', method: 'editProduct', params: { id: '{{ scope.row.id }}' } }] }, children: '编辑' },
-                      { type: 'ElButton', props: { type: 'danger', size: 'small', link: true, style: 'margin-left: 8px;' }, events: { click: [{ type: 'call', method: 'deleteProduct', params: { id: '{{ scope.row.id }}' } }] }, children: '删除' }
+                      { 
+                        type: 'ElButton', 
+                        props: { 
+                          type: 'primary', 
+                          size: 'small', 
+                          link: true
+                        },
+                        events: {
+                          click: [
+                            { type: 'call', method: 'editProduct', params: '{{ scope.row }}' }
+                          ]
+                        },
+                        children: '编辑' 
+                      },
+                      { 
+                        type: 'ElButton', 
+                        props: { 
+                          type: 'danger', 
+                          size: 'small', 
+                          link: true, 
+                          style: 'margin-left: 8px;'
+                        },
+                        events: {
+                          click: [
+                            { type: 'call', method: 'deleteProduct', params: '{{ scope.row }}' }
+                          ]
+                        },
+                        children: '删除' 
+                      }
                     ]
                   }
                 ]
@@ -197,7 +324,9 @@ export function createDataTable(app?: App | null) {
       currentPage: 1,
       pageSize: 10,
       selectedIds: [],
-      selectAll: false
+      selectAll: false,
+      editDialogVisible: false,
+      editingProduct: null
     },
     computed: {
       filteredProducts: (s) => {
@@ -239,15 +368,45 @@ export function createDataTable(app?: App | null) {
         }
         state.products.push(newProduct)
       },
-      editProduct: ({ params }: MethodContext<DataTableState>) => {
-        console.log('Edit product:', params.id)
+      editProduct: ({ state, params }: MethodContext<DataTableState>) => {
+        const product = params as Product
+        if (product) {
+          // 创建产品的副本用于编辑，避免直接修改原数据
+          state.editingProduct = { ...product }
+          state.editDialogVisible = true
+        }
+      },
+      saveEdit: ({ state }: MethodContext<DataTableState>) => {
+        if (state.editingProduct) {
+          const index = state.products.findIndex(p => p.id === state.editingProduct!.id)
+          if (index !== -1) {
+            // 更新产品信息
+            state.products[index] = { ...state.editingProduct }
+          }
+          state.editDialogVisible = false
+          state.editingProduct = null
+        }
+      },
+      cancelEdit: ({ state }: MethodContext<DataTableState>) => {
+        state.editDialogVisible = false
+        state.editingProduct = null
       },
       deleteProduct: ({ state, params }: MethodContext<DataTableState>) => {
-        state.products = state.products.filter(p => p.id !== params.id)
+        const product = params as Product
+        const id = product?.id
+        if (id) {
+          state.products = state.products.filter(p => p.id !== id)
+        }
       },
       batchDelete: ({ state }: MethodContext<DataTableState>) => {
         state.products = state.products.filter(p => !state.selectedIds.includes(p.id))
         state.selectedIds = []
+      },
+      handleSelectionChange: ({ state, params }: MethodContext<DataTableState>) => {
+        // params 是 ElTable selection-change 事件传递的选中行数组
+        if (Array.isArray(params)) {
+          state.selectedIds = params.map((row: Product) => row.id)
+        }
       }
     },
     onError: (error: Error) => console.error('[DataTable] Error:', error)

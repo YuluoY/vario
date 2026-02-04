@@ -7,7 +7,7 @@
  * - 自动清理和重置
  */
 
-import type { RuntimeContext } from '../types.js'
+import type { RuntimeContext } from '@variojs/types'
 
 /**
  * 循环上下文对象池
