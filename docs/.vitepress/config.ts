@@ -92,7 +92,8 @@ export default defineConfig({
             items: [
               { text: 'Vue 特性', link: '/guide/vue-features' },
               { text: 'Computed 与 Watch', link: '/guide/computed-watch' },
-              { text: 'Refs（模板引用）', link: '/packages/vue/refs' }
+              { text: 'Refs（模板引用）', link: '/packages/vue/refs' },
+              { text: '生命周期', link: '/packages/vue/lifecycle' }
             ]
           },
           {
@@ -100,6 +101,7 @@ export default defineConfig({
             collapsed: false,
             items: [
               { text: 'Schema 查询', link: '/guide/schema-query' },
+              { text: '节点上下文', link: '/guide/node-context' },
               { text: '性能优化', link: '/guide/performance' },
               { text: '错误处理', link: '/packages/vue/error-handling' }
             ]
@@ -108,6 +110,7 @@ export default defineConfig({
             text: '参考',
             collapsed: true,
             items: [
+              { text: 'useVario API', link: '/api/use-vario' },
               { text: 'API 参考', link: '/packages/vue/api' },
               { text: '类型定义', link: '/packages/vue/types' },
               { text: '最佳实践', link: '/packages/vue/best-practices' }

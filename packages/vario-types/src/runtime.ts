@@ -3,6 +3,7 @@
  */
 
 import type { ExpressionOptions } from './expression.js'
+import type { SchemaNode } from './schema.js'
 import type { GetPathValue, SetPathValue } from './utils.js'
 
 /**
@@ -54,6 +55,14 @@ export type RuntimeContext<TState extends Record<string, unknown> = Record<strin
     $event?: unknown
     $item?: TState[keyof TState]  // 循环当前项（在 Table/loop 中可用）
     $index?: number  // 循环索引（在 Table/loop 中可用）
+    /** 当前节点（节点上下文功能，在事件处理中可用） */
+    $self?: SchemaNode<TState>
+    /** 父节点（支持链式访问 $parent.$parent，节点上下文功能） */
+    $parent?: SchemaNode<TState> | null
+    /** 兄弟节点数组（不包含自身，节点上下文功能） */
+    $siblings?: SchemaNode<TState>[]
+    /** 子节点数组（节点上下文功能） */
+    $children?: SchemaNode<TState>[]
     // 内部方法（路径解析，不对外暴露）
     _get: <TPath extends string>(path: TPath) => GetPathValue<TState, TPath>
     _set: <TPath extends string>(path: TPath, value: SetPathValue<TState, TPath>, options?: { skipCallback?: boolean }) => void

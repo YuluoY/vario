@@ -108,6 +108,8 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { HomeFilled, DocumentChecked, Connection, Collection, Timer, Moon, Sunny, Edit } from '@element-plus/icons-vue'
 
+const LOCAL_THEME_KEY = 'vario-theme'
+
 const route = useRoute()
 // 文档链接：生产环境使用构建后的静态文件，开发环境使用 VitePress dev server
 const getDocsUrl = () => {
@@ -155,14 +157,13 @@ const currentLanguageCode = computed(() => {
   return locale.value === 'zh-CN' ? 'CN' : 'EN'
 })
 
-// 从localStorage读取主题设置，如果没有则跟随系统
+// 从localStorage读取主题设置，如果没有则默认使用暗色主题
 onMounted(() => {
-  let theme = localStorage.getItem('theme')
+  let theme = localStorage.getItem(LOCAL_THEME_KEY)
   
-  // 如果没有保存的主题设置，检测系统主题偏好
+  // 如果没有保存的主题设置，默认使用暗色主题
   if (!theme) {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    theme = prefersDark ? 'dark' : 'light'
+    theme = 'dark'
   }
   
   const html = document.documentElement
@@ -170,6 +171,11 @@ onMounted(() => {
   html.setAttribute('data-theme', theme)
   if (theme === 'dark') {
     html.classList.add('dark')
+  }
+  
+  // 保存到 localStorage（首次访问时）
+  if (!localStorage.getItem(LOCAL_THEME_KEY)) {
+    localStorage.setItem(LOCAL_THEME_KEY, theme)
   }
 })
 
@@ -183,7 +189,7 @@ watch(isDark, (newVal) => {
   } else {
     html.classList.remove('dark')
   }
-  localStorage.setItem('theme', theme)
+  localStorage.setItem(LOCAL_THEME_KEY, theme)
 })
 
 const handleLanguageChange = () => {
