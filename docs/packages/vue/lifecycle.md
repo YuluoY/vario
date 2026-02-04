@@ -696,6 +696,6 @@ methods: {
 
 - [useVario API](/api/use-vario) - useVario 完整 API 参考
 - [Vue 特性](/guide/vue-features) - Vue 集成功能概览
-- [Methods](/guide/methods) - 方法定义与使用
+- [useVario API](/api/use-vario) - 方法定义与使用
 - [Refs](/packages/vue/refs) - 获取组件实例引用
 - [错误处理](/packages/vue/error-handling) - 错误边界与异常处理

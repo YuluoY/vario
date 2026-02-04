@@ -59,7 +59,7 @@ import type {
 
 ## 核心类型
 
-### SchemaNode<TState>
+### SchemaNode\<TState>
 
 Schema 节点的基础类型定义，支持状态类型泛型：
 
@@ -72,12 +72,12 @@ interface MyState {
 }
 
 const schema: SchemaNode<MyState> = {
-  type: 'div',
-  model: 'username',  // ✅ 类型安全：keyof MyState
-  show: '{{ items.length > 0 }}',  // ✅ 表达式类型推导
+  tag: 'div',
+  model: { bind: 'username' },  // ✅ 类型安全：keyof MyState
+  if: '{{ items.length > 0 }}',  // ✅ 表达式类型推导
   loop: {
-    items: '{{ items }}',  // ✅ 数组路径类型安全
-    itemKey: 'item'
+    from: '{{ items }}',  // ✅ 数组路径类型安全
+    as: 'item'
   },
   events: {
     click: { type: 'call', method: 'handleClick' }
@@ -104,10 +104,10 @@ const modifiers2: ModelModifiers = {
 
 // 在 Schema 中使用
 const schema: SchemaNode = {
-  type: 'ElInput',
+  tag: 'ElInput',
   model: {
-    path: 'username',
-    modifiers: ['trim', 'lazy']  // ✅ 类型安全
+    bind: 'username',
+    modifier: ['trim', 'lazy']  // ✅ 类型安全
   }
 }
 ```
@@ -161,7 +161,7 @@ const action3: Action = {
 }
 ```
 
-### RuntimeContext<TState>
+### RuntimeContext\<TState>
 
 运行时上下文类型，包含节点上下文属性：
 
@@ -208,7 +208,7 @@ Vue 特定的 Schema 节点类型：
 import type { VueSchemaNode } from '@variojs/vue'
 
 const schema: VueSchemaNode<MyState> = {
-  type: 'div',
+  tag: 'div',
   ref: 'myDiv',  // ✅ Vue 模板引用
   
   // ✅ 生命周期钩子
@@ -241,7 +241,7 @@ import type { InferStateType } from '@variojs/types'
 
 const view = {
   state: { count: 0, name: '' },
-  schema: { type: 'div' },
+  schema: { tag: 'div' },
   services: {}
 }
 

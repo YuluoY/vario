@@ -490,7 +490,7 @@ const submitButton = query('[type="ElButton"][props.type="primary"]')
 
 - [Schema 查询](/guide/schema-query) - 使用选择器查询 Schema 节点
 - [事件处理](/guide/events) - 在事件中使用节点上下文
-- [Methods](/guide/methods) - 定义事件处理方法
+- [useVario API](/api/use-vario) - 定义事件处理方法
 
 ## 总结
 
