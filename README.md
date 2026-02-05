@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./play/public/logo-icon.svg" alt="Vario Logo" width="200" style="margin: -50px 0" />
+<img src="./play/public/logo-icon.svg" alt="Vario Logo" width="200" style="margin-bottom: -50px; margin-top: -50px;" />
 
 # Vario
 
