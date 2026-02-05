@@ -144,7 +144,7 @@ CLI 已具备基础的开发服务器与代码生成入口，但部分命令仍�
 pnpm install
 pnpm build
 pnpm test
-pnpm dev
+pnpm start
 ```
 
 ## 🤝 贡献

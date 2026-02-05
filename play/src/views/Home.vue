@@ -231,7 +231,6 @@
                   :key="i"
                   class="code-line"
                   :class="{ highlight: line.highlight }"
-                  :style="{ animationDelay: `${i * 0.05}s` }"
                 >
                   <span class="line-number">{{ i + 1 }}</span>
                   <span class="line-content" v-html="highlightCode(line.content)"></span>
@@ -409,23 +408,24 @@ const codeTabs = computed(() => [
       { content: "import { defineSchema } from '@variojs/schema'", highlight: false },
       { content: '', highlight: false },
       { content: 'export default defineSchema({', highlight: true },
-      { content: "  type: 'form',", highlight: false },
       { content: '  state: {', highlight: false },
       { content: "    username: '',", highlight: false },
       { content: "    email: ''", highlight: false },
       { content: '  },', highlight: false },
       { content: '', highlight: false },
-      { content: '  schema: (ctx) => ({', highlight: false },
+      { content: '  schema: () => ({', highlight: false },
       { content: "    type: 'div',", highlight: false },
       { content: '    children: [', highlight: false },
       { content: '      {', highlight: false },
       { content: "        type: 'input',", highlight: false },
-      { content: "        bind: 'username',", highlight: true },
-      { content: `        placeholder: '${t('home.codeExamples.placeholder')}'`, highlight: false },
+      { content: "        model: 'username',", highlight: true },
+      { content: '        props: {', highlight: false },
+      { content: `          placeholder: '${t('home.codeExamples.placeholder')}'`, highlight: false },
+      { content: '        }', highlight: false },
       { content: '      },', highlight: false },
       { content: '      {', highlight: false },
       { content: "        type: 'button',", highlight: false },
-      { content: `        text: '${t('home.codeExamples.submit')}',`, highlight: false },
+      { content: `        children: '${t('home.codeExamples.submit')}',`, highlight: false },
       { content: '        events: {', highlight: false },
       { content: "          click: { type: 'call', method: 'submit' }", highlight: true },
       { content: '        }', highlight: false },
@@ -445,13 +445,33 @@ const codeTabs = computed(() => [
       { content: '', highlight: false },
       { content: '<script setup lang="ts">', highlight: false },
       { content: "import { useVario } from '@variojs/vue'", highlight: false },
-      { content: "import schema from './schema'", highlight: false },
+      { content: "import type { Schema } from '@variojs/schema'", highlight: false },
+      { content: '', highlight: false },
+      { content: 'const schema: Schema = {', highlight: true },
+      { content: "  type: 'div',", highlight: false },
+      { content: '  children: [', highlight: false },
+      { content: '    {', highlight: false },
+      { content: "      type: 'input',", highlight: false },
+      { content: "      model: 'username',", highlight: false },
+      { content: '      props: {', highlight: false },
+      { content: `        placeholder: '${t('home.codeExamples.placeholder')}'`, highlight: false },
+      { content: '      }', highlight: false },
+      { content: '    },', highlight: false },
+      { content: '    {', highlight: false },
+      { content: "      type: 'button',", highlight: false },
+      { content: `      children: '${t('home.codeExamples.submit')}',`, highlight: false },
+      { content: '      events: {', highlight: false },
+      { content: "        click: { type: 'call', method: 'submit' }", highlight: false },
+      { content: '      }', highlight: false },
+      { content: '    }', highlight: false },
+      { content: '  ]', highlight: false },
+      { content: '}', highlight: false },
       { content: '', highlight: false },
       { content: 'const { vnode, state } = useVario(schema, {', highlight: true },
-      { content: '  state: { count: 0 },', highlight: false },
+      { content: "  state: { username: '' },", highlight: false },
       { content: '  methods: {', highlight: false },
-      { content: '    increment: ({ state }) => {', highlight: false },
-      { content: '      state.count++', highlight: false },
+      { content: '    submit: ({ state }) => {', highlight: false },
+      { content: '      console.log(state.username)', highlight: false },
       { content: '    }', highlight: false },
       { content: '  }', highlight: false },
       { content: '})', highlight: false },
@@ -464,25 +484,21 @@ const codeTabs = computed(() => [
     lines: [
       { content: '{', highlight: false },
       { content: '  "type": "div",', highlight: false },
-      { content: '  "props": {', highlight: false },
-      { content: '    "class": "counter-demo"', highlight: false },
-      { content: '  },', highlight: false },
       { content: '  "children": [', highlight: false },
       { content: '    {', highlight: false },
-      { content: '      "type": "h2",', highlight: false },
-      { content: `      "children": "${t('home.codeExamples.counterTitle')}"`, highlight: false },
-      { content: '    },', highlight: false },
-      { content: '    {', highlight: false },
-      { content: '      "type": "div",', highlight: false },
-      { content: '      "children": "{{ count }}"', highlight: true },
+      { content: '      "type": "input",', highlight: false },
+      { content: '      "model": "username",', highlight: true },
+      { content: '      "props": {', highlight: false },
+      { content: `        "placeholder": "${t('home.codeExamples.placeholder')}"`, highlight: false },
+      { content: '      }', highlight: false },
       { content: '    },', highlight: false },
       { content: '    {', highlight: false },
       { content: '      "type": "button",', highlight: false },
-      { content: '      "children": "+1",', highlight: false },
+      { content: `      "children": "${t('home.codeExamples.submit')}",`, highlight: false },
       { content: '      "events": {', highlight: false },
       { content: '        "click": {', highlight: false },
       { content: '          "type": "call",', highlight: true },
-      { content: '          "method": "increment"', highlight: false },
+      { content: '          "method": "submit"', highlight: false },
       { content: '        }', highlight: false },
       { content: '      }', highlight: false },
       { content: '    }', highlight: false },
@@ -535,6 +551,7 @@ const highlightCode = (code: string) => {
 
 // ===== ScrollTrigger 动画 =====
 let triggers: ScrollTrigger[] = []
+let codeLineTriggers: ScrollTrigger[] = []
 
 onMounted(() => {
   // 等待 DOM 完全渲染
@@ -551,21 +568,34 @@ watch(activeCodeTab, () => {
 })
 
 const initCodeLineAnimations = () => {
-  // 代码行逐行淡入
-  const codeLines = document.querySelectorAll('.code-line')
-  codeLines.forEach((line, index) => {
-    const el = line as HTMLElement
-    el.style.opacity = '0'
-    el.style.transform = 'translateX(-20px)'
-    
-    // 使用 GSAP 动画，带延迟
-    gsap.to(el, {
-      opacity: 1,
-      x: 0,
-      duration: 0.4,
-      delay: index * 0.05,
-      ease: 'power2.out'
+  if (codeLineTriggers.length) {
+    codeLineTriggers.forEach(trigger => trigger.kill())
+    codeLineTriggers = []
+  }
+
+  const codeBlock = document.querySelector('.v-code-block__body') as HTMLElement | null
+  if (!codeBlock) return
+
+  const codeLines = Array.from(codeBlock.querySelectorAll('.code-line')) as HTMLElement[]
+  if (!codeLines.length) return
+
+  codeLines.forEach((line) => {
+    gsap.set(line, { y: 18, opacity: 0 })
+    const trigger = ScrollTrigger.create({
+      trigger: line,
+      start: 'top 85%',
+      once: true,
+      onEnter: () => {
+        gsap.to(line, {
+          y: 0,
+          opacity: 1,
+          duration: 0.5,
+          ease: 'power2.out'
+        })
+      }
     })
+    codeLineTriggers.push(trigger)
+    triggers.push(trigger)
   })
 }
 
@@ -1287,7 +1317,6 @@ onBeforeUnmount(() => {
   padding: 2px 0;
   font-family: var(--v-font-mono);
   font-size: 0.9rem;
-  opacity: 0;
 
   &.highlight {
     background: rgba(37, 99, 235, 0.1);

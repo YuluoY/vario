@@ -130,7 +130,7 @@ export default defineConfig({
       },
       { text: '示例', link: '/guide/examples' }
     ],
-    socialLinks: [{ icon: 'github', link: 'https://github.com/variojs/vario' }],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/YuluoY/vario' }],
     footer: { message: 'MIT License', copyright: 'Vario' }
   }
 })
