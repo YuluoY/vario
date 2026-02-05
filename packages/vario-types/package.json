@@ -1,6 +1,6 @@
 {
   "name": "@variojs/types",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "TypeScript type definitions for Vario framework",
   "type": "module",
   "main": "./dist/index.js",

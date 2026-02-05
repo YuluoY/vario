@@ -18,7 +18,12 @@ export async function handleIf(
   ctx: RuntimeContext,
   action: Action
 ): Promise<void> {
-  const { cond, then, else: elseBranch } = action
+  // 类型断言：确保 action 包含 if 动作的属性
+  const { cond, then, else: elseBranch } = action as Action & { 
+    cond?: string; 
+    then?: Action[]; 
+    else?: Action[] 
+  }
   
   if (!cond || typeof cond !== 'string') {
     throw new ActionError(

@@ -7,7 +7,7 @@
  * 3. .self 修饰符 - 只在自身触发
  * 4. .once 修饰符 - 只触发一次
  * 5. 组合修饰符
- * 6. 数组简写格式修饰符 [type, method, args, modifiers]
+ * 6. 数组简写格式修饰符 [type, method, params, modifiers]
  */
 
 import { describe, it, expect, vi } from 'vitest'

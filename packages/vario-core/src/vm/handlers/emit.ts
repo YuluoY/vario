@@ -16,7 +16,8 @@ export async function handleEmit(
   ctx: RuntimeContext,
   action: Action
 ): Promise<void> {
-  const { event, data } = action
+  // 类型断言：确保 action 包含 emit 动作的属性
+  const { event, data } = action as Action & { event?: string; data?: unknown }
   
   if (!event || typeof event !== 'string') {
     throw new ActionError(

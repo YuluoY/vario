@@ -18,7 +18,8 @@ export async function handleUnshift(
   ctx: RuntimeContext,
   action: Action
 ): Promise<void> {
-  const { path, value, items } = action
+  // 类型断言：确保 action 包含 unshift 动作的属性
+  const { path, value, items } = action as Action & { path?: string; value?: unknown; items?: unknown[] }
   
   if (!path || typeof path !== 'string') {
     throw new ActionError(

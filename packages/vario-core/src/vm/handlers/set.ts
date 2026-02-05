@@ -19,7 +19,8 @@ export async function handleSet(
   ctx: RuntimeContext,
   action: Action
 ): Promise<void> {
-  const { path, value } = action
+  // 类型断言：确保 action 包含 set 动作的属性
+  const { path, value } = action as Action & { path?: string; value?: unknown }
   
   if (!path || typeof path !== 'string') {
     throw new ActionError(

@@ -170,8 +170,7 @@ export type ActionMap = {
   loop: { var: string; in: string; body: Action[] }
   call: { 
     method: string; 
-    params?: Record<string, unknown>; 
-    args?: unknown[];  // 位置参数（事件数组简写格式）
+    params?: string | Record<string, unknown> | unknown[];  // 参数：表达式字符串、对象（命名参数）或数组（位置参数）
     resultTo?: string;
     modifiers?: Record<string, boolean>  // 事件修饰符
   }

@@ -90,4 +90,58 @@ describe('call 指令', () => {
       ], ctx)
     ).rejects.toThrow(ServiceError)
   })
+  
+  it('应该支持 params 数组形式（位置参数）', async () => {
+    ctx.$methods['test.array'] = async (ctx, params: unknown) => {
+      // 验证接收到的是数组
+      expect(Array.isArray(params)).toBe(true)
+      return params
+    }
+    
+    await execute([
+      {
+        type: 'call',
+        method: 'test.array',
+        params: ['{{ user.name }}', 30, true],
+        resultTo: 'result'
+      }
+    ], ctx)
+    
+    expect(ctx.result).toEqual(['John', 30, true])
+  })
+  
+  it('应该支持 params 对象形式（命名参数）', async () => {
+    ctx.$methods['test.object'] = async (ctx, params: unknown) => {
+      expect(typeof params === 'object' && !Array.isArray(params)).toBe(true)
+      return params
+    }
+    
+    await execute([
+      {
+        type: 'call',
+        method: 'test.object',
+        params: { name: '{{ user.name }}', age: '{{ user.age }}' },
+        resultTo: 'result'
+      }
+    ], ctx)
+    
+    expect(ctx.result).toEqual({ name: 'John', age: 30 })
+  })
+  
+  it('应该对 params 数组中的表达式求值', async () => {
+    ctx.$methods['test.array.eval'] = async (ctx, params: unknown) => {
+      return params
+    }
+    
+    await execute([
+      {
+        type: 'call',
+        method: 'test.array.eval',
+        params: ['{{ user.name }}', '{{ user.age + 10 }}', 'static'],
+        resultTo: 'result'
+      }
+    ], ctx)
+    
+    expect(ctx.result).toEqual(['John', 40, 'static'])
+  })
 })

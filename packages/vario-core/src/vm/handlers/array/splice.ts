@@ -18,7 +18,8 @@ export async function handleSplice(
   ctx: RuntimeContext,
   action: Action
 ): Promise<void> {
-  const { path, start, deleteCount = 0, items } = action
+  // 类型断言：确保 action 包含 splice 动作的属性
+  const { path, start, deleteCount = 0, items } = action as Action & { path?: string; start?: number | string; deleteCount?: number | string; items?: unknown[] }
   
   if (!path || typeof path !== 'string') {
     throw new ActionError(

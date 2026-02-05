@@ -47,7 +47,7 @@ const schema2: SchemaNode = {
 
 ### 方式 2：数组简写修饰符
 
-在数组简写格式 `[type, method, args?, modifiers?]` 的第四个位置指定修饰符：
+在数组简写格式 `[call, method, params?, modifiers?]` 的第四个位置指定修饰符：
 
 ```typescript
 // 数组形式的修饰符
@@ -321,9 +321,9 @@ type EventWithModifiers = `${string}.${EventModifier}` | `${string}.${EventModif
 
 // 数组简写格式
 type EventHandlerArray = [
-  string,                                 // type: action 类型
+  string,                                 // type: action 类型（目前仅支持 'call'）
   string,                                 // method: 方法名
-  unknown[]?,                             // args: 参数
+  unknown[]?,                             // params: 参数
   EventModifier[] | Record<string, boolean>?  // modifiers: 修饰符
 ]
 ```

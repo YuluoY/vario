@@ -91,7 +91,7 @@ events: { click: 'submit' }
 events: { click: ['call', 'submit'] }
 
 // 带参数
-events: { click: ['call', 'submit', { args: ['{{name}}'] }] }
+events: { click: ['call', 'submit', { params: ['{{name}}'] }] }
 
 // 事件名带修饰符（推荐）
 events: { 'click.stop.prevent': 'submit' }

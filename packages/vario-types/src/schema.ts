@@ -2,7 +2,7 @@
  * Schema 相关类型定义
  */
 
-import type { Action } from './action.js'
+import type { Action, ActionMap } from './action.js'
 
 /**
  * Model 修饰符类型
@@ -165,7 +165,7 @@ export interface SchemaNode<TState extends Record<string, unknown> = Record<stri
    * 2. Action 对象数组
    * 3. 字符串（method 名简写）
    * 4. 字符串数组（多个 method 名）
-   * 5. 数组简写 [type, method, args?, modifiers?]（四个固定位置，类似指令格式）
+   * 5. 数组简写 [call, method, params?, modifiers?]（四个固定位置，类似指令格式）
    * 
    * @example
    * // 单个 action 对象
@@ -338,17 +338,20 @@ export type Schema<TState extends Record<string, unknown> = Record<string, unkno
 
 /**
  * 事件处理器数组简写格式（四个固定位置，类似指令格式）
- * [type, method, args?, modifiers?]
+ * [call, method, params?, modifiers?]
  * 
  * @example ['call', 'submit']
  * @example ['call', 'submit', ['{{name}}', '{{age}}']]
  * @example ['call', 'submit', [], ['stop', 'prevent']]
  * @example ['call', 'submit', ['{{id}}'], { stop: true }]
  */
+type CallParams = ActionMap['call'] extends { params?: infer P } ? P : never
+type EventHandlerParams = ReadonlyArray<unknown> | Readonly<{ params?: CallParams }>
+
 export type EventHandlerArray = readonly [
-  string,                                         // type: action 类型
+  string,                                         // type: action 类型（目前仅支持 'call'）
   string,                                         // method: 方法名
-  (ReadonlyArray<unknown> | undefined)?,          // args: 参数数组
+  (EventHandlerParams | undefined)?,              // params: 参数数组或 { params }
   (EventModifiers | undefined)?                   // modifiers: 事件修饰符
 ]
 
@@ -360,7 +363,7 @@ export type EventHandler =
   | ReadonlyArray<Action>                     // action 对象数组
   | string                                    // method 名简写（自动转为 call action）
   | ReadonlyArray<string>                     // method 名数组
-  | EventHandlerArray                         // 数组简写 [type, method, args?, modifiers?]
+  | EventHandlerArray                         // 数组简写 [call, method, params?, modifiers?]
 
 /**
  * 单个指令配置对象

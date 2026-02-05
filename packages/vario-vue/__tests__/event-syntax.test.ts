@@ -6,7 +6,7 @@
  * 2. 单个 Action 对象格式
  * 3. Action 数组格式
  * 4. 字符串简写格式
- * 5. 数组简写格式 ['call', 'method', options]
+ * 5. 数组简写格式 ['call', 'method', params?, modifiers?]
  * 6. 参数传递（包括表达式）
  */
 
@@ -173,7 +173,7 @@ describe('事件语法', () => {
     })
   })
 
-  describe('数组简写格式 [type, method, args, modifiers]', () => {
+  describe('数组简写格式 [type, method, params, modifiers]', () => {
     it('应该支持数组简写 [type, method]', () => {
       const eventHandler = new EventHandler(evaluateExpr)
       const handleClick = vi.fn()
@@ -196,7 +196,7 @@ describe('事件语法', () => {
       expect(handleClick).toHaveBeenCalled()
     })
     
-    it('应该支持数组简写带参数 [type, method, args]', () => {
+    it('应该支持数组简写带参数 [type, method, params]', () => {
       const eventHandler = new EventHandler(evaluateExpr)
       const handleClick = vi.fn()
       const ctx = createRuntimeContext({ name: 'Alice' }, {
@@ -215,7 +215,7 @@ describe('事件语法', () => {
       expect(handlers.onClick).toBeDefined()
     })
 
-    it('应该支持数组简写带修饰符 [type, method, args, modifiers]', () => {
+    it('应该支持数组简写带修饰符 [type, method, params, modifiers]', () => {
       const eventHandler = new EventHandler(evaluateExpr)
       const handleClick = vi.fn()
       const ctx = createRuntimeContext({}, {

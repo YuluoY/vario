@@ -4,7 +4,7 @@
  * 负责处理 Schema 中的事件绑定；支持 nodeContext 时在事件执行前挂载 $self / $parent / $siblings / $children。
  */
 
-import type { RuntimeContext, Action } from '@variojs/types'
+import type { RuntimeContext, Action, EventModifiers, WritableAction } from '@variojs/types'
 import type { SchemaNode } from '@variojs/schema'
 import { execute } from '@variojs/core'
 import { applyNodeContextToCtx } from './node-context.js'
@@ -61,34 +61,40 @@ export class EventHandler {
    * 2. Action[]
    * 3. 字符串（method 名）
    * 4. 字符串数组
-   * 5. [type, method, args?, modifiers?] 数组简写（类似指令的四个固定位置）
-   *    - args: 可以是数组（位置参数）或对象（包含 params）
+   * 5. [call, method, params?, modifiers?] 数组简写（类似指令的四个固定位置）
+   *    - params: 可以是数组（位置参数）或对象（包含 params 字段）
    */
   private normalizeEventHandler(handler: any, eventModifiers: Record<string, boolean> = {}): Action[] {
     // 1. 已经是数组
     if (Array.isArray(handler)) {
-      // 检查是否是数组简写格式 [type, method, args?, modifiers?]
-      if (
+      const isCallShorthand =
         handler.length >= 2 &&
-        typeof handler[0] === 'string' &&
+        handler[0] === 'call' &&
         typeof handler[1] === 'string'
-      ) {
-        // 数组简写：四个固定位置 [type, method, args?, modifiers?]
-        const [type, method, argsOrParams, modifiers] = handler
-        const action: Action = { type, method }
+
+      // 检查是否是数组简写格式 [call, method, params?, modifiers?]
+      if (isCallShorthand) {
+        // 数组简写：四个固定位置 [call, method, params?, modifiers?]
+        const [, method, paramsOrOptions, modifiers] = handler
         
-        // 处理 args（第三个位置）
+        // 创建类型安全的 call action
+        const action: WritableAction<'call'> = { 
+          type: 'call' as const, 
+          method 
+        }
+        
+        // 处理 params（第三个位置）
         // 支持两种形式：
-        // 1. 数组形式：['{{name}}', 'static'] -> 转换为 params
-        // 2. 对象形式：{ params: { id: '{{id}}' } } -> 直接使用
-        if (argsOrParams) {
-          if (Array.isArray(argsOrParams) && argsOrParams.length > 0) {
-            // 数组形式的参数，转换为 params 对象
-            action.args = argsOrParams
-          } else if (typeof argsOrParams === 'object' && !Array.isArray(argsOrParams)) {
+        // 1. 数组形式：['{{name}}', 'static'] -> 直接作为 params
+        // 2. 对象形式：{ params: { id: '{{id}}' } } -> 提取 params
+        if (paramsOrOptions) {
+          if (Array.isArray(paramsOrOptions) && paramsOrOptions.length > 0) {
+            // 数组形式的参数，直接赋值给 params（位置参数）
+            action.params = paramsOrOptions
+          } else if (typeof paramsOrOptions === 'object' && !Array.isArray(paramsOrOptions)) {
             // 对象形式，可能包含 params
-            if (argsOrParams.params) {
-              action.params = argsOrParams.params
+            if ('params' in paramsOrOptions && paramsOrOptions.params !== undefined) {
+              action.params = paramsOrOptions.params
             }
           }
         }
@@ -132,7 +138,7 @@ export class EventHandler {
         if (Object.keys(eventModifiers).length > 0) {
           return {
             ...action,
-            modifiers: { ...eventModifiers, ...(action.modifiers || {}) }
+            modifiers: { ...eventModifiers, ...((action as Action & { modifiers?: EventModifiers }).modifiers || {}) }
           }
         }
         return action
@@ -226,8 +232,9 @@ export class EventHandler {
         // 收集所有修饰符（事件名 + action 中的）
         const allModifiers: Record<string, boolean> = { ...eventNameModifiers }
         normalizedActions.forEach(action => {
-          if (action.modifiers) {
-            Object.assign(allModifiers, action.modifiers)
+          const actionWithModifiers = action as Action & { modifiers?: EventModifiers }
+          if (actionWithModifiers.modifiers) {
+            Object.assign(allModifiers, actionWithModifiers.modifiers)
           }
         })
         
@@ -298,41 +305,44 @@ export class EventHandler {
    */
   private preprocessActionsParams(actions: Action[], ctx: RuntimeContext): Action[] {
     return actions.map(action => {
-      if (action.type === 'call' && action.params !== undefined) {
-        const params = action.params
-        
-        // params 是字符串表达式（如 '{{ scope.row }}'）
-        if (typeof params === 'string' && params.startsWith('{{') && params.endsWith('}}')) {
-          try {
-            const expr = params.slice(2, -2).trim()
-            const evaluated = this.evaluateExpr(expr, ctx)
-            return { ...action, params: evaluated }
-          } catch (error) {
-            console.warn(`Failed to evaluate params expression: ${params}`, error)
-            return action
-          }
-        }
-        
-        // params 是对象，遍历其属性求值
-        if (typeof params === 'object' && params !== null && !Array.isArray(params)) {
-          const evaluatedParams: Record<string, unknown> = {}
+      if (action.type === 'call') {
+        const callAction = action as WritableAction<'call'>
+        if (callAction.params !== undefined) {
+          const params = callAction.params
           
-          for (const [key, value] of Object.entries(params as Record<string, unknown>)) {
-            if (typeof value === 'string' && value.startsWith('{{') && value.endsWith('}}')) {
-              // 立即求值表达式
-              try {
-                const expr = value.slice(2, -2).trim()
-                evaluatedParams[key] = this.evaluateExpr(expr, ctx)
-              } catch (error) {
-                console.warn(`Failed to evaluate param expression: ${value}`, error)
-                evaluatedParams[key] = value
-              }
-            } else {
-              evaluatedParams[key] = value
+          // params 是字符串表达式（如 '{{ scope.row }}'）
+          if (typeof params === 'string' && params.startsWith('{{') && params.endsWith('}}')) {
+            try {
+              const expr = params.slice(2, -2).trim()
+              const evaluated = this.evaluateExpr(expr, ctx)
+              return { ...callAction, params: evaluated }
+            } catch (error) {
+              console.warn(`Failed to evaluate params expression: ${params}`, error)
+              return action
             }
           }
           
-          return { ...action, params: evaluatedParams }
+          // params 是对象，遍历其属性求值
+          if (typeof params === 'object' && params !== null && !Array.isArray(params)) {
+            const evaluatedParams: Record<string, unknown> = {}
+            
+            for (const [key, value] of Object.entries(params as Record<string, unknown>)) {
+              if (typeof value === 'string' && value.startsWith('{{') && value.endsWith('}}')) {
+                // 立即求值表达式
+                try {
+                  const expr = value.slice(2, -2).trim()
+                  evaluatedParams[key] = this.evaluateExpr(expr, ctx)
+                } catch (error) {
+                  console.warn(`Failed to evaluate param expression: ${value}`, error)
+                  evaluatedParams[key] = value
+                }
+              } else {
+                evaluatedParams[key] = value
+              }
+            }
+            
+            return { ...callAction, params: evaluatedParams }
+          }
         }
       }
       return action

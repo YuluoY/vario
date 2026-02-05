@@ -16,7 +16,8 @@ export async function handleNavigate(
   ctx: RuntimeContext,
   action: Action
 ): Promise<void> {
-  const { to } = action
+  // 类型断言：确保 action 包含 navigate 动作的属性
+  const { to } = action as Action & { to?: string }
   
   if (!to || typeof to !== 'string') {
     throw new ActionError(

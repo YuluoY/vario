@@ -31,7 +31,7 @@ const schema: SchemaNode = {
 
 ### 事件数组简写格式
 
-事件处理器支持数组简写，格式为：`[type, method, args?, modifiers?]`
+事件处理器支持数组简写，格式为：`['call', method, params?, modifiers?]`
 
 ```typescript
 // 基本用法
@@ -56,9 +56,9 @@ events: {
 ```
 
 **四个固定位置**：
-1. **type**: action 类型（如 `'call'`）
+1. **type**: action 类型（目前仅支持 `'call'`）
 2. **method**: 方法名
-3. **args**: 参数数组（可选）
+3. **params**: 参数（可选，数组或 `{ params: ... }`）
 4. **modifiers**: 修饰符数组或对象（可选）
 
 ### 混合使用
@@ -236,7 +236,7 @@ import type {
 type EventHandlerArray = readonly [
   string,                                         // type
   string,                                         // method
-  (ReadonlyArray<unknown> | undefined)?,          // args
+  (ReadonlyArray<unknown> | undefined)?,          // params
   (string[] | Record<string, boolean> | undefined)?  // modifiers
 ]
 
@@ -287,7 +287,7 @@ type DirectiveArray = readonly [
 ['call', 'method', params]
 
 // ✅ 新写法（四个位置）
-['call', 'method', args, modifiers]
+['call', 'method', params, modifiers]
 ```
 
 ## 相关文档

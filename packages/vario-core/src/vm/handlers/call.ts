@@ -2,7 +2,13 @@
  * call 动作处理器
  * 
  * 功能：调用 method（通过 $methods）
- * 示例：{ "type": "call", "method": "services.fetchUser", "params": {...}, "resultTo": "user" }
+ * 
+ * params 参数支持三种形式：
+ * 1. 对象（命名参数）：{ "type": "call", "method": "fetchUser", "params": { id: "{{userId}}" } }
+ * 2. 数组（位置参数）：{ "type": "call", "method": "sum", "params": ["{{a}}", "{{b}}"] }
+ * 3. 字符串（表达式）：{ "type": "call", "method": "fetchUser", "params": "{{ userParams }}" }
+ * 
+ * resultTo：将方法返回值保存到状态中
  * 
  * 参考文档：action-reference.md - call 动作
  */
@@ -19,9 +25,12 @@ export async function handleCall(
   ctx: RuntimeContext,
   action: Action
 ): Promise<unknown> {
-  const method = action.method as string | undefined
-  const rawParams = action.params
-  const resultTo = action.resultTo as string | undefined
+  // 类型断言：确保 action 包含 call 动作的属性
+  const { method, params: rawParams, resultTo } = action as Action & {
+    method?: string
+    params?: string | Record<string, unknown> | unknown[]
+    resultTo?: string
+  }
   
   if (!method || typeof method !== 'string') {
     throw new ActionError(
@@ -45,21 +54,31 @@ export async function handleCall(
     )
   }
   
-  // 求值参数（支持表达式）
-  // rawParams 可能是：
-  // 1. undefined/null（默认为空对象）
-  // 2. 对象（需要遍历求值每个属性）
-  // 3. 已经求值过的值（直接使用）
-  // 4. 字符串表达式（需要求值）
-  let finalParams: unknown = rawParams ?? {}
+  // 求值参数（params 支持字符串表达式、对象、数组三种形式）
+  let finalParams: unknown
   
   try {
-    // 如果 params 是字符串表达式，先求值
-    if (typeof rawParams === 'string' && rawParams.startsWith('{{') && rawParams.endsWith('}}')) {
+    if (rawParams == null) {
+      // 没有 params，使用空对象
+      finalParams = {}
+    } else if (typeof rawParams === 'string' && rawParams.startsWith('{{') && rawParams.endsWith('}}')) {
+      // 字符串表达式，求值
       const expr = rawParams.slice(2, -2).trim()
       finalParams = evaluate(expr, ctx)
-    } else if (rawParams != null && typeof rawParams === 'object' && !Array.isArray(rawParams)) {
-      // params 是对象，遍历其属性求值
+    } else if (Array.isArray(rawParams)) {
+      // 数组形式（位置参数），求值每个元素
+      const evaluatedParams: unknown[] = []
+      for (const param of rawParams) {
+        if (typeof param === 'string' && param.startsWith('{{') && param.endsWith('}}')) {
+          const expr = param.slice(2, -2).trim()
+          evaluatedParams.push(evaluate(expr, ctx))
+        } else {
+          evaluatedParams.push(param)
+        }
+      }
+      finalParams = evaluatedParams
+    } else if (typeof rawParams === 'object') {
+      // 对象形式（命名参数），求值每个属性
       const evaluatedParams: Record<string, unknown> = {}
       for (const [key, value] of Object.entries(rawParams as Record<string, unknown>)) {
         if (typeof value === 'string' && value.startsWith('{{') && value.endsWith('}}')) {
@@ -70,6 +89,9 @@ export async function handleCall(
         }
       }
       finalParams = evaluatedParams
+    } else {
+      // 其他情况直接使用
+      finalParams = rawParams
     }
     
     // 调用 method

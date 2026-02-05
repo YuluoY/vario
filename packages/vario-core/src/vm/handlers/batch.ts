@@ -16,7 +16,8 @@ export async function handleBatch(
   ctx: RuntimeContext,
   action: Action
 ): Promise<void> {
-  const { actions } = action
+  // 类型断言：确保 action 包含 batch 动作的属性
+  const { actions } = action as Action & { actions?: Action[] }
   
   if (!actions || !Array.isArray(actions)) {
     throw new ActionError(

@@ -16,7 +16,8 @@ export async function handleLog(
   ctx: RuntimeContext,
   action: Action
 ): Promise<void> {
-  const { level = 'info', message } = action
+  // 类型断言：确保 action 包含 log 动作的属性
+  const { level = 'info', message } = action as Action & { level?: 'info' | 'warn' | 'error'; message?: string }
   
   if (!message) {
     throw new ActionError(

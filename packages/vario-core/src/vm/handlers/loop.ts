@@ -19,7 +19,8 @@ export async function handleLoop(
   ctx: RuntimeContext,
   action: Action
 ): Promise<void> {
-  const { var: varName, in: inExpr, body } = action
+  // 类型断言：确保 action 包含 loop 动作的属性
+  const { var: varName, in: inExpr, body } = action as Action & { var?: string; in?: string; body?: Action[] }
   
   if (!varName || typeof varName !== 'string') {
     throw new ActionError(

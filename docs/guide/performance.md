@@ -185,7 +185,7 @@ const schema = {
             click: {
               type: 'call',
               method: 'deleteTodo',
-              args: ['{{ item.id }}']
+              params: ['{{ item.id }}']
             }
           },
           children: '删除'

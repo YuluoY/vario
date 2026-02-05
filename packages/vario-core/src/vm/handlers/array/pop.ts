@@ -16,7 +16,8 @@ export async function handlePop(
   ctx: RuntimeContext,
   action: Action
 ): Promise<void> {
-  const { path } = action
+  // 类型断言：确保 action 包含 pop 动作的属性
+  const { path } = action as Action & { path?: string }
   
   if (!path || typeof path !== 'string') {
     throw new ActionError(

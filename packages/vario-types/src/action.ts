@@ -15,8 +15,7 @@ export type ActionMap = {
   loop: { var: string; in: string; body: Action[] }
   call: { 
     method: string; 
-    params?: string | Record<string, unknown>;  // 支持表达式字符串或对象
-    args?: unknown[];  // 位置参数（事件数组简写格式）
+    params?: string | Record<string, unknown> | unknown[];  // 支持表达式字符串、对象（命名参数）或数组（位置参数）
     resultTo?: string;
     modifiers?: import('./schema.js').EventModifiers  // 事件修饰符
   }
@@ -59,4 +58,25 @@ export function isActionOfType<T extends keyof ActionMap>(
   actionType: T
 ): action is Action & ActionMap[T] {
   return action.type === actionType
+}
+
+/**
+ * 可写的 Action 类型（用于构建 Action 对象）
+ * 移除了 readonly 修饰符，允许动态赋值
+ */
+export type WritableAction<T extends keyof ActionMap = keyof ActionMap> = {
+  type: T
+} & ActionMap[T]
+
+/**
+ * 创建特定类型的 Action（类型安全的构建器）
+ * @example
+ * const action = createAction('call', { method: 'handleClick' })
+ * action.params = ['arg1', 'arg2'] // 类型安全
+ */
+export function createAction<T extends keyof ActionMap>(
+  type: T,
+  props: ActionMap[T]
+): WritableAction<T> {
+  return { type, ...props } as WritableAction<T>
 }
