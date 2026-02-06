@@ -15,6 +15,14 @@ const packages = [
   'vario-cli'
 ]
 
+const npmNameMap = {
+  'vario-types': '@variojs/types',
+  'vario-core': '@variojs/core',
+  'vario-schema': '@variojs/schema',
+  'vario-vue': '@variojs/vue',
+  'vario-cli': '@variojs/cli'
+}
+
 const choices = [
   { name: chalk.yellow('全部发布 (all)'), value: 'all' },
   ...packages.map(p => ({ name: chalk.cyan(p), value: p }))
@@ -67,6 +75,51 @@ function ensurePublishConfig(pkgPath) {
   return changed
 }
 
+function sortPackagesByPublishOrder(selected) {
+  const selectedSet = new Set(selected)
+  return packages.filter(pkgName => selectedSet.has(pkgName))
+}
+
+function buildDepVersionMap() {
+  const versionMap = {}
+  for (const [localName, npmName] of Object.entries(npmNameMap)) {
+    const pkgFile = path.join(__dirname, '..', 'packages', localName, 'package.json')
+    if (!fs.existsSync(pkgFile)) continue
+    const pkg = JSON.parse(fs.readFileSync(pkgFile, 'utf8'))
+    if (pkg.version) {
+      versionMap[npmName] = pkg.version
+    }
+  }
+  return versionMap
+}
+
+function normalizeCaretVersion(version) {
+  if (!version) return version
+  if (version.startsWith('^')) return version
+  if (version.startsWith('~')) return `^${version.slice(1)}`
+  if (/^\d+\.\d+\.\d+(-[\w.-]+)?$/.test(version)) return `^${version}`
+  return version
+}
+
+function resolvePeerVersion(depName, pkg, depVersionMap) {
+  if (depVersionMap[depName]) {
+    return `^${depVersionMap[depName]}`
+  }
+
+  if (depName === 'vue') {
+    return normalizeCaretVersion(
+      pkg.peerDependencies?.vue || pkg.devDependencies?.vue || '^3.4.0'
+    )
+  }
+
+  const existing = pkg.peerDependencies?.[depName]
+  if (existing) {
+    return normalizeCaretVersion(existing)
+  }
+
+  throw new Error(`无法解析 peerDependencies 版本: ${pkg.name} -> ${depName}`)
+}
+
 async function main() {
   console.log(chalk.bold.bgMagenta('\nVario 多包发布工具\n'))
 
@@ -113,6 +166,13 @@ async function main() {
   let toPublish = answers.selected
   if (toPublish.includes('all')) {
     toPublish = packages
+  } else {
+    toPublish = sortPackagesByPublishOrder(toPublish)
+  }
+
+  if (toPublish.length === 0) {
+    console.log(chalk.yellow('未选择任何包，已退出。'))
+    return
   }
 
   const bumpArg = answers.manualVersionMode ? answers.manualVersion : answers.versionType
@@ -189,21 +249,6 @@ async function main() {
     process.off('SIGINT', onExit)
     process.off('SIGTERM', onExit)
     throw err
-  }
-
-  const npmNameMap = {
-    'vario-types': '@variojs/types',
-    'vario-core': '@variojs/core',
-    'vario-schema': '@variojs/schema',
-    'vario-vue': '@variojs/vue',
-    'vario-cli': '@variojs/cli'
-  }
-  function buildDepVersionMap() {
-    const m = {}
-    for (const [localName, npmName] of Object.entries(npmNameMap)) {
-      if (versionMap[localName]) m[npmName] = versionMap[localName]
-    }
-    return m
   }
 
   // Check npm authentication before publishing
@@ -306,18 +351,7 @@ async function main() {
             // 移除 from dependencies
             delete pkg.dependencies[peerDep]
             // 添加到 peerDependencies
-            if (depVersionMap[peerDep]) {
-              pkg.peerDependencies[peerDep] = `^${depVersionMap[peerDep]}`
-            } else {
-              // 对于 vue 等外部依赖，使用现有版本或默认版本
-              if (peerDep === 'vue') {
-                // 尝试从 devDependencies 获取版本，否则使用默认
-                const vueVersion = pkg.devDependencies?.vue || '^3.4.0'
-                pkg.peerDependencies[peerDep] = vueVersion.replace(/^\^?/, '^')
-              } else {
-                pkg.peerDependencies[peerDep] = `^${pkg.version}`
-              }
-            }
+            pkg.peerDependencies[peerDep] = resolvePeerVersion(peerDep, pkg, depVersionMap)
             // 添加 meta
             if (peerDepsMeta[peerDep]) {
               pkg.peerDependenciesMeta[peerDep] = peerDepsMeta[peerDep]
@@ -342,14 +376,7 @@ async function main() {
       // 对于没有在 dependencies 中找到的 peerDeps，直接添加
       for (const peerDep of peerDeps) {
         if (!pkg.peerDependencies[peerDep]) {
-          if (depVersionMap[peerDep]) {
-            pkg.peerDependencies[peerDep] = `^${depVersionMap[peerDep]}`
-          } else if (peerDep === 'vue') {
-            const vueVersion = pkg.devDependencies?.vue || '^3.4.0'
-            pkg.peerDependencies[peerDep] = vueVersion.replace(/^\^?/, '^')
-          } else {
-            pkg.peerDependencies[peerDep] = `^${pkg.version}`
-          }
+          pkg.peerDependencies[peerDep] = resolvePeerVersion(peerDep, pkg, depVersionMap)
           if (peerDepsMeta[peerDep]) {
             pkg.peerDependenciesMeta[peerDep] = peerDepsMeta[peerDep]
           }
