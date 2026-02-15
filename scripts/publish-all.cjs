@@ -120,6 +120,20 @@ function resolvePeerVersion(depName, pkg, depVersionMap) {
   throw new Error(`无法解析 peerDependencies 版本: ${pkg.name} -> ${depName}`)
 }
 
+/** 发布前：把 dependencies/peerDependencies/optionalDependencies 里所有 workspace: 协议替换为 ^version，确保发包不含 workspace 引用 */
+function replaceAllWorkspaceRefs(pkg, depVersionMap) {
+  const sections = ['dependencies', 'peerDependencies', 'optionalDependencies']
+  for (const section of sections) {
+    if (!pkg[section]) continue
+    for (const [depName, depVersion] of Object.entries(pkg[section])) {
+      if (typeof depVersion !== 'string') continue
+      if (depVersion.startsWith('workspace:') && depVersionMap[depName]) {
+        pkg[section][depName] = `^${depVersionMap[depName]}`
+      }
+    }
+  }
+}
+
 async function main() {
   console.log(chalk.bold.bgMagenta('\nVario 多包发布工具\n'))
 
@@ -392,7 +406,7 @@ async function main() {
         }
       }
     } else {
-      // 对于其他包（如 vario-core），只转换版本号
+      // 对于其他包（如 vario-types），只转换版本号
       if (pkg.dependencies) {
         for (const [depName, depVersion] of Object.entries(pkg.dependencies)) {
           if (depVersion === 'workspace:*' && depVersionMap[depName]) {
@@ -401,6 +415,9 @@ async function main() {
         }
       }
     }
+
+    // 发布前统一替换所有 workspace 引用，确保发包不含 workspace:*
+    replaceAllWorkspaceRefs(pkg, depVersionMap)
 
     fs.writeFileSync(pkgFile, JSON.stringify(pkg, null, 2))
 
