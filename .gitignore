@@ -1,7 +1,7 @@
 # Dependencies
 node_modules/
 .pnpm-store/
-
+.github
 # Build outputs
 dist/
 dist-ssr/
