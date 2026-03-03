@@ -85,11 +85,11 @@ describe('vario-node', () => {
       expect(shouldComponentize({ type: 'ElButton' }, 0, options)).toBe(true)
       expect(shouldComponentize({ type: 'MyComponent' }, 0, options)).toBe(true)
       
-      // 有 loop 是边界
+      // 有 loop 的节点不组件化（LoopHandler 需要在 renderer.createVNode 层面处理）
       expect(shouldComponentize({ 
         type: 'div', 
         loop: { items: '{{ items }}', itemKey: 'item' }
-      }, 0, options)).toBe(true)
+      }, 0, options)).toBe(false)
     })
   })
 

@@ -11,66 +11,68 @@
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 [![pnpm Version](https://img.shields.io/badge/pnpm-%3E%3D8.0.0-orange)](https://pnpm.io/)
 
-[在线演示](https://yuluoy.github.io/vario/) • [文档](https://yuluoy.github.io/vario/docs/) • [快速开始](https://yuluoy.github.io/vario/docs/guide/quick-start.html) • [Packages](#-packages)
+[Live Demo](https://yuluoy.github.io/vario/) • [Documentation](https://yuluoy.github.io/vario/docs/) • [Quick Start](https://yuluoy.github.io/vario/docs/guide/quick-start.html) • [Packages](#-packages)
+
+**English** | [中文](./README.zh-CN.md)
 
 </div>
 
 ---
 
-Vario 是一个 Schema-First 的 UI 行为框架。你用 JSON Schema 描述 UI 结构、动作与表达式，核心运行时通过 Action VM 执行逻辑；渲染层将 Schema 映射到具体框架（当前支持 Vue 3，其他渲染器规划中）。
+Vario is a **Schema-First UI behavior framework**. You describe UI structure, actions, and expressions using JSON Schema; the core runtime executes logic through an Action VM; and the renderer maps the Schema to a concrete framework (currently Vue 3, with other renderers planned).
 
-它的目标是把“页面结构、交互逻辑、运行时执行”解耦开来，形成一套稳定的 UI 行为中间层，便于复用、迁移和跨框架渲染。
+The goal is to **decouple page structure, interaction logic, and runtime execution** into a stable UI behavior intermediate layer — making it easy to reuse, migrate, and render across frameworks.
 
-## ✨ 特性概览
+## ✨ Features
 
-- **Schema DSL**：声明式描述 UI 结构与交互逻辑
-- **Action VM**：统一执行 `call / set / emit / if / loop / batch` 等动作指令
-- **安全表达式引擎**：白名单 + 依赖追踪 + 缓存加速
-- **运行时上下文**：扁平状态 + `$` 系统 API + 路径读写
-- **Vue 3 渲染器**：`useVario`、双向绑定、事件修饰符、refs/teleport/provide/inject
-- **性能优化**：path-memo、列表项组件化、子树组件化、SchemaStore
+- **Schema DSL** — Declaratively describe UI structure and interaction logic
+- **Action VM** — Unified executor for `call / set / emit / if / loop / batch` instructions
+- **Safe Expression Engine** — Whitelist-based sandbox with dependency tracking and expression caching
+- **Runtime Context** — Flat state container with `_`-prefixed system APIs and path-based read/write
+- **Vue 3 Renderer** — `useVario` composable, two-way binding, event modifiers, refs / teleport / provide / inject
+- **Performance Optimizations** — Path memoization, list-item componentization, subtree componentization, SchemaStore
 
-## 🎯 Why Vario / 适用场景
+## 🎯 When to Use Vario
 
-Vario 适合把“UI 行为定义”从具体框架中抽离出来的场景，尤其是需要复用、迁移或跨端渲染的项目：
+Vario is a great fit when you need to decouple "UI behavior definitions" from a specific framework — especially for projects that require reuse, migration, or cross-platform rendering:
 
-- **低代码/可配置 UI**：Schema 可直接作为配置协议，前后端协作更高效
-- **跨框架复用**：同一套 Schema 可被不同渲染器消费（当前 Vue 3，其他规划中）
-- **复杂表单/流程**：Action VM 统一处理逻辑分支、批量动作、异步调用
-- **性能敏感 UI**：路径缓存、子树组件化、列表项组件化等针对大规模渲染优化
-- **安全要求高**：表达式引擎受控执行，避免任意代码执行风险
+- **Low-code / configurable UI** — Schema doubles as a configuration protocol, enabling more efficient front-end and back-end collaboration
+- **Cross-framework reuse** — The same Schema can be consumed by different renderers (Vue 3 today, more planned)
+- **Complex forms & workflows** — Action VM uniformly handles branching logic, batch actions, and async calls
+- **Performance-critical UI** — Path caching, subtree componentization, and list-item componentization optimize large-scale rendering
+- **Security-sensitive environments** — The expression engine uses controlled evaluation to prevent arbitrary code execution
 
-## 🧩 架构一览
+## 🧩 Architecture
 
 ```
 Schema (JSON DSL)
    ↓
-Schema Layer (types / validator / normalizer / defineSchema)
+Schema Layer  (@variojs/schema — types / validator / normalizer / defineSchema)
    ↓
-Core Runtime (RuntimeContext + Expression + Action VM)
+Core Runtime  (@variojs/core  — RuntimeContext + ExpressionEngine + Action VM)
    ↓
-Renderer (Vue 3) → VNode
+Renderer      (@variojs/vue   — useVario + VNode)
 ```
 
 ## 📦 Packages
 
-| 包名 | 说明 |
-|------|------|
-| `@variojs/core` | 运行时核心：Action VM、表达式系统、RuntimeContext、Schema 查询工具 |
-| `@variojs/schema` | Schema DSL：类型、验证、规范化、`defineSchema` |
-| `@variojs/types` | 共享类型定义（消除跨包循环依赖） |
-| `@variojs/vue` | Vue 3 渲染器与 `useVario` 组合式 API |
-| `@variojs/cli` | CLI 工具（开发服务器与代码生成基础实现，部分命令仍在完善） |
+| Package | Description |
+|---------|-------------|
+| `@variojs/core` | Runtime core: Action VM, expression engine, RuntimeContext, schema query utilities |
+| `@variojs/schema` | Schema DSL: types, validation, normalization, `defineSchema` |
+| `@variojs/types` | Shared type definitions (eliminates cross-package circular dependencies) |
+| `@variojs/vue` | Vue 3 renderer and `useVario` composable API |
+| `@variojs/cli` | CLI tooling: dev server and code generation (some commands still in progress) |
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 安装
+### Installation
 
 ```bash
 pnpm add @variojs/vue @variojs/core @variojs/schema
 ```
 
-### 示例（Vue 3）
+### Example (Vue 3)
 
 ```ts
 import { useVario } from '@variojs/vue'
@@ -83,10 +85,10 @@ const schema: Schema = {
     {
       type: 'button',
       events: {
-        // 数组简写：['call', method, params?, modifiers?]
+        // Array shorthand: ['call', method, params?, modifiers?]
         'click.stop': ['call', 'submit', { params: ['{{ name }}'] }]
       },
-      children: '提交'
+      children: 'Submit'
     },
     {
       type: 'div',
@@ -99,58 +101,67 @@ const { vnode, state } = useVario(schema, {
   state: { name: '' },
   methods: {
     submit: ({ params }) => {
-      console.log('params:', params)
+      console.log('submitted:', params)
     }
   }
 })
 ```
 
-## 🧠 核心概念
+## 🧠 Core Concepts
 
-- **Schema**：描述 UI 结构、事件与行为，支持表达式插值
-- **Action**：VM 执行单位，`call` 调用方法、`set` 更新状态等
-- **Expression**：受控表达式引擎，支持依赖追踪与缓存
-- **RuntimeContext**：扁平化状态容器，提供 `_get / _set / $methods / $emit`
+- **Schema** — Describes UI structure, events, and behavior; supports expression interpolation (`{{ expr }}`)
+- **Action** — A VM execution unit: `call` invokes a method, `set` updates state, `if` / `loop` for control flow, etc.
+- **Expression** — A controlled expression engine with dependency tracking and result caching
+- **RuntimeContext** — Flat state container exposing `_get` / `_set` / `$emit` and registered methods
 
 ## ❓ FAQ
 
-**Schema 和直接写组件有什么区别？**  
-Schema 更像“UI 行为的中间表示”，它强调结构与逻辑的声明式描述，便于复用、序列化、跨端渲染与低代码配置。
+**How is Schema different from writing components directly?**  
+Schema is more like an "intermediate representation of UI behavior." It emphasizes declarative descriptions of structure and logic, making them easy to serialize, reuse, migrate, and configure in low-code tools.
 
-**Action VM 做了什么？**  
-Action VM 负责执行动作序列，统一处理 `call / set / emit / if / loop / batch` 等指令，并提供错误包装与超时保护。
+**What does the Action VM do?**  
+The Action VM executes action sequences and uniformly handles `call / set / emit / if / loop / batch` instructions. It wraps errors and provides timeout protection.
 
-**表达式是否安全？**  
-表达式采用白名单机制与受控求值，避免直接执行任意代码，同时具备依赖追踪与缓存加速。
+**Are expressions safe?**  
+Yes. Expressions use a whitelist mechanism and controlled evaluation to prevent arbitrary code execution. They also benefit from dependency tracking and result caching.
 
-**是否只能用 Vue？**  
-当前提供 Vue 3 渲染器；核心运行时与 Schema 是框架无关的，后续可扩展其他渲染器。
+**Is Vue the only supported renderer?**  
+Currently, only the Vue 3 renderer is provided. The core runtime and Schema layer are framework-agnostic, so additional renderers can be added in the future.
 
-**CLI 现在能做什么？**  
-CLI 已具备基础的开发服务器与代码生成入口，但部分命令仍在完善中。
+**What can the CLI do right now?**  
+The CLI has a basic dev server and code generation entry point, but some commands are still being refined.
 
-## 📖 文档
+## 📖 Documentation
 
-- `docs/`：项目文档与指南
-- `packages/vario-core/README.md`：核心运行时
-- `packages/vario-schema/README.md`：Schema DSL
-- `packages/vario-vue/README.md`：Vue 渲染器
-- `packages/vario-types/README.md`：类型定义
-- `packages/vario-cli/README.md`：CLI 工具
+- [`docs/`](./docs/) — Project guides and API reference
+- [`packages/vario-core/README.md`](./packages/vario-core/README.md) — Core runtime
+- [`packages/vario-schema/README.md`](./packages/vario-schema/README.md) — Schema DSL
+- [`packages/vario-vue/README.md`](./packages/vario-vue/README.md) — Vue renderer
+- [`packages/vario-types/README.md`](./packages/vario-types/README.md) — Type definitions
+- [`packages/vario-cli/README.md`](./packages/vario-cli/README.md) — CLI tooling
 
-## 🛠️ 开发
+## 🛠️ Development
 
 ```bash
-pnpm install
-pnpm build
-pnpm test
-pnpm start
+pnpm install       # Install dependencies
+pnpm build         # Build all packages (two-pass: JS then DTS)
+pnpm build:clean   # Clean dist/ then build
+pnpm test          # Run all unit tests
+pnpm start         # Build packages, then start play (:5173) + docs (:5174)
+pnpm dev           # Start without rebuilding (packages must already be built)
 ```
 
-## 🤝 贡献
+Single-package workflow:
 
-请先阅读 `CONTRIBUTING.md`，再提交 Issue 或 PR。
+```bash
+pnpm --filter @variojs/core build
+pnpm --filter @variojs/core test:watch
+```
 
-## 📄 许可证
+## 🤝 Contributing
 
-MIT
+Please read [`CONTRIBUTING.md`](./CONTRIBUTING.md) before opening an issue or pull request.
+
+## 📄 License
+
+[MIT](./LICENSE)

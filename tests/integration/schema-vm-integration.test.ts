@@ -30,7 +30,7 @@ describe('Schema and VM integration', () => {
           type: 'div',
           events: {
             click: [
-              { op: 'set', path: 'count', value: '{{ count + 1 }}' }
+              { type: 'set', path: 'count', value: '{{ count + 1 }}' }
             ]
           }
         }

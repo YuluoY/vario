@@ -121,7 +121,7 @@ describe('Vue integration with Element Plus', () => {
           },
           events: {
             click: [
-              { op: 'set', path: 'clickCount', value: '{{ clickCount + 1 }}' }
+              { type: 'set', path: 'clickCount', value: '{{ clickCount + 1 }}' }
             ]
           },
           children: 'Click to increment'

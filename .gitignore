@@ -64,3 +64,5 @@ Thumbs.db
 # Claude skills (keep structure but ignore large files)
 .claude/skills/*/node_modules/
 .claude/skills/*/dist/
+blog-screenshots
+docs/runtime

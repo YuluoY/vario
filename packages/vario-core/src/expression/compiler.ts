@@ -105,6 +105,12 @@ export function compileSimpleExpression(ast: ESTree.Node): CompiledExpression | 
   // 注意：全局对象名称（window, document等）不应该被编译，应该回退到解释执行以进行安全检查
   if (ast.type === 'Identifier') {
     const name = ast.name
+    // 循环/系统变量（$item, $index, $event 等）不能编译为 ctx._get()：
+    // _get() 通过 adapter 读取 reactive state，但这些变量存在于 loopCtx 的自有属性上，
+    // 只有解释器的 ctx[name]（JavaScript 原型链查找）才能正确访问它们
+    if (name.startsWith('$') || name.startsWith('_')) {
+      return null  // 回退到解释执行
+    }
     // 全局对象名称不应该被编译（需要安全检查）
     const globalObjectNames = ['window', 'document', 'global', 'globalThis', 'self']
     if (globalObjectNames.includes(name)) {
@@ -117,9 +123,14 @@ export function compileSimpleExpression(ast: ESTree.Node): CompiledExpression | 
   // 注意：如果路径以全局对象名称开头或包含危险属性，不应该被编译
   const path = extractStaticPath(ast)
   if (path) {
+    const firstSegment = path.split('.')[0]
+    // 循环/系统变量的成员访问（$item.type, $item.name 等）不能编译为 ctx._get()：
+    // 理由同上：_get() 无法访问 loopCtx 的自有属性，需要解释器的原型链查找
+    if (firstSegment.startsWith('$') || firstSegment.startsWith('_')) {
+      return null  // 回退到解释执行
+    }
     // 检查路径是否以全局对象名称开头
     const globalObjectNames = ['window', 'document', 'global', 'globalThis', 'self']
-    const firstSegment = path.split('.')[0]
     if (globalObjectNames.includes(firstSegment)) {
       return null  // 回退到解释执行以进行安全检查
     }

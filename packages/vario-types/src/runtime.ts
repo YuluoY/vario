@@ -7,6 +7,33 @@ import type { SchemaNode } from './schema.js'
 import type { GetPathValue, SetPathValue } from './utils.js'
 
 /**
+ * 响应式适配器接口
+ * 
+ * 核心设计：让 RuntimeContext 的状态存储可以适配到不同 UI 框架的响应式系统，
+ * 从而消除"双份状态同步"问题。Vue 侧提供 VueReactiveAdapter（内部用 reactive()），
+ * React 侧可提供 ReactReactiveAdapter（内部用 useSyncExternalStore + 不可变快照）。
+ * 
+ * 当 adapter 被注入到 RuntimeContext 后：
+ * - _get/_set 通过 adapter 读写状态
+ * - Proxy 的 get/set/has/ownKeys trap 也路由到 adapter
+ * - 不再需要 onStateChange 做双向同步（因为只有一份状态）
+ */
+export interface ReactiveAdapter {
+  /** 通过路径读取值（支持嵌套路径如 'user.name'） */
+  get(path: string): unknown
+  /** 通过路径设置值（支持嵌套路径，自动创建中间结构） */
+  set(path: string, value: unknown): void
+  /** 直接读取顶层属性（供 Proxy get trap 使用） */
+  getProperty(key: string): unknown
+  /** 直接设置顶层属性（供 Proxy set trap 使用） */
+  setProperty(key: string, value: unknown): void
+  /** 检查属性是否存在（供 Proxy has trap 和表达式引擎 'name in ctx' 使用） */
+  has(key: string): boolean
+  /** 返回所有状态键名（供 Proxy ownKeys trap 和 for...in 使用） */
+  keys(): string[]
+}
+
+/**
  * 方法处理器类型
  * 所有注册到 $methods 的方法必须符合此签名
  * 
@@ -86,4 +113,14 @@ export interface CreateContextOptions<TState extends Record<string, unknown> = R
   createObject?: () => Record<string, unknown>
   createArray?: () => unknown[]
   exprOptions?: ExpressionOptions
+  /**
+   * 响应式适配器（可选）
+   * 
+   * 提供后，RuntimeContext 的状态读写全部路由到 adapter，
+   * 不再在 ctx 内部维护独立的状态副本。
+   * 这消除了 useVario 中"双份状态 + 三重锁同步"的复杂度。
+   * 
+   * 向后兼容：不提供 adapter 时行为与之前完全一致。
+   */
+  adapter?: ReactiveAdapter
 }

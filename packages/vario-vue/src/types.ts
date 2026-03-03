@@ -13,7 +13,12 @@
  * 应该在 Vue 组件中使用原生 API 定义，然后通过 useVario 的 computed 选项传入
  */
 
-import type { SchemaNode } from '@variojs/schema'
+import type { Schema, SchemaNode } from '@variojs/schema'
+import type { RuntimeContext, ExpressionOptions } from '@variojs/types'
+import type { Ref, VNode, ComputedRef, App } from 'vue'
+import type { VueRendererOptions } from './renderer.js'
+import type { SchemaStats } from './features/schema-analyzer.js'
+import type { SchemaQueryApi } from './composables/useSchemaQuery.js'
 
 /**
  * Vue 特有的 SchemaNode 扩展
@@ -126,4 +131,105 @@ export interface VueSchemaNode extends SchemaNode {
     exclude?: string | RegExp | Array<string | RegExp>
     max?: number
   }
+}
+
+/**
+ * useVario 方法上下文
+ *
+ * 说明：
+ * - 该类型用于 `options.methods` 中每个方法的参数类型推导
+ * - 同时兼容 `value`（推荐）与 `event`（向后兼容）两种事件值读取方式
+ */
+export interface MethodContext<TState extends Record<string, unknown> = Record<string, unknown>, TEvent = unknown> {
+  /** 响应式状态对象 */
+  state: TState
+  /** Schema 中定义的 params 参数 */
+  params: any
+  /**
+   * 事件值（Vue 组件 emit 的参数或原生 DOM 事件）
+   * 推荐优先使用该字段
+   */
+  value: TEvent
+  /** @deprecated 请使用 value 代替，此属性仅用于向后兼容 */
+  event?: TEvent
+  /** 完整运行时上下文（包含 state、$methods、_get/_set 等） */
+  ctx: RuntimeContext<TState>
+}
+
+/**
+ * useVario 配置项
+ */
+export interface UseVarioOptions<TState extends Record<string, unknown> = Record<string, unknown>> {
+  /** 初始状态（会自动包裹为响应式对象） */
+  state?: TState
+  /** 计算属性（Options 风格函数）或 Composition 风格（ComputedRef） */
+  computed?: Record<string, ((state: TState) => any) | ComputedRef<any>>
+  /** 方法（统一注册到 $methods） */
+  methods?: Record<string, (ctx: MethodContext<TState, any>) => any>
+  /** 双向绑定配置（非标准组件） */
+  modelBindings?: Record<string, any>
+  /** 事件处理 */
+  onEmit?: (event: string, data?: unknown) => void
+  /** 错误处理 */
+  onError?: (error: Error) => void
+  /** 错误边界配置 */
+  errorBoundary?: {
+    /** 是否启用错误边界（默认 true） */
+    enabled?: boolean
+    /** 自定义错误显示节点 */
+    fallback?: (error: Error) => VNode
+    /** 错误恢复回调 */
+    onRecover?: (error: Error) => void
+  }
+  /** 渲染器配置 */
+  rendererOptions?: VueRendererOptions
+  /** Vue 应用实例（用于非组件上下文，优先级高于 getCurrentInstance） */
+  app?: App | null
+  /** 全局组件映射（用于非组件上下文，优先级最高） */
+  components?: Record<string, any>
+  /** 表达式求值配置 */
+  exprOptions?: ExpressionOptions
+  /**
+   * Model 绑定配置（供外部/扩展使用）
+   * - separator: 路径分隔符，默认 '.'
+   * - lazy: 整棵 schema 的 model 默认惰性，true 时不预写 state
+   */
+  modelOptions?: {
+    separator?: string
+    lazy?: boolean
+  }
+}
+
+/**
+ * useVario 返回值
+ */
+export interface UseVarioResult<TState extends Record<string, unknown>> extends SchemaQueryApi {
+  /** 当前渲染结果 */
+  vnode: Ref<VNode | null>
+  /** 响应式 state */
+  state: TState
+  /** RuntimeContext 引用 */
+  ctx: Ref<RuntimeContext<TState>>
+  /** 模板引用（ref）集合 */
+  refs: Record<string, Ref<any>>
+  /** 当前错误（如果有） */
+  error: Ref<Error | null>
+  /** Schema 统计信息 */
+  stats: Ref<SchemaStats>
+  /** 手动触发重新渲染（用于错误恢复） */
+  retry: () => void
+}
+
+/**
+ * useVario 的函数重载签名
+ */
+export type UseVarioOverload = {
+  <TState extends Record<string, unknown>>(
+    schema: Schema<TState> | (() => Schema<TState>) | ComputedRef<Schema<TState>>,
+    options: UseVarioOptions<TState> & { state: TState }
+  ): UseVarioResult<TState>
+  <TState extends Record<string, unknown> = Record<string, unknown>>(
+    schema: Schema<TState> | (() => Schema<TState>) | ComputedRef<Schema<TState>>,
+    options?: UseVarioOptions<TState>
+  ): UseVarioResult<TState>
 }

@@ -111,17 +111,21 @@ export function shouldComponentize(
   if (!options.enabled) return false
   if (options.maxDepth !== undefined && depth > options.maxDepth) return false
 
+  // 含 loop 的节点不可组件化：LoopHandler 需要在 renderer.createVNode 层面
+  // 展开循环、创建 LoopItemCell 等，VarioNode 无法处理此逻辑。
+  // 必须让 renderer.createVNode 直接处理 loop 节点。
+  if (schema.loop) return false
+
   if (options.granularity === 'boundary') {
     // 仅在组件边界组件化
     const type = schema.type
     const isCustomComponent = typeof type === 'string' && /^[A-Z]/.test(type)
-    const hasLoop = !!schema.loop
     const vueNode = schema as VueSchemaNode
     const hasLifecycle = !!(vueNode.onMounted || vueNode.provide || vueNode.inject)
-    return isCustomComponent || hasLoop || hasLifecycle
+    return isCustomComponent || hasLifecycle
   }
 
-  // granularity === 'all'：所有节点都组件化
+  // granularity === 'all'：所有节点都组件化（但 loop 节点已在上方排除）
   return true
 }
 
@@ -213,10 +217,12 @@ export const VarioNode = defineComponent({
         return null
       }
 
-      // 处理 loop（循环节点委托给 LoopHandler）
+      // 处理 loop（循环节点不应在 VarioNode 内处理）
+      // 注意：含 loop 的节点不应被组件化为 VarioNode，
+      // 因为 LoopHandler 需要在 renderer.createVNode 层面处理循环逻辑。
+      // 如果到达这里说明 shouldComponentize 未正确排除 loop 节点。
+      // 安全回退：返回 null，让 Vue 跳过渲染
       if (schema.loop) {
-        // 对于 loop 节点，返回 Fragment 包裹的循环结果
-        // 实际循环逻辑由外部 LoopHandler 处理
         return null
       }
 

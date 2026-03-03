@@ -52,15 +52,18 @@ export function createRuntimeContext<TState extends Record<string, unknown>>(
     onStateChange,
     createObject = () => ({}),
     createArray = () => [],
-    exprOptions
+    exprOptions,
+    adapter
   } = options
 
   // 用于存储 proxied 引用，以便 _set 中的 onStateChange 能使用正确的引用
   let proxiedRef: RuntimeContext<TState> | null = null
 
   // 2. 创建基础上下文对象
+  //    当有 adapter 时，状态由 adapter 管理，不在 ctx 上展开
+  //    Proxy 会将状态属性的读写路由到 adapter
   const ctx = {
-    ...initialState,
+    ...(adapter ? {} : initialState),
     $emit: (event: string, data?: unknown) => {
       if (onEmit) {
         onEmit(event, data)
@@ -69,13 +72,20 @@ export function createRuntimeContext<TState extends Record<string, unknown>>(
     $methods: methods as MethodsRegistry,
     $exprOptions: exprOptions,
     _get: <TPath extends string>(path: TPath): GetPathValue<TState, TPath> => {
+      if (adapter) {
+        return adapter.get(path) as GetPathValue<TState, TPath>
+      }
       return getPath(ctx as Record<string, unknown>, path) as GetPathValue<TState, TPath>
     },
     _set: <TPath extends string>(path: TPath, value: SetPathValue<TState, TPath>, options?: { skipCallback?: boolean }): void => {
-      setPath(ctx as Record<string, unknown>, path, value, {
-        createObject,
-        createArray
-      })
+      if (adapter) {
+        adapter.set(path, value)
+      } else {
+        setPath(ctx as Record<string, unknown>, path, value, {
+          createObject,
+          createArray
+        })
+      }
       // 使缓存失效（使用 proxied 引用以确保缓存键一致）
       invalidateCache(path, (proxiedRef || ctx) as RuntimeContext)
       if (onStateChange && !options?.skipCallback) {
@@ -87,8 +97,8 @@ export function createRuntimeContext<TState extends Record<string, unknown>>(
   // 3. 自动注册内置指令到 $methods（RuntimeContext<TState> 与 RuntimeContext 在 _set 值域上逆变，需通过 unknown 转接）
   registerBuiltinMethods(ctx as unknown as RuntimeContext)
 
-  // 4. 使用 Proxy 保护系统 API
-  const proxied = createProxy(ctx as unknown as RuntimeContext) as RuntimeContext<TState>
+  // 4. 使用 Proxy 保护系统 API（传入 adapter 以路由状态访问）
+  const proxied = createProxy(ctx as unknown as RuntimeContext, adapter) as RuntimeContext<TState>
   
   // 5. 保存 proxied 引用供 _set 使用
   proxiedRef = proxied

@@ -18,6 +18,7 @@
 export * from './renderer.js'
 export * from './composable.js'
 export * from './bindings.js'
+export * from './adapter.js'
 export * from './types.js'
 export * from './features/refs.js'
 export * from './features/teleport.js'

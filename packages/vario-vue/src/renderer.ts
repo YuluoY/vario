@@ -115,6 +115,14 @@ export class VueRenderer implements VarioNodeRenderer {
   private childrenResolver: ChildrenResolver
   private lifecycleWrapper: LifecycleWrapper
 
+  /**
+   * 稳定的 parentMap 引用（方案 C 优化）
+   * 使用实例级别 WeakMap，避免 render() 每次创建新 WeakMap
+   * 导致 VarioNode 的 parentMap prop 引用变化→触发不必要的级联重渲染。
+   * WeakMap 的 GC 特性保证：旧 schema 对象被回收后，对应条目自动清理。
+   */
+  private _stableParentMap: ParentMap = new WeakMap()
+
   constructor(options: VueRendererOptions = {}) {
     this.getState = options.getState
     this.refsRegistry = options.refsRegistry || new RefsRegistry()
@@ -178,13 +186,26 @@ export class VueRenderer implements VarioNodeRenderer {
       path?: string
     ) =>
       this.createVNode(schema, ctx, modelPathStack ?? [], nodeContext, parentMap, path ?? nodeContext?.path ?? '')
-    const getRenderNodeForLoopItem = (parentMap: ParentMap) => (
-      s: SchemaNode,
-      c: RuntimeContext,
-      stack: PathSegment[],
-      nc: NodeContext | undefined,
-      p: string
-    ) => this.createVNode(s, c, stack, nc, parentMap, p)
+    // 缓存 renderNodeForLoopItem 闭包：避免 parentMap 引用稳定后
+    // 仍因闭包重建导致 LoopItemCell 的 renderNode prop 变化而级联重渲染
+    const renderNodeCache = new WeakMap<ParentMap, (
+      s: SchemaNode, c: RuntimeContext, stack: PathSegment[],
+      nc: NodeContext | undefined, p: string
+    ) => VNode>()
+    const getRenderNodeForLoopItem = (parentMap: ParentMap) => {
+      let cached = renderNodeCache.get(parentMap)
+      if (!cached) {
+        cached = (
+          s: SchemaNode,
+          c: RuntimeContext,
+          stack: PathSegment[],
+          nc: NodeContext | undefined,
+          p: string
+        ) => this.createVNode(s, c, stack, nc, parentMap, p)
+        renderNodeCache.set(parentMap, cached)
+      }
+      return cached
+    }
     this.loopHandler = new LoopHandler(
       this.pathResolver,
       createVNodeFn,
@@ -202,8 +223,10 @@ export class VueRenderer implements VarioNodeRenderer {
    * 渲染 Schema 为 VNode
    */
   render(schema: SchemaNode, ctx: RuntimeContext): VNode | null {
-    const parentMap: ParentMap = new WeakMap()
-    const vnode = this.createVNode(schema, ctx, [], undefined, parentMap, '')
+    // 复用稳定的 parentMap 引用，避免 VarioNode 因 parentMap prop 变化而级联重渲染
+    // WeakMap 中旧 schema 节点的条目由 GC 自动清理；
+    // 当前 render 中 createVNode 会覆写同一 schema 节点的条目，保证正确性
+    const vnode = this.createVNode(schema, ctx, [], undefined, this._stableParentMap, '')
     // 如果返回 null，返回一个空的 Fragment 作为占位符
     // Vue 需要有效的 VNode，不能是 null
     if (vnode === null || vnode === undefined) {
