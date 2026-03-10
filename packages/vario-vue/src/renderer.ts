@@ -127,12 +127,14 @@ export class VueRenderer implements VarioNodeRenderer {
     this.getState = options.getState
     this.refsRegistry = options.refsRegistry || new RefsRegistry()
     // 初始化功能模块
-    // 优先级：components > app._context.components > instance?.appContext?.components
-    const globalComponents = 
-      options.components ||
+    // 合并全局组件：app / instance 上下文的全局组件作为基础，options.components 覆盖同名组件
+    const appComponents =
       options.app?._context?.components ||
       options.instance?.appContext?.components ||
       {}
+    const globalComponents = options.components
+      ? { ...appComponents, ...options.components }
+      : appComponents
     this.componentResolver = new ComponentResolver(globalComponents)
     this.expressionEvaluator = new ExpressionEvaluator()
     this.eventHandler = new EventHandler((expr, ctx) => this.expressionEvaluator.evaluateExpr(expr, ctx))
