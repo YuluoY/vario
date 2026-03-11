@@ -91,6 +91,7 @@ export interface VueRendererOptions {
  */
 export class VueRenderer implements VarioNodeRenderer {
   public refsRegistry: RefsRegistry
+  private instance: ComponentInternalInstance | null
   private getState?: () => any
   /** path-memo：按 path 缓存子树 VNode，未变分支复用 */
   private pathMemoCache: PathMemoCache
@@ -124,6 +125,7 @@ export class VueRenderer implements VarioNodeRenderer {
   private _stableParentMap: ParentMap = new WeakMap()
 
   constructor(options: VueRendererOptions = {}) {
+    this.instance = options.instance || null
     this.getState = options.getState
     this.refsRegistry = options.refsRegistry || new RefsRegistry()
     // 初始化功能模块
@@ -451,7 +453,7 @@ export class VueRenderer implements VarioNodeRenderer {
     
     // 处理 ref
     if (vueSchema.ref) {
-      vnode = attachRef(vnode, vueSchema, this.refsRegistry)
+      vnode = attachRef(vnode, vueSchema, this.refsRegistry, this.instance)
     }
     
     // 处理自定义指令（使用 withDirectives）
@@ -587,7 +589,7 @@ export class VueRenderer implements VarioNodeRenderer {
    * 附加 ref
    */
   attachRef(vnode: VNode, vueSchema: VueSchemaNode): VNode {
-    return attachRef(vnode, vueSchema, this.refsRegistry)
+    return attachRef(vnode, vueSchema, this.refsRegistry, this.instance)
   }
 
   /**

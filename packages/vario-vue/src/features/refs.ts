@@ -6,8 +6,50 @@
  */
 
 import { ref, type Ref } from 'vue'
-import type { VNode } from 'vue'
+import type { ComponentInternalInstance, VNode } from 'vue'
 import type { VueSchemaNode } from '../types.js'
+
+type SupportedTemplateRef = Ref<any> | ((...args: any[]) => any) | string
+
+type NormalizedVNodeRef = {
+  i: ComponentInternalInstance | null
+  r: SupportedTemplateRef
+  k?: string
+  f?: boolean
+}
+
+function isSupportedTemplateRef(value: unknown): value is SupportedTemplateRef {
+  return typeof value === 'string' ||
+    typeof value === 'function' ||
+    (!!value && typeof value === 'object' && 'value' in value)
+}
+
+function isNormalizedVNodeRef(value: unknown): value is NormalizedVNodeRef {
+  return !!value && typeof value === 'object' && 'i' in value && 'r' in value
+}
+
+function normalizeVNodeRefs(
+  value: unknown,
+  owner: ComponentInternalInstance | null
+): NormalizedVNodeRef[] {
+  if (!value) {
+    return []
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap(item => normalizeVNodeRefs(item, owner))
+  }
+
+  if (isNormalizedVNodeRef(value)) {
+    return [value]
+  }
+
+  if (isSupportedTemplateRef(value)) {
+    return [{ i: owner, r: value }]
+  }
+
+  return []
+}
 
 /**
  * Refs 注册表
@@ -85,42 +127,33 @@ export class RefsRegistry {
 export function attachRef(
   vnode: VNode,
   schema: VueSchemaNode,
-  refsRegistry: RefsRegistry
+  refsRegistry: RefsRegistry,
+  owner: ComponentInternalInstance | null = null
 ): VNode {
   if (!schema.ref) {
     return vnode
   }
 
   const refValue = refsRegistry.register(schema.ref)
-  
-  // 使用类型断言处理 ref（Vue 的 ref 类型比较复杂）
   const vnodeAny = vnode as any
-  
-  // 如果 vnode 已经有 ref，需要合并处理
-  if (vnodeAny.ref) {
-    const existingRef = vnodeAny.ref
-    const refCallback = (el: any) => {
-      // 调用原有的 ref
-      if (typeof existingRef === 'function') {
-        try {
-          existingRef(el)
-        } catch (e) {
-          // 忽略错误
-        }
-      } else if (existingRef && typeof existingRef === 'object' && 'value' in existingRef) {
-        try {
-          (existingRef as any).value = el
-        } catch (e) {
-          // 忽略错误
-        }
-      }
-      // 设置到我们的 ref
-      refValue.value = el
-    }
-    vnodeAny.ref = refCallback
-  } else {
-    vnodeAny.ref = refValue
+  const existingNormalizedRefs = normalizeVNodeRefs(vnodeAny.ref, owner)
+  const resolvedOwner = owner || existingNormalizedRefs.find(refAtom => refAtom.i)?.i || null
+
+  if (!resolvedOwner) {
+    return vnode
   }
+
+  const normalizedRef: NormalizedVNodeRef = {
+    i: resolvedOwner,
+    r: refValue,
+    k: schema.ref
+  }
+
+  const mergedRefs = existingNormalizedRefs.length > 0
+    ? [...normalizeVNodeRefs(vnodeAny.ref, resolvedOwner), normalizedRef]
+    : normalizedRef
+
+  vnodeAny.ref = mergedRefs
 
   return vnode
 }

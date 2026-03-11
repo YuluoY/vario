@@ -77,6 +77,7 @@ describe('RefsRegistry', () => {
 describe('attachRef', () => {
   let registry: RefsRegistry
   let schema: VueSchemaNode
+  let owner: any
 
   beforeEach(() => {
     registry = new RefsRegistry()
@@ -84,15 +85,23 @@ describe('attachRef', () => {
       type: 'div',
       ref: 'containerRef'
     }
+    owner = {
+      refs: {},
+      setupState: {}
+    }
   })
 
   describe('基础功能', () => {
     it('应该为 VNode 添加 ref', () => {
       const vnode = h('div', { class: 'container' }, 'Hello')
-      const result = attachRef(vnode, schema, registry)
+      const result = attachRef(vnode, schema, registry, owner)
       
       expect(result).toBe(vnode)
-      expect((result as any).ref).toBeDefined()
+      expect((result as any).ref).toMatchObject({
+        i: owner,
+        r: registry.get('containerRef'),
+        k: 'containerRef'
+      })
       
       // 验证 ref 已注册
       const refValue = registry.get('containerRef')
@@ -104,7 +113,7 @@ describe('attachRef', () => {
         type: 'div'
       }
       const vnode = h('div', {}, 'Hello')
-      const result = attachRef(vnode, schemaWithoutRef, registry)
+      const result = attachRef(vnode, schemaWithoutRef, registry, owner)
       
       expect(result).toBe(vnode)
       // ref 可能为 null 或 undefined
@@ -113,21 +122,27 @@ describe('attachRef', () => {
 
     it('应该正确设置 ref 值', () => {
       const vnode = h('div', {}, 'Hello')
-      attachRef(vnode, schema, registry)
+      attachRef(vnode, schema, registry, owner)
       
       const refValue = registry.get('containerRef')
       expect(refValue).toBeDefined()
       
-      // 模拟组件挂载（使用简单的对象模拟 DOM 元素）
       const mockElement = { tagName: 'DIV' } as any
-      const refCallback = (vnode as any).ref
-      if (typeof refCallback === 'function') {
-        refCallback(mockElement)
-      } else {
-        (refCallback as any).value = mockElement
-      }
+      ;(vnode as any).ref.r.value = mockElement
       
       expect(refValue!.value).toStrictEqual(mockElement)
+    })
+
+    it('在缺少 owner 时应该保持原始 vnode.ref 不变', () => {
+      const vnode = h('div', {}, 'Hello')
+      const existingRef = ref(null)
+      ;(vnode as any).ref = existingRef
+
+      attachRef(vnode, schema, registry, null)
+
+      expect((vnode as any).ref).toBe(existingRef)
+      expect(registry.get('containerRef')).toBeDefined()
+      expect(registry.get('containerRef')?.value).toBe(null)
     })
   })
 
@@ -137,18 +152,12 @@ describe('attachRef', () => {
       const vnode = h('div', {}, 'Hello')
       ;(vnode as any).ref = existingRef
       
-      attachRef(vnode, schema, registry)
+      attachRef(vnode, schema, registry, owner)
       
-      const refValue = registry.get('containerRef')
-      const mockElement = { tagName: 'DIV' } as any
-      const refCallback = (vnode as any).ref
-      
-      if (typeof refCallback === 'function') {
-        refCallback(mockElement)
-      }
-      
-      expect(existingRef).toHaveBeenCalledWith(mockElement)
-      expect(refValue!.value).toStrictEqual(mockElement)
+      expect((vnode as any).ref).toEqual([
+        { i: owner, r: existingRef },
+        { i: owner, r: registry.get('containerRef'), k: 'containerRef' }
+      ])
     })
 
     it('应该合并已有的 ref（Ref 对象形式）', () => {
@@ -156,20 +165,26 @@ describe('attachRef', () => {
       const vnode = h('div', {}, 'Hello')
       ;(vnode as any).ref = existingRef
       
-      attachRef(vnode, schema, registry)
+      attachRef(vnode, schema, registry, owner)
       
-      const refValue = registry.get('containerRef')
-      const mockElement = { tagName: 'DIV' } as any
-      const refCallback = (vnode as any).ref
-      
-      if (typeof refCallback === 'function') {
-        refCallback(mockElement)
-      } else {
-        (refCallback as any).value = mockElement
-      }
-      
-      expect(existingRef.value).toStrictEqual(mockElement)
-      expect(refValue!.value).toStrictEqual(mockElement)
+      expect((vnode as any).ref).toEqual([
+        { i: owner, r: existingRef },
+        { i: owner, r: registry.get('containerRef'), k: 'containerRef' }
+      ])
+    })
+
+    it('应该保留已有的 Vue 规范化 ref 对象', () => {
+      const existingRef = ref(null)
+      const vnode = h('div', {}, 'Hello')
+      const rawRef = { i: owner, r: existingRef, k: 'legacyRef' }
+      ;(vnode as any).ref = rawRef
+
+      attachRef(vnode, schema, registry, owner)
+
+      expect((vnode as any).ref).toEqual([
+        rawRef,
+        { i: owner, r: registry.get('containerRef'), k: 'containerRef' }
+      ])
     })
   })
 
@@ -179,9 +194,9 @@ describe('attachRef', () => {
       const schema2: VueSchemaNode = { type: 'div', ref: 'ref2' }
       const schema3: VueSchemaNode = { type: 'div', ref: 'ref3' }
       
-      const vnode1 = attachRef(h('div'), schema1, registry)
-      const vnode2 = attachRef(h('div'), schema2, registry)
-      const vnode3 = attachRef(h('div'), schema3, registry)
+      const vnode1 = attachRef(h('div'), schema1, registry, owner)
+      const vnode2 = attachRef(h('div'), schema2, registry, owner)
+      const vnode3 = attachRef(h('div'), schema3, registry, owner)
       
       const allRefs = registry.getAll()
       expect(Object.keys(allRefs)).toHaveLength(3)
