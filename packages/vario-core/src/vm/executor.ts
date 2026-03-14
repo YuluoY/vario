@@ -88,7 +88,7 @@ export async function execute(
             }
           )
         }
-      })
+      }, timeout)
       cleanup()
     } catch (error) {
       cleanup()
@@ -125,7 +125,7 @@ export async function execute(
           }
         )
       }
-    })
+    }, timeout)
   }
   
   // 最终检查超时（即使有 AbortController，也做双重检查）
@@ -146,6 +146,24 @@ export async function execute(
 }
 
 /**
+ * 创建超时 Promise（用于 Promise.race 强制超时）
+ */
+function createTimeoutRace(action: Action, timeout: number): { promise: Promise<never>; clear: () => void } {
+  let timer: ReturnType<typeof setTimeout>
+  const promise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      reject(new ActionError(
+        action,
+        `Action handler exceeded forced timeout (${timeout}ms)`,
+        ErrorCodes.ACTION_TIMEOUT,
+        { metadata: { timeout, forcedTimeout: true } }
+      ))
+    }, timeout)
+  })
+  return { promise, clear: () => clearTimeout(timer!) }
+}
+
+/**
  * 执行动作序列（内部实现）
  */
 async function executeActions(
@@ -153,7 +171,8 @@ async function executeActions(
   ctx: RuntimeContext,
   signal: AbortSignal | null,
   _maxSteps: number,  // 用于类型，实际限制在 checkLimits 中检查
-  checkLimits: () => void
+  checkLimits: () => void,
+  timeout: number = 5000
 ): Promise<void> {
   for (const action of actions) {
     // 检查中断信号
@@ -180,7 +199,18 @@ async function executeActions(
     }
     
     try {
-      await handler(ctx, action)
+      // Promise.race 强制超时：即使 handler 忽略 AbortSignal 也能超时
+      const handlerResult = handler(ctx, action)
+      if (handlerResult && typeof (handlerResult as Promise<unknown>).then === 'function') {
+        const race = createTimeoutRace(action, timeout)
+        try {
+          await Promise.race([handlerResult, race.promise])
+        } finally {
+          race.clear()
+        }
+      } else {
+        await handlerResult
+      }
     } catch (error: unknown) {
       // 如果已经是 ActionError，直接抛出
       if (error instanceof ActionError) {

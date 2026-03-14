@@ -225,10 +225,10 @@ export class VueRenderer implements VarioNodeRenderer {
     depth: number = 0
   ): VNode {
     if (!schema || typeof schema !== 'object') {
-      return h('div', { style: 'color: red; padding: 10px;' }, 'Invalid schema')
+      return this.createErrorVNode('Invalid schema')
     }
     if (!schema.type) {
-      return h('div', { style: 'color: red; padding: 10px;' }, 'Schema missing type property')
+      return this.createErrorVNode('Schema missing type property')
     }
 
     if (parentMap != null) {
@@ -254,9 +254,7 @@ export class VueRenderer implements VarioNodeRenderer {
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error)
-        return h('div', { 
-          style: 'color: red; padding: 10px; border: 1px solid red;' 
-        }, `Condition evaluation error: ${errorMessage}`)
+        return this.createErrorVNode(`Condition evaluation error: ${errorMessage}`, true)
       }
     }
 
@@ -310,7 +308,7 @@ export class VueRenderer implements VarioNodeRenderer {
     
     // 确保 component 有效
     if (!component) {
-      return h('div', { style: 'color: red; padding: 10px;' }, `Component "${schema.type}" not found`)
+      return this.createErrorVNode(`Component "${schema.type}" not found`)
     }
     
     // 处理 Vue 特有的扩展
@@ -391,7 +389,7 @@ export class VueRenderer implements VarioNodeRenderer {
       try {
         vnode = h(component, finalAttrs, finalChildren)
       } catch (error) {
-        return h('div', { style: 'color: red; padding: 10px;' }, `Failed to render "${schema.type}": ${error}`)
+        return this.createErrorVNode(`Failed to render "${schema.type}": ${error}`)
       }
     }
     
@@ -412,6 +410,16 @@ export class VueRenderer implements VarioNodeRenderer {
   // ============================================================================
   // 渲染管线辅助方法
   // ============================================================================
+
+  /**
+   * 创建错误提示 VNode
+   */
+  private createErrorVNode(message: string, withBorder = false): VNode {
+    const style = withBorder
+      ? 'color: red; padding: 10px; border: 1px solid red;'
+      : 'color: red; padding: 10px;'
+    return h('div', { style }, message)
+  }
 
   /**
    * 应用 show 指令：根据 showValue 设置 display: none

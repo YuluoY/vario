@@ -113,6 +113,8 @@ describe('边界压力测试', () => {
 
   describe('1. 超大规模节点测试', () => {
     const nodeCounts = [1000, 2000, 5000, 10000]
+    // 性能回归阈值（ms，较宽松以适应 CI 环境）
+    const nodeThresholds: Record<number, number> = { 1000: 500, 2000: 1000, 5000: 3000, 10000: 8000 }
     
     nodeCounts.forEach(count => {
       it(`${count} 个扁平节点`, () => {
@@ -129,6 +131,10 @@ describe('边界压力测试', () => {
         results[`${count}节点`] = { ...result, memDelta: memAfter - memBefore }
         console.log(`${count}节点: ${result.avg.toFixed(2)}ms (min: ${result.min.toFixed(2)}, max: ${result.max.toFixed(2)})`)
         expect(result.avg).toBeDefined()
+        // 性能回归检测
+        if (nodeThresholds[count]) {
+          expect(result.avg).toBeLessThan(nodeThresholds[count])
+        }
       })
     })
   })
@@ -318,6 +324,8 @@ describe('边界压力测试', () => {
       
       console.log(`组合极端: ${result.avg.toFixed(2)}ms`)
       expect(result.avg).toBeDefined()
+      // 组合极端场景回归检测：500 循环 + 深嵌套 + 表达式应在 3s 内完成
+      expect(result.avg).toBeLessThan(3000)
     })
   })
 

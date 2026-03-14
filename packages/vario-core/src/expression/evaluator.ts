@@ -379,7 +379,16 @@ export function evaluateExpression(
           case '&': return (left as number) & (right as number)
           case '|': return (left as number) | (right as number)
           case '^': return (left as number) ^ (right as number)
-          case 'in': return (left as string | number) in (right as object)
+          case 'in': {
+            if (right == null || (typeof right !== 'object' && typeof right !== 'function')) {
+              throw new ExpressionError(
+                JSON.stringify(node),
+                'Right-hand side of \'in\' must be an object',
+                ErrorCodes.EXPRESSION_EVALUATION_ERROR
+              )
+            }
+            return (left as string | number) in (right as object)
+          }
           case 'instanceof': {
             // instanceof 需要检查 right 是否为构造函数
             if (typeof right !== 'function' && typeof right !== 'object') {

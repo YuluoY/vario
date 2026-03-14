@@ -237,7 +237,9 @@ export function setPathValue(
   
   const segments = typeof path === 'string' ? parsePathCached(path) : path
   
-  if (segments.length === 0) {
+  // 路径深度上限，防止恶意构造超深路径导致无限对象创建
+  const MAX_PATH_DEPTH = 20
+  if (segments.length === 0 || segments.length > MAX_PATH_DEPTH) {
     return false
   }
   

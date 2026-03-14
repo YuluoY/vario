@@ -54,4 +54,12 @@ export default tseslint.config(
       'no-console': 'off',
     },
   },
+
+  // CLI 和 log handler 允许 console.log
+  {
+    files: ['packages/vario-cli/src/**', 'packages/vario-core/src/vm/handlers/log.ts'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
 )
