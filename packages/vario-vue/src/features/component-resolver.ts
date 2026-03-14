@@ -66,7 +66,7 @@ export class ComponentResolver {
       return this.componentCache.get(type)
     }
 
-    let resolved: any = null
+    let resolved: any
 
     // 如果是原生 DOM 元素，直接返回类型名（Vue 的 h 函数会将其作为 HTML 标签处理）
     if (isNativeDOMElement(type)) {
@@ -74,19 +74,13 @@ export class ComponentResolver {
     } else {
       try {
         // 从全局组件注册表中查找组件
-        // 支持所有通过 app.component() 注册的全局组件（包括 Element Plus、自定义组件等）
         if (this.globalComponents) {
           const globalComponent = this.globalComponents[type]
-          if (globalComponent) {
-            resolved = globalComponent
-          } else {
-            // 组件未找到，作为 HTML 标签使用（可能是未知的原生元素或自定义标签）
-            resolved = type
-          }
+          resolved = globalComponent || type
         } else {
           resolved = type
         }
-      } catch (error) {
+      } catch (_error) {
         // 解析失败，作为 HTML 标签使用
         resolved = type
       }

@@ -1,5 +1,5 @@
 /**
- * 方案 C/D 边界压力测试
+ * 边界压力测试（Scope-Weight Hybrid 自适应策略）
  * 
  * 测试极端场景下的性能表现：
  * - 超大规模节点数
@@ -7,6 +7,8 @@
  * - 大量循环项
  * - 高频状态更新
  * - 内存压力测试
+ * 
+ * 所有优化现由渲染器内部自适应管理（path-memo / subtree / loop 组件化），无需手动配置。
  */
 import { describe, it, expect } from 'vitest'
 import { VueRenderer } from '../../src/renderer'
@@ -113,35 +115,19 @@ describe('边界压力测试', () => {
     const nodeCounts = [1000, 2000, 5000, 10000]
     
     nodeCounts.forEach(count => {
-      it(`${count} 个扁平节点 - 基线`, () => {
+      it(`${count} 个扁平节点`, () => {
         const schema = generateFlatSchema(count)
-        const renderer = new VueRenderer({ subtreeComponent: { enabled: false } })
+        const renderer = new VueRenderer()
         const ctx = createRuntimeContext({})
         
         const memBefore = getMemoryUsage()
-        const result = measure(`${count}节点-基线`, () => {
+        const result = measure(`${count}节点`, () => {
           renderer.render(schema, ctx)
         }, 3)
         const memAfter = getMemoryUsage()
         
-        results[`${count}节点-基线`] = { ...result, memDelta: memAfter - memBefore }
-        console.log(`${count}节点-基线: ${result.avg.toFixed(2)}ms (min: ${result.min.toFixed(2)}, max: ${result.max.toFixed(2)})`)
-        expect(result.avg).toBeDefined()
-      })
-      
-      it(`${count} 个扁平节点 - subtreeComponent (all)`, () => {
-        const schema = generateFlatSchema(count)
-        const renderer = new VueRenderer({ subtreeComponent: { enabled: true, granularity: 'all' } })
-        const ctx = createRuntimeContext({})
-        
-        const memBefore = getMemoryUsage()
-        const result = measure(`${count}节点-all`, () => {
-          renderer.render(schema, ctx)
-        }, 3)
-        const memAfter = getMemoryUsage()
-        
-        results[`${count}节点-all`] = { ...result, memDelta: memAfter - memBefore }
-        console.log(`${count}节点-all: ${result.avg.toFixed(2)}ms (min: ${result.min.toFixed(2)}, max: ${result.max.toFixed(2)})`)
+        results[`${count}节点`] = { ...result, memDelta: memAfter - memBefore }
+        console.log(`${count}节点: ${result.avg.toFixed(2)}ms (min: ${result.min.toFixed(2)}, max: ${result.max.toFixed(2)})`)
         expect(result.avg).toBeDefined()
       })
     })
@@ -151,47 +137,17 @@ describe('边界压力测试', () => {
     const depths = [10, 20, 50, 100, 200]
     
     depths.forEach(depth => {
-      it(`${depth} 层深度嵌套 - 基线`, () => {
+      it(`${depth} 层深度嵌套`, () => {
         const schema = generateDeepSchema(depth)
-        const renderer = new VueRenderer({ subtreeComponent: { enabled: false } })
+        const renderer = new VueRenderer()
         const ctx = createRuntimeContext({})
         
-        const result = measure(`${depth}层-基线`, () => {
+        const result = measure(`${depth}层`, () => {
           renderer.render(schema, ctx)
         }, 5)
         
-        results[`${depth}层-基线`] = result
-        console.log(`${depth}层-基线: ${result.avg.toFixed(3)}ms`)
-        expect(result.avg).toBeDefined()
-      })
-      
-      it(`${depth} 层深度嵌套 - subtreeComponent (all)`, () => {
-        const schema = generateDeepSchema(depth)
-        const renderer = new VueRenderer({ subtreeComponent: { enabled: true, granularity: 'all' } })
-        const ctx = createRuntimeContext({})
-        
-        const result = measure(`${depth}层-all`, () => {
-          renderer.render(schema, ctx)
-        }, 5)
-        
-        results[`${depth}层-all`] = result
-        console.log(`${depth}层-all: ${result.avg.toFixed(3)}ms`)
-        expect(result.avg).toBeDefined()
-      })
-      
-      it(`${depth} 层深度嵌套 - subtreeComponent (maxDepth=10)`, () => {
-        const schema = generateDeepSchema(depth)
-        const renderer = new VueRenderer({ 
-          subtreeComponent: { enabled: true, granularity: 'all', maxDepth: 10 } 
-        })
-        const ctx = createRuntimeContext({})
-        
-        const result = measure(`${depth}层-maxDepth10`, () => {
-          renderer.render(schema, ctx)
-        }, 5)
-        
-        results[`${depth}层-maxDepth10`] = result
-        console.log(`${depth}层-maxDepth10: ${result.avg.toFixed(3)}ms`)
+        results[`${depth}层`] = result
+        console.log(`${depth}层: ${result.avg.toFixed(3)}ms`)
         expect(result.avg).toBeDefined()
       })
     })
@@ -207,31 +163,17 @@ describe('边界压力测试', () => {
     ]
     
     configs.forEach(({ depth, breadth, expected }) => {
-      it(`${depth}层 x ${breadth}宽 (约${expected}节点) - 基线`, () => {
+      it(`${depth}层 x ${breadth}宽 (约${expected}节点)`, () => {
         const schema = generateWideSchema(depth, breadth)
-        const renderer = new VueRenderer({ subtreeComponent: { enabled: false } })
+        const renderer = new VueRenderer()
         const ctx = createRuntimeContext({})
         
-        const result = measure(`${depth}x${breadth}-基线`, () => {
+        const result = measure(`${depth}x${breadth}`, () => {
           renderer.render(schema, ctx)
         }, 3)
         
-        results[`${depth}x${breadth}-基线`] = result
-        console.log(`${depth}层x${breadth}宽-基线: ${result.avg.toFixed(2)}ms`)
-        expect(result.avg).toBeDefined()
-      })
-      
-      it(`${depth}层 x ${breadth}宽 (约${expected}节点) - subtreeComponent`, () => {
-        const schema = generateWideSchema(depth, breadth)
-        const renderer = new VueRenderer({ subtreeComponent: { enabled: true, granularity: 'all' } })
-        const ctx = createRuntimeContext({})
-        
-        const result = measure(`${depth}x${breadth}-all`, () => {
-          renderer.render(schema, ctx)
-        }, 3)
-        
-        results[`${depth}x${breadth}-all`] = result
-        console.log(`${depth}层x${breadth}宽-all: ${result.avg.toFixed(2)}ms`)
+        results[`${depth}x${breadth}`] = result
+        console.log(`${depth}层x${breadth}宽: ${result.avg.toFixed(2)}ms`)
         expect(result.avg).toBeDefined()
       })
     })
@@ -241,7 +183,7 @@ describe('边界压力测试', () => {
     const itemCounts = [500, 1000, 2000, 5000]
     
     itemCounts.forEach(count => {
-      it(`${count} 项循环 - 基线`, () => {
+      it(`${count} 项循环`, () => {
         const schema: SchemaNode = {
           type: 'ul',
           children: [{
@@ -258,47 +200,15 @@ describe('边界压力测试', () => {
           name: `Item ${i}`, 
           value: i * 100 
         }))
-        const renderer = new VueRenderer({ subtreeComponent: { enabled: false } })
+        const renderer = new VueRenderer()
         const ctx = createRuntimeContext({ items })
         
-        const result = measure(`${count}循环-基线`, () => {
+        const result = measure(`${count}循环`, () => {
           renderer.render(schema, ctx)
         }, 3)
         
-        results[`${count}循环-基线`] = result
-        console.log(`${count}循环-基线: ${result.avg.toFixed(2)}ms`)
-        expect(result.avg).toBeDefined()
-      })
-      
-      it(`${count} 项循环 - loopItemAsComponent`, () => {
-        const schema: SchemaNode = {
-          type: 'ul',
-          children: [{
-            type: 'li',
-            loop: { items: '{{ items }}', itemKey: 'item', indexKey: 'idx' },
-            children: [
-              { type: 'span', children: '{{ item.name }}' },
-              { type: 'span', children: '{{ item.value }}' }
-            ]
-          }]
-        }
-        const items = Array.from({ length: count }, (_, i) => ({ 
-          id: i, 
-          name: `Item ${i}`, 
-          value: i * 100 
-        }))
-        const renderer = new VueRenderer({ 
-          loopItemAsComponent: true,
-          subtreeComponent: { enabled: false }
-        })
-        const ctx = createRuntimeContext({ items })
-        
-        const result = measure(`${count}循环-loopItem`, () => {
-          renderer.render(schema, ctx)
-        }, 3)
-        
-        results[`${count}循环-loopItem`] = result
-        console.log(`${count}循环-loopItem: ${result.avg.toFixed(2)}ms`)
+        results[`${count}循环`] = result
+        console.log(`${count}循环: ${result.avg.toFixed(2)}ms`)
         expect(result.avg).toBeDefined()
       })
     })
@@ -308,7 +218,7 @@ describe('边界压力测试', () => {
     const updateCounts = [100, 500, 1000]
     
     updateCounts.forEach(count => {
-      it(`${count} 次连续状态更新 - 基线`, () => {
+      it(`${count} 次连续状态更新`, () => {
         const schema: SchemaNode = {
           type: 'div',
           children: [
@@ -316,42 +226,17 @@ describe('边界压力测试', () => {
             { type: 'p', children: '{{ message }}' }
           ]
         }
-        const renderer = new VueRenderer({ subtreeComponent: { enabled: false } })
+        const renderer = new VueRenderer()
         
-        const result = measure(`${count}更新-基线`, () => {
+        const result = measure(`${count}更新`, () => {
           for (let i = 0; i < count; i++) {
             const ctx = createRuntimeContext({ count: i, message: `Update ${i}` })
             renderer.render(schema, ctx)
           }
         }, 3)
         
-        results[`${count}更新-基线`] = result
-        console.log(`${count}更新-基线: ${result.avg.toFixed(2)}ms (${(count / result.avg * 1000).toFixed(0)} ops/s)`)
-        expect(result.avg).toBeDefined()
-      })
-      
-      it(`${count} 次连续状态更新 - path-memo`, () => {
-        const schema: SchemaNode = {
-          type: 'div',
-          children: [
-            { type: 'span', children: '{{ count }}' },
-            { type: 'p', children: '{{ message }}' }
-          ]
-        }
-        const renderer = new VueRenderer({ 
-          usePathMemo: true,
-          subtreeComponent: { enabled: false }
-        })
-        
-        const result = measure(`${count}更新-pathMemo`, () => {
-          for (let i = 0; i < count; i++) {
-            const ctx = createRuntimeContext({ count: i, message: `Update ${i}` })
-            renderer.render(schema, ctx)
-          }
-        }, 3)
-        
-        results[`${count}更新-pathMemo`] = result
-        console.log(`${count}更新-pathMemo: ${result.avg.toFixed(2)}ms (${(count / result.avg * 1000).toFixed(0)} ops/s)`)
+        results[`${count}更新`] = result
+        console.log(`${count}更新: ${result.avg.toFixed(2)}ms (${(count / result.avg * 1000).toFixed(0)} ops/s)`)
         expect(result.avg).toBeDefined()
       })
     })
@@ -361,7 +246,7 @@ describe('边界压力测试', () => {
     const counts = [100, 500, 1000]
     
     counts.forEach(count => {
-      it(`${count} 个表达式节点 - 基线`, () => {
+      it(`${count} 个表达式节点`, () => {
         const schema = generateExpressionSchema(count)
         const state: Record<string, any> = {}
         for (let i = 0; i < 10; i++) {
@@ -369,35 +254,15 @@ describe('边界压力测试', () => {
           state[`show${i}`] = true
           state[`count${i}`] = i
         }
-        const renderer = new VueRenderer({ subtreeComponent: { enabled: false } })
+        const renderer = new VueRenderer()
         const ctx = createRuntimeContext(state)
         
-        const result = measure(`${count}表达式-基线`, () => {
+        const result = measure(`${count}表达式`, () => {
           renderer.render(schema, ctx)
         }, 3)
         
-        results[`${count}表达式-基线`] = result
-        console.log(`${count}表达式-基线: ${result.avg.toFixed(2)}ms`)
-        expect(result.avg).toBeDefined()
-      })
-      
-      it(`${count} 个表达式节点 - subtreeComponent`, () => {
-        const schema = generateExpressionSchema(count)
-        const state: Record<string, any> = {}
-        for (let i = 0; i < 10; i++) {
-          state[`visible${i}`] = true
-          state[`show${i}`] = true
-          state[`count${i}`] = i
-        }
-        const renderer = new VueRenderer({ subtreeComponent: { enabled: true, granularity: 'all' } })
-        const ctx = createRuntimeContext(state)
-        
-        const result = measure(`${count}表达式-all`, () => {
-          renderer.render(schema, ctx)
-        }, 3)
-        
-        results[`${count}表达式-all`] = result
-        console.log(`${count}表达式-all: ${result.avg.toFixed(2)}ms`)
+        results[`${count}表达式`] = result
+        console.log(`${count}表达式: ${result.avg.toFixed(2)}ms`)
         expect(result.avg).toBeDefined()
       })
     })
@@ -442,27 +307,17 @@ describe('边界压力测试', () => {
         count: i * 10
       }))
       
-      const renderer1 = new VueRenderer({ subtreeComponent: { enabled: false } })
-      const renderer2 = new VueRenderer({ 
-        subtreeComponent: { enabled: true, granularity: 'all' },
-        loopItemAsComponent: true
-      })
+      const renderer = new VueRenderer()
       const ctx = createRuntimeContext({ items })
       
-      const result1 = measure('组合极端-基线', () => {
-        renderer1.render(schema, ctx)
+      const result = measure('组合极端', () => {
+        renderer.render(schema, ctx)
       }, 3)
       
-      const result2 = measure('组合极端-优化', () => {
-        renderer2.render(schema, ctx)
-      }, 3)
+      results['组合极端'] = result
       
-      results['组合极端-基线'] = result1
-      results['组合极端-优化'] = result2
-      
-      console.log(`组合极端-基线: ${result1.avg.toFixed(2)}ms`)
-      console.log(`组合极端-优化: ${result2.avg.toFixed(2)}ms (${(result1.avg / result2.avg).toFixed(2)}x)`)
-      expect(result1.avg).toBeDefined()
+      console.log(`组合极端: ${result.avg.toFixed(2)}ms`)
+      expect(result.avg).toBeDefined()
     })
   })
 
@@ -482,12 +337,9 @@ describe('边界压力测试', () => {
       console.log('║ ──────────────────────────────────────────────────────────────────────────── ║')
       const nodeCounts = [1000, 2000, 5000, 10000]
       nodeCounts.forEach(count => {
-        const baseline = results[`${count}节点-基线`]
-        const all = results[`${count}节点-all`]
-        if (baseline && all) {
-          const ratio = (baseline.avg / all.avg).toFixed(2)
-          const status = Number(ratio) >= 1 ? '🚀' : '⚠️'
-          console.log(`║   ${count.toString().padStart(5)}节点: 基线 ${baseline.avg.toFixed(2).padStart(7)}ms → ${all.avg.toFixed(2).padStart(7)}ms  ${status} ${ratio}x        ║`)
+        const r = results[`${count}节点`]
+        if (r) {
+          console.log(`║   ${count.toString().padStart(5)}节点: ${r.avg.toFixed(2).padStart(7)}ms (min: ${r.min.toFixed(2)}ms, max: ${r.max.toFixed(2)}ms)       ║`)
         }
       })
       
@@ -497,13 +349,9 @@ describe('边界压力测试', () => {
       console.log('║ ──────────────────────────────────────────────────────────────────────────── ║')
       const depths = [10, 20, 50, 100, 200]
       depths.forEach(depth => {
-        const baseline = results[`${depth}层-基线`]
-        const all = results[`${depth}层-all`]
-        const limited = results[`${depth}层-maxDepth10`]
-        if (baseline && all) {
-          const ratio = (baseline.avg / all.avg).toFixed(2)
-          const limitedRatio = limited ? (baseline.avg / limited.avg).toFixed(2) : '-'
-          console.log(`║   ${depth.toString().padStart(3)}层: 基线 ${baseline.avg.toFixed(3).padStart(7)}ms → all ${all.avg.toFixed(3).padStart(7)}ms (${ratio}x) maxDepth10 ${limitedRatio}x ║`)
+        const r = results[`${depth}层`]
+        if (r) {
+          console.log(`║   ${depth.toString().padStart(3)}层: ${r.avg.toFixed(3).padStart(7)}ms                                                ║`)
         }
       })
       
@@ -513,11 +361,9 @@ describe('边界压力测试', () => {
       console.log('║ ──────────────────────────────────────────────────────────────────────────── ║')
       const loopCounts = [500, 1000, 2000, 5000]
       loopCounts.forEach(count => {
-        const baseline = results[`${count}循环-基线`]
-        const loopItem = results[`${count}循环-loopItem`]
-        if (baseline && loopItem) {
-          const ratio = (baseline.avg / loopItem.avg).toFixed(2)
-          console.log(`║   ${count.toString().padStart(4)}项: 基线 ${baseline.avg.toFixed(2).padStart(8)}ms → ${loopItem.avg.toFixed(2).padStart(8)}ms  🚀 ${ratio}x          ║`)
+        const r = results[`${count}循环`]
+        if (r) {
+          console.log(`║   ${count.toString().padStart(4)}项: ${r.avg.toFixed(2).padStart(8)}ms                                              ║`)
         }
       })
       
@@ -527,13 +373,10 @@ describe('边界压力测试', () => {
       console.log('║ ──────────────────────────────────────────────────────────────────────────── ║')
       const updateCounts = [100, 500, 1000]
       updateCounts.forEach(count => {
-        const baseline = results[`${count}更新-基线`]
-        const pathMemo = results[`${count}更新-pathMemo`]
-        if (baseline && pathMemo) {
-          const ratio = (baseline.avg / pathMemo.avg).toFixed(2)
-          const opsBaseline = (count / baseline.avg * 1000).toFixed(0)
-          const opsPathMemo = (count / pathMemo.avg * 1000).toFixed(0)
-          console.log(`║   ${count.toString().padStart(4)}次更新: ${opsBaseline.padStart(6)} ops/s → ${opsPathMemo.padStart(6)} ops/s  🚀 ${ratio}x              ║`)
+        const r = results[`${count}更新`]
+        if (r) {
+          const ops = (count / r.avg * 1000).toFixed(0)
+          console.log(`║   ${count.toString().padStart(4)}次更新: ${r.avg.toFixed(2).padStart(7)}ms  ${ops.padStart(6)} ops/s                            ║`)
         }
       })
       
@@ -541,20 +384,16 @@ describe('边界压力测试', () => {
       console.log('║                                                                              ║')
       console.log('║ 【5. 组合极端场景】                                                          ║')
       console.log('║ ──────────────────────────────────────────────────────────────────────────── ║')
-      const extreme1 = results['组合极端-基线']
-      const extreme2 = results['组合极端-优化']
-      if (extreme1 && extreme2) {
-        const ratio = (extreme1.avg / extreme2.avg).toFixed(2)
-        console.log(`║   深嵌套+500循环+表达式: ${extreme1.avg.toFixed(2)}ms → ${extreme2.avg.toFixed(2)}ms  🚀 ${ratio}x                   ║`)
+      const extreme = results['组合极端']
+      if (extreme) {
+        console.log(`║   深嵌套+500循环+表达式: ${extreme.avg.toFixed(2)}ms                                         ║`)
       }
       
       console.log('║                                                                              ║')
       console.log('╠══════════════════════════════════════════════════════════════════════════════╣')
-      console.log('║ 结论:                                                                        ║')
-      console.log('║   1. subtreeComponent 在大规模节点场景下有显著优势                           ║')
-      console.log('║   2. maxDepth 限制可有效控制深度嵌套的开销                                   ║')
-      console.log('║   3. loopItemAsComponent 在大循环场景下表现优异                              ║')
-      console.log('║   4. path-memo 在高频更新场景下提供稳定加速                                  ║')
+      console.log('║ 说明:                                                                        ║')
+      console.log('║   所有优化（path-memo / subtree / loop 组件化）由渲染器自适应管理            ║')
+      console.log('║   无需手动配置，系统根据 Scope-Weight Hybrid 策略自动形成最优解              ║')
       console.log('╚══════════════════════════════════════════════════════════════════════════════╝')
       
       expect(true).toBe(true)

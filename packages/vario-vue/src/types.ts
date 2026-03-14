@@ -15,8 +15,7 @@
 
 import type { Schema, SchemaNode } from '@variojs/schema'
 import type { RuntimeContext, ExpressionOptions } from '@variojs/types'
-import type { Ref, VNode, ComputedRef, App } from 'vue'
-import type { VueRendererOptions } from './renderer.js'
+import type { Ref, VNode, ComputedRef, App, Directive } from 'vue'
 import type { SchemaStats } from './features/schema-analyzer.js'
 import type { SchemaQueryApi } from './composables/useSchemaQuery.js'
 
@@ -181,8 +180,8 @@ export interface UseVarioOptions<TState extends Record<string, unknown> = Record
     /** 错误恢复回调 */
     onRecover?: (error: Error) => void
   }
-  /** 渲染器配置 */
-  rendererOptions?: VueRendererOptions
+  /** 自定义指令映射（支持用户注册指令） */
+  directives?: Record<string, Directive>
   /** Vue 应用实例（用于非组件上下文，优先级高于 getCurrentInstance） */
   app?: App | null
   /** 全局组件映射（用于非组件上下文，优先级最高） */

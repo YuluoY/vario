@@ -52,8 +52,7 @@ import type {
   VueSchemaNode,
   UseVarioOptions,
   UseVarioResult,
-  MethodContext,
-  VueRendererOptions
+  MethodContext
 } from '@variojs/vue'
 ```
 

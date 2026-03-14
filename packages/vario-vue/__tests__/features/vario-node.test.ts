@@ -1,5 +1,5 @@
 /**
- * 方案 C：子树组件化 单元测试
+ * Scope-Weight 子树组件化 单元测试
  */
 import { describe, it, expect, vi } from 'vitest'
 import { h, Fragment } from 'vue'
@@ -7,9 +7,15 @@ import {
   VarioNode,
   createVarioNodeVNode,
   shouldComponentize,
-  type VarioNodeRenderer,
-  type SubtreeComponentOptions
+  type VarioNodeRenderer
 } from '../../src/features/vario-node'
+import {
+  COMPONENT_OVERHEAD,
+  createWeightCache,
+  computeWeight,
+  isScopeBoundary,
+  type WeightCache
+} from '../../src/features/schema-weight'
 import type { SchemaNode } from '@variojs/schema'
 import type { RuntimeContext, PathSegment } from '@variojs/core'
 
@@ -49,47 +55,111 @@ function createMockContext(state: Record<string, any> = {}): RuntimeContext {
   return ctx
 }
 
+describe('schema-weight', () => {
+  describe('computeWeight', () => {
+    it('叶子节点 weight = 1', () => {
+      const cache = createWeightCache()
+      expect(computeWeight({ type: 'span' }, cache)).toBe(1)
+      expect(computeWeight({ type: 'div', children: 'text' }, cache)).toBe(1)
+    })
+
+    it('容器节点 weight = 1 + Σ children', () => {
+      const cache = createWeightCache()
+      const schema: SchemaNode = {
+        type: 'div',
+        children: [{ type: 'span' }, { type: 'span' }, { type: 'span' }]
+      }
+      expect(computeWeight(schema, cache)).toBe(4)
+    })
+
+    it('嵌套结构正确累加', () => {
+      const cache = createWeightCache()
+      const schema: SchemaNode = {
+        type: 'div',
+        children: [
+          { type: 'div', children: [{ type: 'span' }, { type: 'span' }] },
+          { type: 'span' }
+        ]
+      }
+      expect(computeWeight(schema, cache)).toBe(5)
+    })
+
+    it('结果应被缓存', () => {
+      const cache = createWeightCache()
+      const schema: SchemaNode = { type: 'div', children: [{ type: 'span' }] }
+      expect(computeWeight(schema, cache)).toBe(2)
+      expect(computeWeight(schema, cache)).toBe(2)
+    })
+  })
+
+  describe('isScopeBoundary', () => {
+    it('有 lifecycle 的节点是 scope boundary', () => {
+      expect(isScopeBoundary({ type: 'div', onMounted: 'init' } as any)).toBe(true)
+    })
+    it('有 provide/inject 的节点是 scope boundary', () => {
+      expect(isScopeBoundary({ type: 'div', provide: { theme: 'dark' } } as any)).toBe(true)
+      expect(isScopeBoundary({ type: 'div', inject: ['theme'] } as any)).toBe(true)
+    })
+    it('有 model 绑定的节点是 scope boundary', () => {
+      expect(isScopeBoundary({ type: 'input', model: 'name' } as any)).toBe(true)
+    })
+    it('自定义组件是 scope boundary', () => {
+      expect(isScopeBoundary({ type: 'ElButton' })).toBe(true)
+    })
+    it('原生元素无 model 不是 scope boundary', () => {
+      expect(isScopeBoundary({ type: 'div' })).toBe(false)
+    })
+  })
+})
+
 describe('vario-node', () => {
-  describe('shouldComponentize', () => {
-    it('options.enabled 为 false 时应返回 false', () => {
-      const schema: SchemaNode = { type: 'div' }
-      const options: SubtreeComponentOptions = { enabled: false }
-      
-      expect(shouldComponentize(schema, 0, options)).toBe(false)
+  describe('shouldComponentize (Scope-Weight Hybrid)', () => {
+    it('轻量 scope boundary 不组件化', () => {
+      const cache = createWeightCache()
+      expect(shouldComponentize({ type: 'ElButton' }, cache)).toBe(false)
     })
 
-    it('超过 maxDepth 时应返回 false', () => {
-      const schema: SchemaNode = { type: 'div' }
-      const options: SubtreeComponentOptions = { enabled: true, maxDepth: 5 }
-      
-      expect(shouldComponentize(schema, 6, options)).toBe(false)
-      expect(shouldComponentize(schema, 5, options)).toBe(true)
+    it('重量 scope boundary 应组件化', () => {
+      const cache = createWeightCache()
+      const schema: SchemaNode = {
+        type: 'ElCard',
+        children: Array.from({ length: 6 }, () => ({ type: 'span' }))
+      }
+      expect(shouldComponentize(schema, cache)).toBe(true)
     })
 
-    it('granularity=all 时所有节点都应组件化', () => {
-      const options: SubtreeComponentOptions = { enabled: true, granularity: 'all' }
-      
-      expect(shouldComponentize({ type: 'div' }, 0, options)).toBe(true)
-      expect(shouldComponentize({ type: 'span' }, 0, options)).toBe(true)
-      expect(shouldComponentize({ type: 'ElButton' }, 0, options)).toBe(true)
+    it('原生元素即使很重也不组件化', () => {
+      const cache = createWeightCache()
+      const schema: SchemaNode = {
+        type: 'div',
+        children: Array.from({ length: 20 }, () => ({ type: 'span' }))
+      }
+      expect(shouldComponentize(schema, cache)).toBe(false)
     })
 
-    it('granularity=boundary 时只有边界节点组件化', () => {
-      const options: SubtreeComponentOptions = { enabled: true, granularity: 'boundary' }
-      
-      // 原生元素不是边界
-      expect(shouldComponentize({ type: 'div' }, 0, options)).toBe(false)
-      expect(shouldComponentize({ type: 'span' }, 0, options)).toBe(false)
-      
-      // 自定义组件是边界
-      expect(shouldComponentize({ type: 'ElButton' }, 0, options)).toBe(true)
-      expect(shouldComponentize({ type: 'MyComponent' }, 0, options)).toBe(true)
-      
-      // 有 loop 的节点不组件化（LoopHandler 需要在 renderer.createVNode 层面处理）
-      expect(shouldComponentize({ 
-        type: 'div', 
-        loop: { items: '{{ items }}', itemKey: 'item' }
-      }, 0, options)).toBe(false)
+    it('有 model 的原生元素且重量足够应组件化', () => {
+      const cache = createWeightCache()
+      const schema = {
+        type: 'div', model: 'form.address',
+        children: Array.from({ length: 6 }, () => ({ type: 'span' }))
+      } as any
+      expect(shouldComponentize(schema, cache)).toBe(true)
+    })
+
+    it('有 lifecycle/provide/inject 始终组件化', () => {
+      const cache = createWeightCache()
+      expect(shouldComponentize({ type: 'div', onMounted: 'init' } as any, cache)).toBe(true)
+      expect(shouldComponentize({ type: 'div', provide: { theme: 'dark' } } as any, cache)).toBe(true)
+      expect(shouldComponentize({ type: 'div', inject: ['theme'] } as any, cache)).toBe(true)
+    })
+
+    it('有 loop 的节点不组件化', () => {
+      const cache = createWeightCache()
+      expect(shouldComponentize({
+        type: 'ElButton',
+        loop: { items: '{{ items }}', itemKey: 'item' },
+        children: Array.from({ length: 20 }, () => ({ type: 'span' }))
+      } as any, cache)).toBe(false)
     })
   })
 

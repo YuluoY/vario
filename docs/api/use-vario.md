@@ -31,9 +31,9 @@ interface UseVarioOptions<TState> {
     separator?: string  // 默认 '.'
     lazy?: boolean       // true 时所有未显式设置 lazy 的 model 均不预写 state
   }
-  
-  /** 渲染器选项 */
-  rendererOptions?: VueRendererOptions
+
+  /** 自定义指令映射（支持用户注册指令） */
+  directives?: Record<string, Directive>
   
   /** 错误边界配置 */
   errorBoundary?: {

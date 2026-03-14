@@ -263,7 +263,7 @@
 import { reactive, ref, watch, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { MagicStick, View, DataBoard, List, Document, Check } from '@element-plus/icons-vue'
-import { useVario, type VueRendererOptions } from '@variojs/vue'
+import { useVario } from '@variojs/vue'
 import type { Schema } from '@variojs/schema'
 import { 
   defaultStates, 
@@ -301,9 +301,6 @@ watch(schemas, (newSchemas) => {
   Object.assign(editableSchemas, newSchemas)
 }, { immediate: true, deep: true })
 
-// renderer 选项（保持可扩展）
-const renderOptions: VueRendererOptions = {}
-
 // 事件记录
 const logEvent = (name: string, data?: any) => {
   const time = new Date().toLocaleTimeString()
@@ -327,8 +324,7 @@ const { vnode, state, ctx } = useVario(currentSchema, {
   onError: (error: Error) => {
     console.error('[Vario Integration] Error:', error)
     alert('Error: ' + error.message)
-  },
-  rendererOptions: renderOptions
+  }
 })
 
 const renderVNode = computed(() => vnode.value)

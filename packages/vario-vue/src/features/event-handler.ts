@@ -356,10 +356,6 @@ export class EventHandler {
     actions: Action[],
     ctx: RuntimeContext
   ): Promise<void> {
-    try {
-      await execute(actions, ctx)
-    } catch (error) {
-      throw error
-    }
+    await execute(actions, ctx)
   }
 }

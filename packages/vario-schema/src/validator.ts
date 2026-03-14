@@ -28,7 +28,12 @@ export interface ValidationOptions {
   validatePaths?: boolean
   /** 自定义验证器 */
   customValidators?: Array<(node: SchemaNode, path: string) => void>
+  /** 最大递归深度（默认 100），防止超深嵌套或循环引用导致栈溢出 */
+  maxDepth?: number
 }
+
+/** 默认最大递归深度 */
+const DEFAULT_MAX_DEPTH = 100
 
 /**
  * 验证 Schema 节点
@@ -36,18 +41,33 @@ export interface ValidationOptions {
  * @param node Schema 节点
  * @param path 当前路径（用于错误报告）
  * @param options 验证选项
+ * @param _depth 当前递归深度（内部使用）
+ * @param _visited 已访问节点集合，用于检测循环引用（内部使用）
  * @throws SchemaValidationError 如果验证失败
  */
 export function validateSchemaNode(
   node: unknown,
   path: string = 'root',
-  options: ValidationOptions = {}
+  options: ValidationOptions = {},
+  _depth: number = 0,
+  _visited?: Set<unknown>
 ): asserts node is SchemaNode {
   const {
     validateExpressions = true,
     validatePaths = true,
-    customValidators = []
+    customValidators = [],
+    maxDepth = DEFAULT_MAX_DEPTH
   } = options
+
+  // 递归深度保护
+  if (_depth > maxDepth) {
+    throw new SchemaValidationError(
+      path,
+      `Schema nesting exceeds maximum depth (${maxDepth}). Check for circular references or excessive nesting.`,
+      'MAX_DEPTH_EXCEEDED'
+    )
+  }
+
   if (!isObject(node)) {
     throw new SchemaValidationError(
       path,
@@ -55,6 +75,17 @@ export function validateSchemaNode(
       'INVALID_NODE_TYPE'
     )
   }
+
+  // 循环引用检测
+  const visited = _visited ?? new Set<unknown>()
+  if (visited.has(node)) {
+    throw new SchemaValidationError(
+      path,
+      'Circular reference detected in schema',
+      'CIRCULAR_REFERENCE'
+    )
+  }
+  visited.add(node)
 
   // 验证 type 字段（必需）
   if (typeof node.type !== 'string' || node.type.length === 0) {
@@ -86,7 +117,7 @@ export function validateSchemaNode(
     } else if (Array.isArray(node.children)) {
       // 数组子节点：递归验证每个子节点
       node.children.forEach((child, index) => {
-        validateSchemaNode(child, `${path}.children[${index}]`, options)
+        validateSchemaNode(child, `${path}.children[${index}]`, options, _depth + 1, visited)
       })
     } else {
       throw new SchemaValidationError(
@@ -204,6 +235,9 @@ export function validateSchemaNode(
   for (const validator of customValidators) {
     validator(validatedNode, path)
   }
+
+  // 验证完成后从 visiting 集合中移除，允许同一节点在不同分支中合法复用
+  visited.delete(node)
 }
 
 /**
@@ -287,7 +321,7 @@ function validateLoopConfig(
 function validateExpression(expr: string, path: string): void {
   try {
     // 提取表达式（如果包含插值语法）
-    let actualExpr = expr
+    const actualExpr = expr
     if (expr.includes('{{')) {
       // 提取 {{ ... }} 中的表达式
       const matches = expr.match(/\{\{([^}]+)\}\}/g)

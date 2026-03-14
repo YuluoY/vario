@@ -22,10 +22,7 @@ Vue 需 ^3.4.0；若用 Element Plus 等组件库，需在应用里自己注册�
 
 ## 核心特性（v0.4.0）
 
-- ✅ **path-memo**：路径缓存优化，表达式密集场景最高 88 倍加速
-- ✅ **loopItemAsComponent**：列表项组件化，单项更新场景 4-29 倍加速 🔥
-- ✅ **subtreeComponent**：子树组件化，大规模 UI 场景 2-12 倍加速（新增）
-- ✅ **schemaFragment**：Schema 碎片化，支持精确节点更新（新增）
+- ✅ **自适应优化**：基于 Scope-Weight Hybrid 策略，自动管理 path-memo / 子树组件化 / 循环项组件化，零配置
 - ✅ **node-context**：节点关系上下文，支持 `$parent`、`$root` 访问
 - ✅ **model-path**：自动路径解析，支持扁平路径、scope、循环内路径
 - ✅ **lazy model**：延迟初始化，优化表单性能

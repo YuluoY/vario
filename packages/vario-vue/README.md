@@ -109,39 +109,19 @@ export default {
 - **Provide/Inject**：`provide: { theme: 'dark' }`
 - **Teleport**：`teleport: 'body'`
 
-## 性能优化（v0.3.0）
+## 性能优化
 
-内置多项优化方案，经基准测试验证：
+采用 **Scope-Weight Hybrid** 自适应优化策略，所有优化**零配置自动生效**：
 
-| 优化方案 | 适用场景 | 加速倍数 |
-|----------|----------|----------|
-| **path-memo** | 表达式密集、静态子树 | 2-88x 🔥 |
-| **loopItemAsComponent** | 长列表单项更新 | 4-29x 🔥 |
-| **subtreeComponent** | 大规模/深嵌套 UI | 2-12x |
-| **schemaFragment** | 精确 Schema 更新 | 按需 |
-
-### 启用优化
+| 优化方案 | 工作方式 | 配置 |
+|----------|----------|------|
+| **path-memo** | 按路径缓存 VNode，未变分支复用 | 始终开启 |
+| **子树组件化** | scope boundary + weight > 5 时自动拆分 | 自适应 |
+| **循环组件化** | 模板 weight > 5 时列表项自动包装 | 自适应 |
 
 ```typescript
-const { vnode, state } = useVario(schema, {
-  rendererOptions: {
-    usePathMemo: true,           // 默认已启用
-    loopItemAsComponent: true,   // 推荐生产环境启用
-    
-    // 方案 C：子树组件化（v0.4.0）
-    subtreeComponent: {
-      enabled: true,             // 启用子树组件化
-      granularity: 'boundary',   // 'all' | 'boundary'
-      maxDepth: 10               // 最大组件化深度
-    },
-    
-    // 方案 D：Schema 碎片化（v0.4.0）
-    schemaFragment: {
-      enabled: true,             // 启用 Schema 碎片化
-      granularity: 'node'        // 'node' | 'component'
-    }
-  }
-})
+// 无需任何配置，优化自动生效
+const { vnode, state } = useVario(schema)
 ```
 
 详见 [性能优化文档](./docs/benchmark.md)

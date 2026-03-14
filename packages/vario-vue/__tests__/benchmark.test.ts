@@ -1,11 +1,8 @@
 /**
  * Vario 渲染优化基准测试
  *
- * 对比以下方案的性能：
- * 1. 基线：无优化（usePathMemo=false, loopItemAsComponent=false）
- * 2. path-memo：仅启用 path-memo 缓存
- * 3. 列表项组件化：仅启用 loopItemAsComponent
- * 4. 组合优化：path-memo + 列表项组件化
+ * Scope-Weight Hybrid 自适应优化：所有优化内置，无需手动配置。
+ * 测试各场景下的渲染性能。
  *
  * 测试场景：
  * - 大量节点渲染
@@ -245,7 +242,6 @@ describe('Vario 渲染优化基准测试', () => {
 
       const start = performance.now()
       const { vnode } = useVario(schema, {
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: false }
       })
       await nextTick()
       const duration = performance.now() - start
@@ -265,7 +261,6 @@ describe('Vario 渲染优化基准测试', () => {
 
       const start = performance.now()
       const { vnode } = useVario(schema, {
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: false }
       })
       await nextTick()
       const duration = performance.now() - start
@@ -296,8 +291,7 @@ describe('Vario 渲染优化基准测试', () => {
 
       const start = performance.now()
       const { vnode } = useVario(schema, {
-        state: { items },
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: false }
+        state: { items }
       })
       await nextTick()
       const duration = performance.now() - start
@@ -324,8 +318,7 @@ describe('Vario 渲染优化基准测试', () => {
 
       const start = performance.now()
       const { vnode } = useVario(schema, {
-        state: { items },
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: false }
+        state: { items }
       })
       await nextTick()
       const duration = performance.now() - start
@@ -352,8 +345,7 @@ describe('Vario 渲染优化基准测试', () => {
 
       const start = performance.now()
       const { vnode } = useVario(schema, {
-        state: { items },
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: true }
+        state: { items }
       })
       await nextTick()
       const duration = performance.now() - start
@@ -380,8 +372,7 @@ describe('Vario 渲染优化基准测试', () => {
 
       const start = performance.now()
       const { vnode } = useVario(schema, {
-        state: { items },
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: true }
+        state: { items }
       })
       await nextTick()
       const duration = performance.now() - start
@@ -410,8 +401,7 @@ describe('Vario 渲染优化基准测试', () => {
       )
 
       const { vnode, state } = useVario(schema, {
-        state: { items },
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: false }
+        state: { items }
       })
       await nextTick()
 
@@ -441,8 +431,7 @@ describe('Vario 渲染优化基准测试', () => {
       )
 
       const { vnode, state } = useVario(schema, {
-        state: { items },
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: false }
+        state: { items }
       })
       await nextTick()
 
@@ -472,8 +461,7 @@ describe('Vario 渲染优化基准测试', () => {
       )
 
       const { vnode, state } = useVario(schema, {
-        state: { items },
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: true }
+        state: { items }
       })
       await nextTick()
 
@@ -503,8 +491,7 @@ describe('Vario 渲染优化基准测试', () => {
       )
 
       const { vnode, state } = useVario(schema, {
-        state: { items },
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: true }
+        state: { items }
       })
       await nextTick()
 
@@ -534,8 +521,7 @@ describe('Vario 渲染优化基准测试', () => {
       }
 
       const { vnode, state } = useVario(schema, {
-        state: { count: 0 },
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: false }
+        state: { count: 0 }
       })
       await nextTick()
 
@@ -561,8 +547,7 @@ describe('Vario 渲染优化基准测试', () => {
       }
 
       const { vnode, state } = useVario(schema, {
-        state: { count: 0 },
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: false }
+        state: { count: 0 }
       })
       await nextTick()
 
@@ -619,8 +604,7 @@ describe('Vario 渲染优化基准测试', () => {
 
       const start = performance.now()
       const { vnode } = useVario(schema, {
-        state: { groups },
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: false }
+        state: { groups }
       })
       await nextTick()
       const duration = performance.now() - start
@@ -666,8 +650,7 @@ describe('Vario 渲染优化基准测试', () => {
 
       const start = performance.now()
       const { vnode } = useVario(schema, {
-        state: { groups },
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: false }
+        state: { groups }
       })
       await nextTick()
       const duration = performance.now() - start
@@ -713,8 +696,7 @@ describe('Vario 渲染优化基准测试', () => {
 
       const start = performance.now()
       const { vnode } = useVario(schema, {
-        state: { groups },
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: true }
+        state: { groups }
       })
       await nextTick()
       const duration = performance.now() - start
@@ -760,8 +742,7 @@ describe('Vario 渲染优化基准测试', () => {
 
       const start = performance.now()
       const { vnode } = useVario(schema, {
-        state: { groups },
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: true }
+        state: { groups }
       })
       await nextTick()
       const duration = performance.now() - start
@@ -783,8 +764,7 @@ describe('Vario 渲染优化基准测试', () => {
       const schema: Schema<{ count: number }> = { type: 'div', children }
 
       const { vnode, state } = useVario(schema, {
-        state: { count: 0 },
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: false }
+        state: { count: 0 }
       })
       await nextTick()
 
@@ -808,8 +788,7 @@ describe('Vario 渲染优化基准测试', () => {
       const schema: Schema<{ count: number }> = { type: 'div', children }
 
       const { vnode, state } = useVario(schema, {
-        state: { count: 0 },
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: false }
+        state: { count: 0 }
       })
       await nextTick()
 
@@ -857,8 +836,7 @@ describe('Vario 渲染优化基准测试', () => {
       const start = performance.now()
       const { vnode } = useVario(schema, {
         state: { form: initialForm },
-        components: ElementPlusComponents,
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: false }
+        components: ElementPlusComponents
       })
       await nextTick()
       const duration = performance.now() - start
@@ -892,8 +870,7 @@ describe('Vario 渲染优化基准测试', () => {
       const start = performance.now()
       const { vnode } = useVario(schema, {
         state: { form: initialForm },
-        components: ElementPlusComponents,
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: false }
+        components: ElementPlusComponents
       })
       await nextTick()
       const duration = performance.now() - start
@@ -934,8 +911,7 @@ describe('Vario 渲染优化基准测试', () => {
       const start = performance.now()
       const { vnode } = useVario(schema, {
         state: { tableData },
-        components: ElementPlusComponents,
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: false }
+        components: ElementPlusComponents
       })
       await nextTick()
       const duration = performance.now() - start
@@ -972,8 +948,7 @@ describe('Vario 渲染优化基准测试', () => {
       const start = performance.now()
       const { vnode } = useVario(schema, {
         state: { tableData },
-        components: ElementPlusComponents,
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: false }
+        components: ElementPlusComponents
       })
       await nextTick()
       const duration = performance.now() - start
@@ -1024,8 +999,7 @@ describe('Vario 渲染优化基准测试', () => {
       const start = performance.now()
       const { vnode } = useVario(schema, {
         state: { items },
-        components: ElementPlusComponents,
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: false }
+        components: ElementPlusComponents
       })
       await nextTick()
       const duration = performance.now() - start
@@ -1072,8 +1046,7 @@ describe('Vario 渲染优化基准测试', () => {
       const start = performance.now()
       const { vnode } = useVario(schema, {
         state: { items },
-        components: ElementPlusComponents,
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: false }
+        components: ElementPlusComponents
       })
       await nextTick()
       const duration = performance.now() - start
@@ -1120,8 +1093,7 @@ describe('Vario 渲染优化基准测试', () => {
       const start = performance.now()
       const { vnode } = useVario(schema, {
         state: { items },
-        components: ElementPlusComponents,
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: true }
+        components: ElementPlusComponents
       })
       await nextTick()
       const duration = performance.now() - start
@@ -1168,8 +1140,7 @@ describe('Vario 渲染优化基准测试', () => {
       const start = performance.now()
       const { vnode } = useVario(schema, {
         state: { items },
-        components: ElementPlusComponents,
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: true }
+        components: ElementPlusComponents
       })
       await nextTick()
       const duration = performance.now() - start
@@ -1216,8 +1187,7 @@ describe('Vario 渲染优化基准测试', () => {
 
       const { vnode, state } = useVario(schema, {
         state: { items },
-        components: ElementPlusComponents,
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: false }
+        components: ElementPlusComponents
       })
       await nextTick()
 
@@ -1265,8 +1235,7 @@ describe('Vario 渲染优化基准测试', () => {
 
       const { vnode, state } = useVario(schema, {
         state: { items },
-        components: ElementPlusComponents,
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: false }
+        components: ElementPlusComponents
       })
       await nextTick()
 
@@ -1314,8 +1283,7 @@ describe('Vario 渲染优化基准测试', () => {
 
       const { vnode, state } = useVario(schema, {
         state: { items },
-        components: ElementPlusComponents,
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: true }
+        components: ElementPlusComponents
       })
       await nextTick()
 
@@ -1363,8 +1331,7 @@ describe('Vario 渲染优化基准测试', () => {
 
       const { vnode, state } = useVario(schema, {
         state: { items },
-        components: ElementPlusComponents,
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: true }
+        components: ElementPlusComponents
       })
       await nextTick()
 
@@ -1450,8 +1417,7 @@ describe('Vario 渲染优化基准测试', () => {
             tags: []
           }
         },
-        components: ElementPlusComponents,
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: false }
+        components: ElementPlusComponents
       })
       await nextTick()
 
@@ -1538,8 +1504,7 @@ describe('Vario 渲染优化基准测试', () => {
             tags: []
           }
         },
-        components: ElementPlusComponents,
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: false }
+        components: ElementPlusComponents
       })
       await nextTick()
 
@@ -1672,6 +1637,7 @@ describe('Vario 渲染优化基准测试', () => {
 
     it('shouldComponentize 判断性能', async () => {
       const { shouldComponentize } = await import('../src/features/vario-node.js')
+      const { createWeightCache } = await import('../src/features/schema-weight.js')
       
       const schemas = [
         { type: 'div' },
@@ -1680,10 +1646,11 @@ describe('Vario 渲染优化基准测试', () => {
         { type: 'span', onMounted: [] }
       ]
       
+      const cache = createWeightCache()
       const start = performance.now()
       for (let i = 0; i < 10000; i++) {
         for (const schema of schemas) {
-          shouldComponentize(schema as any, i % 10, { enabled: true, granularity: 'boundary' })
+          shouldComponentize(schema as any, cache)
         }
       }
       const duration = performance.now() - start
@@ -1692,8 +1659,8 @@ describe('Vario 渲染优化基准测试', () => {
     })
   })
 
-  describe('14. 组合优化（A+B+C+D）对比', () => {
-    it('全量优化 vs 基线：大型 Schema', async () => {
+  describe('14. Scope-Weight 自适应对比', () => {
+    it('自适应优化：大型 Schema', async () => {
       // 生成 500 节点的 Schema
       const children: Schema[] = Array.from({ length: 500 }, (_, i) => ({
         type: i % 3 === 0 ? 'ElButton' : 'div',
@@ -1703,39 +1670,17 @@ describe('Vario 渲染优化基准测试', () => {
       
       const schema: Schema = { type: 'div', children }
       
-      // 基线
-      const startBaseline = performance.now()
-      const baseline = useVario(schema, {
-        components: ElementPlusComponents,
-        rendererOptions: { 
-          usePathMemo: false, 
-          loopItemAsComponent: false,
-          subtreeComponent: { enabled: false },
-          schemaFragment: { enabled: false }
-        }
+      // Scope-Weight 自适应（全部优化内置）
+      const start = performance.now()
+      const result = useVario(schema, {
+        components: ElementPlusComponents
       })
       await nextTick()
-      const baselineDuration = performance.now() - startBaseline
+      const duration = performance.now() - start
       
-      // 全量优化
-      const startOptimized = performance.now()
-      const optimized = useVario(schema, {
-        components: ElementPlusComponents,
-        rendererOptions: { 
-          usePathMemo: true, 
-          loopItemAsComponent: true,
-          subtreeComponent: { enabled: true, granularity: 'boundary' },
-          schemaFragment: { enabled: true }
-        }
-      })
-      await nextTick()
-      const optimizedDuration = performance.now() - startOptimized
+      expect(result.vnode.value).toBeDefined()
       
-      expect(baseline.vnode.value).toBeDefined()
-      expect(optimized.vnode.value).toBeDefined()
-      
-      recordResult('500节点基线', baselineDuration, 1)
-      recordResult('500节点全量优化', optimizedDuration, 1)
+      recordResult('500节点scope-weight自适应', duration, 1)
     })
   })
 

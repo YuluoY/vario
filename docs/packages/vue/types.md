@@ -63,8 +63,8 @@ interface UseVarioOptions<TState extends Record<string, unknown> = Record<string
   // 错误边界配置
   errorBoundary?: ErrorBoundaryConfig
   
-  // 渲染器配置
-  rendererOptions?: VueRendererOptions
+  // 自定义指令映射
+  directives?: Record<string, Directive>
   
   // Vue 应用实例
   app?: App | null
@@ -138,7 +138,7 @@ interface MethodContext<TState extends Record<string, unknown> = Record<string, 
 
 ### VueRendererOptions
 
-Vue 渲染器的配置选项。
+Vue 渲染器的内部配置选项（通常无需直接使用，`useVario` 会自动构建）。
 
 ```typescript
 interface VueRendererOptions {
@@ -162,51 +162,10 @@ interface VueRendererOptions {
   
   // Model 绑定配置
   modelOptions?: ModelOptions
-  
-  // 启用 path-memo 缓存（默认 true）
-  usePathMemo?: boolean
-  
-  // 列表项组件化（默认 false）
-  loopItemAsComponent?: boolean
-  
-  // 子树组件化配置
-  subtreeComponent?: SubtreeComponentConfig
-  
-  // Schema 碎片化配置
-  schemaFragment?: SchemaFragmentConfig
 }
 ```
 
-### SubtreeComponentConfig
-
-子树组件化配置。
-
-```typescript
-interface SubtreeComponentConfig {
-  // 是否启用子树组件化（默认 false）
-  enabled?: boolean
-  
-  // 组件化粒度：'all' 所有节点 | 'boundary' 仅组件边界
-  granularity?: 'all' | 'boundary'
-  
-  // 最大深度（超过后不再组件化）
-  maxDepth?: number
-}
-```
-
-### SchemaFragmentConfig
-
-Schema 碎片化配置。
-
-```typescript
-interface SchemaFragmentConfig {
-  // 是否启用碎片化（默认 false）
-  enabled?: boolean
-  
-  // 碎片粒度：'node' 每个节点 | 'component' 仅组件边界
-  granularity?: 'node' | 'component'
-}
-```
+> **注意**：性能优化（path-memo / 子树组件化 / 循环项组件化）由渲染器内部基于 Scope-Weight Hybrid 策略自适应管理，无需手动配置。
 
 ## Model 相关类型
 
@@ -639,8 +598,6 @@ export type {
   
   // 渲染器类型
   VueRendererOptions,
-  SubtreeComponentConfig,
-  SchemaFragmentConfig,
   
   // Model 类型
   ModelOptions,

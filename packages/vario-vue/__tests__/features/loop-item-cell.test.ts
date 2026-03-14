@@ -1,9 +1,9 @@
 /**
- * 列表项组件化（方案 B）单元测试
+ * 自适应列表项组件化 单元测试
  *
  * 测试场景：
  * - LoopItemCell 组件正确渲染循环项
- * - loopItemAsComponent 配置下每项独立更新
+ * - 自适应组件化：列表长度 >= 阈值时自动启用 LoopItemCell
  * - 单项更新时其他项不重渲染
  * - 与 path-memo 并存（列表用 B，其它用 A）
  * - 嵌套循环场景
@@ -45,9 +45,6 @@ describe('列表项组件化（方案 B）', () => {
             { id: 2, name: 'Item 2' },
             { id: 3, name: 'Item 3' }
           ]
-        },
-        rendererOptions: {
-          loopItemAsComponent: true
         }
       })
       await nextTick()
@@ -58,7 +55,7 @@ describe('列表项组件化（方案 B）', () => {
       expect(children).toBeDefined()
     })
 
-    it('loopItemAsComponent=false 时使用普通循环渲染', async () => {
+    it('小列表（< 阈值）使用普通循环渲染', async () => {
       const schema: Schema<{ items: Array<{ id: number; name: string }> }> = {
         type: 'div',
         children: [
@@ -79,9 +76,6 @@ describe('列表项组件化（方案 B）', () => {
             { id: 1, name: 'A' },
             { id: 2, name: 'B' }
           ]
-        },
-        rendererOptions: {
-          loopItemAsComponent: false
         }
       })
       await nextTick()
@@ -118,10 +112,7 @@ describe('列表项组件化（方案 B）', () => {
       ])
 
       const { vnode, state } = useVario(schema, {
-        state: { items },
-        rendererOptions: {
-          loopItemAsComponent: true
-        }
+        state: { items }
       })
       await nextTick()
 
@@ -158,9 +149,6 @@ describe('列表项组件化（方案 B）', () => {
             { id: 1, name: 'First' },
             { id: 2, name: 'Second' }
           ]
-        },
-        rendererOptions: {
-          loopItemAsComponent: true
         }
       })
       await nextTick()
@@ -198,9 +186,6 @@ describe('列表项组件化（方案 B）', () => {
             { id: 2, name: 'Second' },
             { id: 3, name: 'Third' }
           ]
-        },
-        rendererOptions: {
-          loopItemAsComponent: true
         }
       })
       await nextTick()
@@ -247,10 +232,6 @@ describe('列表项组件化（方案 B）', () => {
         state: {
           title: 'My List',
           items: [{ id: 1, name: 'A' }]
-        },
-        rendererOptions: {
-          usePathMemo: true,
-          loopItemAsComponent: true
         }
       })
       await nextTick()
@@ -322,9 +303,6 @@ describe('列表项组件化（方案 B）', () => {
               ]
             }
           ]
-        },
-        rendererOptions: {
-          loopItemAsComponent: true
         }
       })
       await nextTick()
@@ -376,9 +354,6 @@ describe('列表项组件化（方案 B）', () => {
             capturedItem = (ctx as any).item
             capturedIndex = (ctx as any).idx
           }
-        },
-        rendererOptions: {
-          loopItemAsComponent: true
         }
       })
       await nextTick()
@@ -412,9 +387,6 @@ describe('列表项组件化（方案 B）', () => {
             { uuid: 'abc-123', name: 'A' },
             { uuid: 'def-456', name: 'B' }
           ]
-        },
-        rendererOptions: {
-          loopItemAsComponent: true
         }
       })
       await nextTick()
@@ -443,9 +415,6 @@ describe('列表项组件化（方案 B）', () => {
             { name: 'No ID 1' },
             { name: 'No ID 2' }
           ]
-        },
-        rendererOptions: {
-          loopItemAsComponent: true
         }
       })
       await nextTick()
@@ -471,10 +440,7 @@ describe('列表项组件化（方案 B）', () => {
       }
 
       const { vnode, state } = useVario(schema, {
-        state: { items: [] },
-        rendererOptions: {
-          loopItemAsComponent: true
-        }
+        state: { items: [] }
       })
       await nextTick()
 
@@ -498,10 +464,7 @@ describe('列表项组件化（方案 B）', () => {
       }
 
       const { vnode, state } = useVario(schema, {
-        state: { items: 'not an array' as any },
-        rendererOptions: {
-          loopItemAsComponent: true
-        }
+        state: { items: 'not an array' as any }
       })
       await nextTick()
 
@@ -536,9 +499,6 @@ describe('列表项组件化（方案 B）', () => {
             { id: 1, value: 'A' },
             { id: 2, value: 'B' }
           ]
-        },
-        rendererOptions: {
-          loopItemAsComponent: true
         }
       })
       await nextTick()

@@ -53,7 +53,7 @@ useVario(schemaRef)
 | `onEmit` | `(event: string, data?: unknown) => void` | 事件处理回调 |
 | `onError` | `(error: Error) => void` | 错误处理回调 |
 | `errorBoundary` | `ErrorBoundaryConfig` | 错误边界配置 |
-| `rendererOptions` | `VueRendererOptions` | 渲染器配置 |
+| `directives` | `Record<string, Directive>` | 自定义指令映射 |
 | `app` | `App \| null` | Vue 应用实例（用于获取全局组件） |
 | `components` | `Record<string, any>` | 全局组件映射 |
 | `exprOptions` | `ExpressionOptions` | 表达式求值配置 |
@@ -165,9 +165,9 @@ useVario(schema, {
 })
 ```
 
-#### rendererOptions
+#### directives
 
-渲染器配置，详见 [VueRendererOptions](#vuerendereroptions)。
+自定义指令映射，支持在 Schema 中使用自定义 Vue 指令。
 
 #### modelOptions
 
@@ -286,67 +286,8 @@ class VueRenderer {
 | `getState` | `() => any` | 获取响应式状态 |
 | `refsRegistry` | `RefsRegistry` | Refs 注册表 |
 | `modelOptions` | `ModelOptions` | Model 配置 |
-| `usePathMemo` | `boolean` | 启用 path-memo 缓存（默认 true） |
-| `loopItemAsComponent` | `boolean` | 列表项组件化（默认 false） |
-| `subtreeComponent` | `SubtreeComponentConfig` | 子树组件化配置 |
-| `schemaFragment` | `SchemaFragmentConfig` | Schema 碎片化配置 |
 
-#### 性能优化选项
-
-**usePathMemo**（默认 `true`）
-
-启用路径缓存，缓存未变化分支的 VNode，性能提升 2-88 倍。
-
-```typescript
-useVario(schema, {
-  rendererOptions: {
-    usePathMemo: true
-  }
-})
-```
-
-**loopItemAsComponent**（默认 `false`）
-
-将列表项组件化，单项更新时性能提升 4-29 倍。
-
-```typescript
-useVario(schema, {
-  rendererOptions: {
-    loopItemAsComponent: true
-  }
-})
-```
-
-**subtreeComponent**
-
-子树组件化，大规模 UI 场景提升 2-12 倍。
-
-```typescript
-useVario(schema, {
-  rendererOptions: {
-    subtreeComponent: {
-      enabled: true,
-      granularity: 'boundary', // 'all' | 'boundary'
-      maxDepth: 10
-    }
-  }
-})
-```
-
-**schemaFragment**
-
-Schema 碎片化，支持精确节点更新。
-
-```typescript
-useVario(schema, {
-  rendererOptions: {
-    schemaFragment: {
-      enabled: true,
-      granularity: 'node' // 'node' | 'component'
-    }
-  }
-})
-```
+> **注意**：性能优化（path-memo / 子树组件化 / 循环项组件化）由渲染器内部基于 Scope-Weight Hybrid 策略自适应管理，无需手动配置。
 
 ## 模型绑定
 
@@ -615,7 +556,7 @@ class ModelPathResolver {
 
 ## 最佳实践
 
-1. **优先使用性能优化选项**：在大型应用中启用 `usePathMemo` 和 `loopItemAsComponent`
+1. **性能优化零配置**：渲染器内部自适应管理所有优化策略，无需手动配置
 2. **合理使用 computed**：将复杂计算逻辑提取为 computed 属性
 3. **方法命名规范**：使用清晰的动词开头（如 `handleClick`、`validateForm`）
 4. **错误处理**：配置 `errorBoundary` 提供友好的错误提示

@@ -190,18 +190,18 @@ export const useVario: UseVarioOverload = <TState extends Record<string, unknown
   const modelOptionsConfig = normalizeModelOptions(options.modelOptions)
 
   // 创建 refs 注册表（用于模板引用）
-  const refsRegistry = options.rendererOptions?.refsRegistry || new RefsRegistry()
+  const refsRegistry = new RefsRegistry()
 
   const renderer = new VueRenderer({
-    ...options.rendererOptions,
     instance,
-    app: options.app ?? options.rendererOptions?.app,
-    components: options.components ?? options.rendererOptions?.components,
+    app: options.app,
+    components: options.components,
+    directives: options.directives,
     getState: () => reactiveState,
     refsRegistry,
     modelOptions: {
       ...modelOptionsConfig,
-      lazy: options.modelOptions?.lazy ?? options.rendererOptions?.modelOptions?.lazy
+      lazy: options.modelOptions?.lazy
     }
   })
 

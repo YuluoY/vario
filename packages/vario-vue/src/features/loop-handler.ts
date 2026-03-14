@@ -2,7 +2,8 @@
  * 循环处理模块
  *
  * 负责处理 Schema 中的循环渲染；支持 parentMap / nodeContext 供事件中 $parent 使用。
- * 可选列表项组件化（loopItemAsComponent）：每项独立 Vue 组件，仅该项 props 变化时 re-render。
+ * 基于 Scope-Weight Hybrid 策略的列表项组件化：当循环模板权重 > COMPONENT_OVERHEAD 时，
+ * 自动将每项渲染为独立 Vue 组件，仅该项 props 变化时 re-render。
  */
 
 import { h, Fragment, type VNode } from 'vue'
@@ -12,6 +13,7 @@ import { createLoopContext, type PathSegment } from '@variojs/core'
 import type { ModelPathResolver } from './path-resolver.js'
 import type { ParentMap } from './node-context.js'
 import { LoopItemCell } from './loop-item-cell.js'
+import { computeLoopTemplateWeight, COMPONENT_OVERHEAD, type WeightCache } from './schema-weight.js'
 
 export type CreateVNodeFn = (
   schema: SchemaNode,
@@ -38,8 +40,8 @@ export class LoopHandler {
     private pathResolver: ModelPathResolver,
     private createVNode: CreateVNodeFn,
     private evaluateExpr: (expr: string, ctx: RuntimeContext) => any,
-    private loopItemAsComponent: boolean = false,
-    private getRenderNodeForLoopItem?: (parentMap: ParentMap) => RenderNodeForLoopItemFn
+    private getRenderNodeForLoopItem?: (parentMap: ParentMap) => RenderNodeForLoopItemFn,
+    private weightCache?: WeightCache
   ) {}
 
   /**
@@ -99,8 +101,10 @@ export class LoopHandler {
       )
     }
 
+    // Scope-Weight 循环项组件化：当模板权重 > COMPONENT_OVERHEAD 时自动启用
     const useLoopItemComponent =
-      this.loopItemAsComponent &&
+      this.weightCache != null &&
+      computeLoopTemplateWeight(schema, this.weightCache) > COMPONENT_OVERHEAD &&
       this.getRenderNodeForLoopItem != null &&
       parentMap != null
     const renderNodeForItem = useLoopItemComponent

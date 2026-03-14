@@ -1,12 +1,12 @@
 # Dependencies
 node_modules/
 .pnpm-store/
-.github
 # Build outputs
 dist/
 dist-ssr/
 *.local
 play/public/docs/
+.github/skills/skill-creator
 
 # Documentation
 packages/vario-vue/docs/

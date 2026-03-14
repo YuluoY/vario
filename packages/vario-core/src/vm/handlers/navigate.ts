@@ -44,8 +44,9 @@ export async function handleNavigate(
     finalTo = result
   }
   
-  // 调用路由导航方法（如果已注册）
-  const navigateHandler = ctx.$methods['navigate'] || ctx.$methods['$navigate']
+  // 调用用户注册的路由导航方法
+  // 注意：查找 $navigate 或 $router 方法，而非 navigate（navigate 是本处理器自身）
+  const navigateHandler = ctx.$methods['$navigate'] || ctx.$methods['$router']
   if (navigateHandler) {
     await navigateHandler(ctx, { to: finalTo })
   } else {

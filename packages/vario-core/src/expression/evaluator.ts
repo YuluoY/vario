@@ -463,7 +463,7 @@ export function evaluateExpression(
         // 获取函数名和对象
         let funcName: string
         let funcObj: unknown
-        let callContext: unknown = null // 函数调用的上下文（this）
+        let callContext: unknown
         
         if (callee.type === 'Identifier') {
           // 直接函数调用：String(), Math.max()
@@ -478,8 +478,27 @@ export function evaluateExpression(
             )
           }
           
-          // 从上下文或全局获取函数
-          funcObj = ctx[funcName] ?? (globalThis as Record<string, unknown>)[funcName]
+          // 安全策略：先检查白名单，再解析函数对象
+          // 防止 ctx 中被注入 fetch/XMLHttpRequest 等危险属性时绕过白名单
+          const isDirectWhitelisted = WHITELISTED_GLOBALS.has(funcName) ||
+                                      WHITELISTED_FUNCTIONS.has(funcName) ||
+                                      RUNTIME_HELPERS[funcName] !== undefined
+          
+          if (!allowGlobals && !isDirectWhitelisted) {
+            throw new ExpressionError(
+              funcName,
+              `Function "${funcName}" is not in whitelist`,
+              ErrorCodes.EXPRESSION_FUNCTION_NOT_WHITELISTED
+            )
+          }
+          
+          // 白名单通过后，优先从白名单全局获取（不从 ctx 获取，防止上下文污染）
+          if (isDirectWhitelisted) {
+            funcObj = RUNTIME_HELPERS[funcName] ?? (globalThis as Record<string, unknown>)[funcName]
+          } else {
+            // allowGlobals 模式：从 ctx 或 globalThis 获取
+            funcObj = ctx[funcName] ?? (globalThis as Record<string, unknown>)[funcName]
+          }
           callContext = null // 全局函数调用，this 为 null
         } else if (callee.type === 'MemberExpression') {
           // 成员函数调用：Math.max(), Array.isArray(), array.slice()
@@ -531,13 +550,9 @@ export function evaluateExpression(
           } else {
             // 非数组对象，正常处理
             // 获取对象标识符名称（如果是 Identifier）
-            let objName = '';
-            if (member.object.type === 'Identifier') {
-              objName = (member.object as ESTree.Identifier).name;
-            } else {
-              // 对于其他情况，使用字符串表示，但可能不在白名单内
-              objName = String(obj);
-            }
+            const objName = member.object.type === 'Identifier'
+              ? (member.object as ESTree.Identifier).name
+              : String(obj)
             
             if (member.computed) {
               const prop = evaluate(member.property)

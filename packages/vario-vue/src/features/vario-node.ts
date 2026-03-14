@@ -1,10 +1,10 @@
 /**
- * 方案 C：子树组件化
+ * 方案 C：子树组件化（Scope-Weight Hybrid）
  *
  * 核心思路：
- * - 每个 Schema 节点（或每个"组件边界"）渲染为一个独立的 Vue 组件 VarioNode
- * - 通过 props 传入 (schemaNode, ctx, path)
- * - Vue 对 props 未变的组件不 re-render，实现自动局部更新
+ * - 在「响应式作用域边界」且「子树权重 > 组件开销」的节点自动包装为 VarioNode
+ * - 组件化位置由 isScopeBoundary + computeWeight 共同决定
+ * - 一个参数（COMPONENT_OVERHEAD）映射到物理量（组件实例等价 VNode 成本）
  *
  * 用户写法完全不变，内部架构优化
  */
@@ -22,6 +22,7 @@ import type { SchemaNode } from '@variojs/schema'
 import type { RuntimeContext, PathSegment } from '@variojs/core'
 import type { NodeContext, ParentMap } from './node-context.js'
 import type { VueSchemaNode } from '../types.js'
+import { isScopeBoundary, computeWeight, COMPONENT_OVERHEAD, type WeightCache } from './schema-weight.js'
 
 /**
  * VarioNode 组件的 Props
@@ -89,44 +90,48 @@ export interface VarioNodeRenderer {
 }
 
 /**
- * 子树组件化选项
+ * @deprecated 保留类型以兼容旧测试，内部已不再使用手动配置
  */
 export interface SubtreeComponentOptions {
-  /** 是否启用子树组件化（默认 false） */
   enabled?: boolean
-  /** 组件化粒度：'all' 所有节点 | 'boundary' 仅组件边界 */
   granularity?: 'all' | 'boundary'
-  /** 最大深度（超过后不再组件化，避免过度嵌套） */
   maxDepth?: number
 }
 
 /**
- * 判断是否应该组件化该节点
+ * 判断是否应该组件化该节点（方案 C：Scope-Weight Hybrid）
+ *
+ * 决策公式：
+ *   shouldComponentize = !loop && isScopeBoundary(node) && weight(node) > COMPONENT_OVERHEAD
+ *
+ * 特殊规则：
+ * 1. 含 loop 的节点必须由 LoopHandler 在 createVNode 层面处理，不可组件化
+ * 2. 有 lifecycle/provide/inject 的节点始终组件化（需要独立 setup 环境）
+ * 3. 其他 scope boundary（model 绑定、自定义组件）只在权重 > COMPONENT_OVERHEAD 时组件化
+ *
+ * @param schema   当前 schema 节点
+ * @param weightCache  子树权重缓存（WeakMap，跨 render 复用）
  */
 export function shouldComponentize(
   schema: SchemaNode,
-  depth: number,
-  options: SubtreeComponentOptions
+  weightCache: WeightCache
 ): boolean {
-  if (!options.enabled) return false
-  if (options.maxDepth !== undefined && depth > options.maxDepth) return false
-
   // 含 loop 的节点不可组件化：LoopHandler 需要在 renderer.createVNode 层面
   // 展开循环、创建 LoopItemCell 等，VarioNode 无法处理此逻辑。
-  // 必须让 renderer.createVNode 直接处理 loop 节点。
   if (schema.loop) return false
 
-  if (options.granularity === 'boundary') {
-    // 仅在组件边界组件化
-    const type = schema.type
-    const isCustomComponent = typeof type === 'string' && /^[A-Z]/.test(type)
-    const vueNode = schema as VueSchemaNode
-    const hasLifecycle = !!(vueNode.onMounted || vueNode.provide || vueNode.inject)
-    return isCustomComponent || hasLifecycle
-  }
+  const s = schema as Record<string, unknown>
+  const hasLifecycle = !!(s.onMounted || s.provide || s.inject)
 
-  // granularity === 'all'：所有节点都组件化（但 loop 节点已在上方排除）
-  return true
+  // 有生命周期/provide/inject 的节点始终组件化（需要独立 setup 环境）
+  if (hasLifecycle) return true
+
+  // 非 scope boundary → 永不组件化
+  if (!isScopeBoundary(schema)) return false
+
+  // scope boundary + weight > COMPONENT_OVERHEAD → 组件化有净收益
+  const weight = computeWeight(schema, weightCache)
+  return weight > COMPONENT_OVERHEAD
 }
 
 /**
@@ -242,7 +247,7 @@ export const VarioNode = defineComponent({
       )
 
       // 处理 show
-      let finalAttrs = { ...attrs }
+      const finalAttrs = { ...attrs }
       if (schema.show && !showValue.value) {
         const currentStyle = finalAttrs.style
         if (typeof currentStyle === 'string') {

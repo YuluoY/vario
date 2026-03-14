@@ -100,8 +100,7 @@ describe('优化效果对比测试', () => {
       // 基线：禁用 path-memo
       const startBaseline = performance.now()
       const baseline = useVario(schema, {
-        components: MockComponents,
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: false }
+        components: MockComponents
       })
       await nextTick()
       const baselineDuration = performance.now() - startBaseline
@@ -109,8 +108,7 @@ describe('优化效果对比测试', () => {
       // 优化：启用 path-memo
       const startOptimized = performance.now()
       const optimized = useVario(schema, {
-        components: MockComponents,
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: false }
+        components: MockComponents
       })
       await nextTick()
       const optimizedDuration = performance.now() - startOptimized
@@ -136,8 +134,7 @@ describe('优化效果对比测试', () => {
       const baselineState = reactive({ counter: 0 })
       const baseline = useVario(schema, {
         state: baselineState,
-        components: MockComponents,
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: false }
+        components: MockComponents
       })
       await nextTick()
       
@@ -152,8 +149,7 @@ describe('优化效果对比测试', () => {
       const optimizedState = reactive({ counter: 0 })
       const optimized = useVario(schema, {
         state: optimizedState,
-        components: MockComponents,
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: false }
+        components: MockComponents
       })
       await nextTick()
       
@@ -187,8 +183,7 @@ describe('优化效果对比测试', () => {
       // 基线
       const startBaseline = performance.now()
       const baseline = useVario(schema, {
-        state: { items },
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: false }
+        state: { items }
       })
       await nextTick()
       const baselineDuration = performance.now() - startBaseline
@@ -196,8 +191,7 @@ describe('优化效果对比测试', () => {
       // 优化
       const startOptimized = performance.now()
       const optimized = useVario(schema, {
-        state: { items },
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: true }
+        state: { items }
       })
       await nextTick()
       const optimizedDuration = performance.now() - startOptimized
@@ -224,8 +218,7 @@ describe('优化效果对比测试', () => {
         Array.from({ length: 200 }, (_, i) => ({ id: i, name: `Item ${i}` }))
       )
       const baseline = useVario(schema, {
-        state: { items: baselineItems },
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: false }
+        state: { items: baselineItems }
       })
       await nextTick()
       
@@ -241,8 +234,7 @@ describe('优化效果对比测试', () => {
         Array.from({ length: 200 }, (_, i) => ({ id: i, name: `Item ${i}` }))
       )
       const optimized = useVario(schema, {
-        state: { items: optimizedItems },
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: true }
+        state: { items: optimizedItems }
       })
       await nextTick()
       
@@ -300,8 +292,7 @@ describe('优化效果对比测试', () => {
       const baselineState = reactive(JSON.parse(JSON.stringify(initialState)))
       const baseline = useVario(schema, {
         state: baselineState,
-        components: MockComponents,
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: false }
+        components: MockComponents
       })
       await nextTick()
       
@@ -316,8 +307,7 @@ describe('优化效果对比测试', () => {
       const optimizedState = reactive(JSON.parse(JSON.stringify(initialState)))
       const optimized = useVario(schema, {
         state: optimizedState,
-        components: MockComponents,
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: true }
+        components: MockComponents
       })
       await nextTick()
       
@@ -367,8 +357,7 @@ describe('优化效果对比测试', () => {
       // 基线
       const baselineState = reactive({ groups: createGroups() })
       const baseline = useVario(schema, {
-        state: baselineState,
-        rendererOptions: { usePathMemo: false, loopItemAsComponent: false }
+        state: baselineState
       })
       await nextTick()
       
@@ -382,8 +371,7 @@ describe('优化效果对比测试', () => {
       // 优化
       const optimizedState = reactive({ groups: createGroups() })
       const optimized = useVario(schema, {
-        state: optimizedState,
-        rendererOptions: { usePathMemo: true, loopItemAsComponent: true }
+        state: optimizedState
       })
       await nextTick()
       
