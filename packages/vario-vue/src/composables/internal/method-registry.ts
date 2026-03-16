@@ -3,11 +3,16 @@ import { ServiceError } from '@variojs/core'
 import type { MethodContext, UseVarioOptions } from '../../types.js'
 
 /**
+ * 兼容别名前缀：用户可在 schema event 中通过 `services.xxx` / `methods.xxx` / `$methods.xxx` 调用
+ */
+const METHOD_ALIAS_PREFIXES = ['$methods.', 'methods.', 'services.'] as const
+
+/**
  * 构建 methods 注册表
  *
  * 设计说明：
  * - 把用户传入的 methods 统一注册到 RuntimeContext.$methods
- * - 同时注册多种兼容别名（$methods / methods / services）
+ * - 同时注册兼容别名（$methods.x / methods.x / services.x）
  * - 自动兼容同步/异步返回
  * - 统一包装非 ServiceError 异常，保证错误语义一致
  */
@@ -67,11 +72,11 @@ export function buildMethodsRegistry<TState extends Record<string, unknown>>(
       }
     }
 
-    // 注册多个别名以支持不同历史调用方式
+    // 注册方法本名 + 兼容别名
     registry[name] = handler
-    registry[`$methods.${name}`] = handler
-    registry[`methods.${name}`] = handler
-    registry[`services.${name}`] = handler
+    for (const prefix of METHOD_ALIAS_PREFIXES) {
+      registry[`${prefix}${name}`] = handler
+    }
   }
 
   return registry

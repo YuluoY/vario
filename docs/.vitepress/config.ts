@@ -102,6 +102,7 @@ export default defineConfig({
             items: [
               { text: 'Schema 查询', link: '/guide/schema-query' },
               { text: '节点上下文', link: '/guide/node-context' },
+              { text: '插件系统', link: '/guide/plugins' },
               { text: '性能优化', link: '/guide/performance' },
               { text: '错误处理', link: '/packages/vue/error-handling' }
             ]

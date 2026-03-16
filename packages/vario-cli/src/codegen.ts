@@ -63,19 +63,41 @@ function generateFromSchema(schema: Schema, outputDir: string) {
  * 生成类型定义
  */
 function generateTypeDefinitions(schema: Schema): string {
-  // 简单的类型定义生成
+  const state = (schema as Record<string, unknown>).state as Record<string, unknown> | undefined
+  const stateFields = state
+    ? Object.entries(state).map(([key, val]) => {
+        const tsType = inferTsType(val)
+        return `  ${key}: ${tsType}`
+      }).join('\n')
+    : '  [key: string]: unknown'
+
   return `/**
  * Auto-generated type definitions
  * Generated from Vario Schema
  */
 
 export interface State {
-  // TODO: Extract state type from schema
-  [key: string]: unknown
+${stateFields}
+}
+`
 }
 
-export type Schema = ${JSON.stringify(schema, null, 2)}
-`
+/**
+ * 推断 JS 值对应的 TypeScript 类型
+ */
+function inferTsType(value: unknown): string {
+  if (value === null) return 'null'
+  if (Array.isArray(value)) {
+    if (value.length === 0) return 'unknown[]'
+    const elemType = inferTsType(value[0])
+    return `${elemType}[]`
+  }
+  switch (typeof value) {
+    case 'string': return 'string'
+    case 'number': return 'number'
+    case 'boolean': return 'boolean'
+    default: return 'unknown'
+  }
 }
 
 /**

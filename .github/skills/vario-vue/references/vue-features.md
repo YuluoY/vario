@@ -85,7 +85,9 @@ class RefsRegistry {
 | `onUnmounted` | `onUnmounted` | 卸载后 |
 
 ### 实现机制
-当节点声明了任意生命周期钩子或 provide/inject 时，`VueRenderer` 会将该节点包裹在 `defineComponent` 中（而非直接 `h()` 调用）：
+当节点声明了任意生命周期钩子或 provide/inject 时，`lifecyclePlugin`（VNodePlugin）通过 `wrapComponent` hook 将该节点包裹在 `defineComponent` 中（而非直接 `h()` 调用）：
+
+> **注意**：lifecycle/provide-inject 逻辑已从渲染器硬编码迁移至 `packages/vario-vue/src/plugins/lifecycle.ts` 插件，通过 `VNodePlugin.wrapComponent` hook 实现。
 
 ```
 createComponentWithLifecycle(component, attrs, children, schema, ctx)
@@ -179,9 +181,13 @@ createComponentWithLifecycle(component, attrs, children, schema, ctx)
 - `false` / 省略 → 不传送
 
 ### 渲染
-在 18 步管线的**最外层**包裹：
+通过 `teleportPlugin`（VNodePlugin）的 `decorateVNode` hook 在管线第 13 步（后处理装饰器）包裹：
 ```typescript
-h(Teleport, { to: target }, [vnode])
+// plugins/teleport.ts
+decorateVNode(vnode, schema) {
+  if (!shouldTeleport(schema.teleport)) return vnode
+  return createTeleport(schema.teleport, vnode)  // h(Teleport, { to }, [vnode])
+}
 ```
 
 ---
@@ -324,23 +330,88 @@ withDirectives(vnode, directiveArguments)
 
 ---
 
+## VNode Plugin Architecture
+
+所有 Vue 特有特性已从渲染器硬编码逻辑抽离为可组合的 `VNodePlugin`：
+
+```typescript
+interface VNodePlugin {
+  name: string
+  wrapComponent?: (component, attrs, children, schema, ctx) => VNode | null  // 替代 h() 调用
+  decorateVNode?: (vnode, schema, ctx) => VNode                              // VNode 后处理包裹
+}
+```
+
+### 内置插件
+
+| 插件 | Hook | Schema 字段 | 源码 |
+|------|------|------------|------|
+| `lifecyclePlugin` | `wrapComponent` | `onMounted`/`onUnmounted`/`provide`/`inject` 等 | `plugins/lifecycle.ts` |
+| `keepAlivePlugin` | `decorateVNode` | `keepAlive` | `plugins/keep-alive.ts` |
+| `transitionPlugin` | `decorateVNode` | `transition` | `plugins/transition.ts` |
+| `teleportPlugin` | `decorateVNode` | `teleport` | `plugins/teleport.ts` |
+
+### defaultPlugins
+
+```typescript
+export const defaultPlugins: VNodePlugin[] = [
+  lifecyclePlugin,     // wrapComponent: lifecycle + provide/inject
+  keepAlivePlugin,     // decorateVNode: KeepAlive 包裹
+  transitionPlugin,    // decorateVNode: Transition 包裹
+  teleportPlugin,      // decorateVNode: Teleport 包裹（最外层）
+]
+```
+
+### Hook 语义
+
+- **`wrapComponent`**: 拦截 `h()` 调用。第一个返回非 `null` 的插件胜出（短路）。适用于需要 `defineComponent` 包装的场景。
+- **`decorateVNode`**: `h()` 之后的链式装饰。所有插件按顺序执行，每个接收上一个的输出。适用于外层包裹。
+
+### 按需加载
+
+```typescript
+import { lifecyclePlugin, teleportPlugin } from '@variojs/vue'
+
+// 只加载需要的插件（其余被 tree-shake）
+useVario(schema, { plugins: [lifecyclePlugin, teleportPlugin] })
+
+// 禁用所有插件
+useVario(schema, { plugins: [] })
+```
+
+### 自定义插件
+
+```typescript
+const authPlugin: VNodePlugin = {
+  name: 'auth',
+  decorateVNode(vnode, schema, ctx) {
+    const role = (schema.props as any)?.['data-require-role']
+    if (!role || ctx._get?.('userRole') === role) return vnode
+    return h(Comment, `auth: requires ${role}`)
+  }
+}
+useVario(schema, { plugins: [...defaultPlugins, authPlugin] })
+```
+
+---
+
 ## VNode Wrapping Order
 
-在 `VueRenderer.createVNode()` 18步管线中，各 Vue 特性的包裹顺序（从内到外）：
+在 `VueRenderer.createVNode()` 14 步管线中，Vue 特性通过插件 hook 处理：
 
 ```
-Component (h() 调用)
+步骤 12 — wrapComponent 插件（lifecyclePlugin）或默认 h() 调用
   → attachRef (ref 附加)
     → withDirectives (指令)
-      → KeepAlive (缓存)
-        → Transition (过渡动画)
-          → Teleport (传送，最外层)
+步骤 13 — decorateVNode 插件链：
+      → keepAlivePlugin (缓存)
+        → transitionPlugin (过渡动画)
+          → teleportPlugin (传送，最外层)
 ```
 
 这意味着：
+- lifecyclePlugin 通过 `wrapComponent` 在 h() 阶段接管，用 `defineComponent` 包装
+- keepAlivePlugin/transitionPlugin/teleportPlugin 通过 `decorateVNode` 按注册顺序链式包裹
 - Teleport 在最外层，传送的是包含了所有特性的完整 VNode
-- Transition 包裹在 KeepAlive 外面
-- 指令直接附加在组件 VNode 上
-- Ref 在指令之前附加
-
-注意：Lifecycle 包裹（`defineComponent`）发生在 `h()` 调用阶段作为替代方案，不在后续包裹链中。
+- 指令直接附加在组件 VNode 上，Ref 在指令之前附加
+- 自定义插件可在任一阶段插入，遵循相同的 hook 语义

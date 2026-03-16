@@ -1,6 +1,6 @@
 {
   "name": "@variojs/schema",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Vario Schema DSL - Schema definition, validation, normalization, and transformation",
   "type": "module",
   "main": "./dist/index.js",
@@ -30,6 +30,7 @@
   "publishConfig": {
     "access": "public"
   },
+  "sideEffects": false,
   "dependencies": {
     "@variojs/types": "workspace:*",
     "@variojs/core": "workspace:*"

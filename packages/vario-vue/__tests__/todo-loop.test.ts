@@ -9,6 +9,7 @@ import { VueRenderer } from '../src/renderer'
 import type { Schema } from '@variojs/schema'
 import { createRuntimeContext } from '@variojs/core'
 import type { RuntimeContext } from '@variojs/core'
+import { loopItemsMap } from '../src/features/loop-items-map'
 
 describe('TodoList 循环渲染完整测试', () => {
   let renderer: VueRenderer
@@ -106,7 +107,7 @@ describe('TodoList 循环渲染完整测试', () => {
         type: 'ElCheckbox',
         model: 'todo.done'
       } as any
-      ;(schema as any).__loopItems = 'todos'
+      loopItemsMap.set(schema, 'todos')
 
       const modelPath = (renderer as any).pathResolver.resolveModelPath('todo.done', schema, loopCtx)
       expect(modelPath).toBe('todos.0.done')

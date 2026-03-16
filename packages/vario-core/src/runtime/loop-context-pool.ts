@@ -16,7 +16,7 @@ class LoopContextPool {
   private pool: Array<Partial<RuntimeContext>> = []
   private maxSize: number
 
-  constructor(maxSize: number = 10) {
+  constructor(maxSize: number = 100) {
     this.maxSize = maxSize
   }
 

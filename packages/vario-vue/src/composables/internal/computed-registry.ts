@@ -1,4 +1,4 @@
-import { computed, watch, type ComputedRef } from 'vue'
+import { computed, watch, isRef, type ComputedRef } from 'vue'
 import type { RuntimeContext } from '@variojs/types'
 import { isDeepEqual } from './composable-helpers.js'
 
@@ -20,7 +20,7 @@ export function registerComputed<TState extends Record<string, unknown>>(
     let cVal: ComputedRef<any>
 
     // 支持 Composition 风格（直接传 ComputedRef）
-    if (def && typeof def === 'object' && 'value' in def && 'effect' in def) {
+    if (isRef(def)) {
       cVal = def as ComputedRef<any>
     } else {
       // Options 风格：传入 (state) => value

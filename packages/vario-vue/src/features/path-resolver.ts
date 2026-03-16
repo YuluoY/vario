@@ -7,6 +7,7 @@
 import type { RuntimeContext, PathSegment, ModelModifiers } from '@variojs/types'
 import type { SchemaNode } from '@variojs/schema'
 import { parsePath } from '@variojs/core'
+import { loopItemsMap } from './loop-items-map.js'
 
 /**
  * Model 路径解析器
@@ -104,7 +105,7 @@ export class ModelPathResolver {
       // 检查是否是循环变量（$item 或 itemKey）
       if (firstSegment === '$item' || (firstSegment in ctx && ctx[firstSegment] === ctx.$item)) {
         // 获取循环的 items 路径
-        const loopItems = (schema as any).__loopItems
+        const loopItems = loopItemsMap.get(schema)
         if (loopItems) {
           const itemsPath = this.extractModelPath(loopItems)
           const itemsSegments = parsePath(itemsPath)
@@ -188,7 +189,7 @@ export class ModelPathResolver {
     if (ctx.$index !== undefined && typeof firstSegment === 'string') {
       // 检查是否是循环变量
       if (firstSegment === '$item' || (firstSegment in ctx && ctx[firstSegment] === ctx.$item)) {
-        const loopItems = (schema as any).__loopItems
+        const loopItems = loopItemsMap.get(schema)
         if (loopItems) {
           const itemsPath = this.extractModelPath(loopItems)
           const itemsSegments = parsePath(itemsPath)

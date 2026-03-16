@@ -17,7 +17,9 @@ export type CompiledExpression = (ctx: RuntimeContext) => unknown
 
 /**
  * 编译缓存（全局，表达式字符串 → 编译函数）
+ * 带容量上限，防止 SSR/长运行场景无限增长
  */
+const COMPILED_CACHE_MAX = 2000
 const compiledCache = new Map<string, CompiledExpression | null>()
 
 /**
@@ -162,6 +164,9 @@ export function getCompiledExpression(
   
   // 尝试编译
   const compiled = compileSimpleExpression(ast)
+  if (compiledCache.size >= COMPILED_CACHE_MAX) {
+    compiledCache.clear()
+  }
   compiledCache.set(expr, compiled)
   
   return compiled

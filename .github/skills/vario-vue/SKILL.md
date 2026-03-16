@@ -4,13 +4,14 @@ description: >-
   Expert knowledge for developing with @variojs/vue — the Vue 3 rendering layer of the Vario Schema-First UI system.
   Covers useVario composable, Schema→VNode rendering, model binding, event handling, directives, expressions,
   control flow (cond/show/loop), Vue features (refs, lifecycle, provide/inject, teleport, transition, keep-alive),
+  VNode plugin system (VNodePlugin interface, wrapComponent/decorateVNode hooks, built-in & custom plugins),
   performance optimization (Scope-Weight Hybrid auto-adaptive: path-memo, subtree componentization, loop componentization),
   schema query API,
   computed/methods registration, error boundaries, node context, and TypeScript type patterns.
   Use this skill whenever the user is working with vario-vue, useVario, schema rendering, writing Vario Schema
   for Vue, configuring renderer options, debugging rendering issues, building forms or dynamic UI with JSON Schema
   in Vue, or asking about any @variojs/vue API. Also trigger when user mentions Vario + Vue, schema-driven rendering,
-  Action VM events, model path binding, or VNode creation from schema.
+  Action VM events, model path binding, VNode creation from schema, VNode plugins, or custom rendering plugins.
 ---
 
 # Vario-Vue Skill
@@ -25,7 +26,7 @@ Schema (JSON DSL) → @variojs/core (RuntimeContext + ExpressionEngine + Action 
 
 Dependencies: `@variojs/types` (shared types), `@variojs/core` (runtime engine), `vue` (peer).
 
-Source: `packages/vario-vue/src/` — `composable.ts` (useVario), `renderer.ts` (VueRenderer, 18-step pipeline), `adapter.ts` (Vue reactive bridge), `bindings.ts` (model binding), `features/` (18 feature modules), `composables/` (useSchemaQuery + internal helpers).
+Source: `packages/vario-vue/src/` — `composable.ts` (useVario), `renderer.ts` (VueRenderer, 14-step pipeline), `adapter.ts` (Vue reactive bridge), `bindings.ts` (model binding), `features/` (feature modules), `plugins/` (VNodePlugin system: lifecycle, keep-alive, transition, teleport), `composables/` (useSchemaQuery + internal helpers).
 
 ---
 
@@ -52,6 +53,7 @@ useVario(schema, {
   },
   components: { ElButton },                // Component registry (priority over globals)
   directives: { vFocus: myFocusDirective },// Custom directives
+  plugins: [lifecyclePlugin, teleportPlugin], // VNode plugins (default: defaultPlugins with all 4 built-in)
   app: getCurrentInstance()?.appContext.app ?? null,
   modelOptions: { separator: '.', lazy: false },
   modelBindings: { 'MySwitch': { prop: 'checked', event: 'change' } },
@@ -175,7 +177,7 @@ props: { label: '{{ user?.profile?.name }}' }
 
 **Refs:** `{ ref: 'myInput' }` → `refs.myInput.value?.focus()`. Dynamic: `ref: '{{ \`field_${index}\` }}'`.
 
-**Lifecycle:** `onMounted/onUnmounted/onUpdated/onBeforeMount/onBeforeUnmount/onBeforeUpdate/onActivated/onDeactivated` — values are method names. Node auto-wrapped in `defineComponent`.
+**Lifecycle:** `onMounted/onUnmounted/onUpdated/onBeforeMount/onBeforeUnmount/onBeforeUpdate` — values are method names. Node auto-wrapped in `defineComponent` via `lifecyclePlugin`.
 
 **Provide/Inject:** `provide: { theme: 'dark' }` on parent; `inject: ['theme']` or `inject: { t: { from: 'theme', default: 'light' } }` on consumer.
 
@@ -185,7 +187,51 @@ props: { label: '{{ user?.profile?.name }}' }
 
 **Keep-Alive:** `keepAlive: true` or `keepAlive: { include: [...], max: 10 }`.
 
-**Wrapping order** (outer → inner): Teleport → Transition → Keep-alive → Refs → Directives → Component.
+**Wrapping order** (outer → inner): Teleport → Transition → Keep-alive → Refs → Directives → Component. Wrapping is handled by **VNodePlugin** `decorateVNode` hooks (see Plugin System).
+
+---
+
+## Plugin System
+
+Vue-specific features are decoupled from the core rendering pipeline via `VNodePlugin`:
+
+```typescript
+interface VNodePlugin {
+  name: string
+  wrapComponent?: (component, attrs, children, schema, ctx) => VNode | null  // Replace h() call; null = skip
+  decorateVNode?: (vnode, schema, ctx) => VNode                              // Post-creation wrapping
+}
+```
+
+**Built-in plugins:** `lifecyclePlugin` (lifecycle hooks + provide/inject), `keepAlivePlugin`, `transitionPlugin`, `teleportPlugin`.
+
+**`defaultPlugins`**: all 4 built-in plugins (used when `plugins` option is omitted).
+
+```typescript
+import { lifecyclePlugin, teleportPlugin, defaultPlugins } from '@variojs/vue'
+
+// Per-need loading (tree-shakeable):
+useVario(schema, { plugins: [lifecyclePlugin, teleportPlugin] })
+
+// Disable all plugins:
+useVario(schema, { plugins: [] })
+
+// Custom plugin:
+const logPlugin: VNodePlugin = {
+  name: 'log',
+  decorateVNode(vnode, schema) {
+    console.log(`render: ${schema.type}`)
+    return vnode
+  }
+}
+useVario(schema, { plugins: [...defaultPlugins, logPlugin] })
+```
+
+**Hook semantics:**
+- `wrapComponent`: first non-null return wins (short-circuit); used when component creation must change (e.g. defineComponent wrapping)
+- `decorateVNode`: all plugins chained in order; used for outer wrapping (KeepAlive → Transition → Teleport)
+
+**Ordering:** `wrapComponent` plugins first, `decorateVNode` plugins by wrapping layer (inner → outer).
 
 ---
 
@@ -227,6 +273,12 @@ All optimizations are **zero-config** via the **Scope-Weight Hybrid** strategy:
 
 `COMPONENT_OVERHEAD = 5` is the cost threshold. `computeWeight()` calculates subtree weight (cached in WeakMap). `isScopeBoundary()` checks model/component/lifecycle/provide.
 
+**Benchmark highlights** (2026-03-15):
+- path-memo: avg **11.43x** speedup (up to 19.42x on static subtree re-renders)
+- Loop componentization: avg **1.41x** speedup
+- Combined (500 loop): **7.99x** speedup
+- Plugin refactor: zero perf regression (non-plugin nodes skip unnecessary feature checks)
+
 **No `rendererOptions` needed** — all deprecated fields (`usePathMemo`, `loopItemAsComponent`, `subtreeComponent`, `schemaFragment`) have been removed.
 
 **`directives`** is now a top-level option in `UseVarioOptions` (not nested in `rendererOptions`).
@@ -264,7 +316,8 @@ const { state } = useVario<FormState>(schema, { state: { name: '', age: 0 } })
 - Expressions sandboxed — no arbitrary code execution
 - State access is flat: `ctx._set('count', 1)` not `ctx._set('models.count', 1)`
 - System API prefix: `_get/_set/$emit/$methods/$self/$parent`
-- Tests: `packages/vario-vue/__tests__/`, Vitest, `pnpm --filter @variojs/vue test`
+- Tests: `packages/vario-vue/__tests__/` (433 unit tests), `tests/integration/` (42 integration tests across 8 files), Vitest
+- Integration tests cover: expression sandbox, error boundaries, schema query, control flow, plugin system
 
 ---
 
@@ -276,8 +329,8 @@ The `references/` directory contains detailed deep-dive documents. Read them whe
 |------|-------------|
 | [model-binding.md](references/model-binding.md) | Path stack mechanics, 7 path formats, auto-detection chain, named models, modifier internals, default values, loop context binding |
 | [events-actions.md](references/events-actions.md) | 5 event syntax formats, detection logic, Action VM integration, MethodContext full API, modifier behavior, WeakMap caching, preprocessActionsParams |
-| [vue-features.md](references/vue-features.md) | Refs registry internals, lifecycle wrapper, provide/inject expression evaluation, teleport/transition/keep-alive, directives normalization, VNode wrapping order |
+| [vue-features.md](references/vue-features.md) | Refs registry internals, lifecycle wrapper, provide/inject expression evaluation, teleport/transition/keep-alive, directives normalization, VNode wrapping order, **VNodePlugin architecture** |
 | [control-flow.md](references/control-flow.md) | cond/show implementation details, loop handler full flow, createLoopContext, markLoopSchema, key priority, Fragment wrapping, expression evaluation, text interpolation regex, slot detection and resolution |
-| [performance.md](references/performance.md) | PathMemoCache internals, canMemo conditions, Plans B/C/D implementation details, shouldComponentize criteria, SchemaStore reactive map, recommended plan combinations |
+| [performance.md](references/performance.md) | PathMemoCache internals (MAX_SIZE=5000), canMemo conditions, subtree detection WeakMap caching, shouldComponentize criteria, SchemaStore (internal), cache size limits, sideEffects:false |
 | [schema-query-context.md](references/schema-query-context.md) | SchemaQueryApi, NodeWrapper, SchemaAnalyzer lazy analysis, NodeContext interface, ctx variables ($self/$parent/$siblings/$children), Proxy+WeakMap chain |
 | [patterns.md](references/patterns.md) | Complete code recipes: form, data table, loop cards, scoped slots, computed chains, conditional UI, event patterns, dialog/modal, pagination — with Element Plus examples |

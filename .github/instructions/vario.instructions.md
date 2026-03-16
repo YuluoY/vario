@@ -23,8 +23,8 @@ Schema (JSON DSL)
 | `@variojs/types` | 跨包共享类型（无业务逻辑，消除循环依赖） |
 | `@variojs/core` | Action VM (`execute`)、表达式引擎、`createRuntimeContext`、path 工具 |
 | `@variojs/schema` | `defineSchema`、Schema 验证/规范化 |
-| `@variojs/vue` | `useVario` 组合式 API、Vue 3 渲染器 |
-| `@variojs/cli` | 开发服务器与代码生成工具（部分命令仍在完善） |
+| `@variojs/vue` | `useVario` 组合式 API、Vue 3 渲染器、VNode 插件系统 |
+| `@variojs/cli` | 开发服务器（文件监听 + 自动验证 + 代码生成）、Schema 验证、类型生成工具 |
 
 **构建顺序约束**：`types → core/schema（JS 先行，DTS 第二轮）→ vue → cli`。构建脚本 [`scripts/build.mjs`](../scripts/build.mjs) 自动处理两轮构建（第一轮只出 JS，第二轮才生成 DTS）。
 
@@ -85,6 +85,7 @@ const view = defineSchema({
 - 单包测试在 `packages/*/src/__tests__/` 或 `packages/*/__tests__/` 下
 - 集成测试在 `tests/integration/` 下，使用独立配置 `vitest.config.integration.ts`
 - 环境为 `node`（非浏览器）
+- 当前测试规模：690 单元测试（core 216 + schema 35 + vue 433 + cli 6）+ 42 集成测试（8 个文件）
 
 ## 关键文件参考
 
@@ -92,4 +93,5 @@ const view = defineSchema({
 - `packages/vario-core/src/vm/` — Action VM 实现
 - `packages/vario-core/src/expression/README.md` — 表达式引擎设计文档
 - `packages/vario-vue/src/` — Vue 3 渲染器与 `useVario`
+- `packages/vario-vue/src/plugins/` — VNode 插件系统（lifecycle/keep-alive/transition/teleport）
 - `play/src/` — 可运行示例（演练场）

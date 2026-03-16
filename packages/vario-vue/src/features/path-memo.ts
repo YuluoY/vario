@@ -10,6 +10,12 @@
 import type { SchemaNode } from '@variojs/schema'
 import type { VNode } from 'vue'
 
+// ── subtree 检测结果缓存（Schema 节点是引用稳定的，WeakMap 不阻 GC） ──
+const _exprCache = new WeakMap<SchemaNode, boolean>()
+const _loopCache = new WeakMap<SchemaNode, boolean>()
+const _modelCache = new WeakMap<SchemaNode, boolean>()
+const _schemaIdCache = new WeakMap<SchemaNode, string>()
+
 /**
  * 检查字符串是否包含表达式引用（{{ }} 或 ${} 格式）
  */
@@ -60,22 +66,29 @@ function hasExpressionBinding(schema: SchemaNode): boolean {
 }
 
 /**
- * 是否包含表达式引用的子节点（含自身），含则不应缓存
- * 否则 state 变化后缓存返回旧 VNode，导致 props/children 中的表达式无法更新
+ * 创建带 WeakMap 缓存的子树检测器
+ *
+ * 三个 `hasXxxInSubtree` 结构完全相同——只差「当前节点是否命中」的谓词，
+ * 抽成高阶函数消除重复。
  */
-export function hasExpressionInSubtree(schema: SchemaNode): boolean {
-  if (hasExpressionBinding(schema)) return true
-  const children = schema.children
-  if (!Array.isArray(children)) return false
-  return (children as SchemaNode[]).some((c: SchemaNode) => hasExpressionInSubtree(c))
-}
-
-/** 是否包含 loop 子节点（含自身），含则不应缓存 */
-export function hasLoopInSubtree(schema: SchemaNode): boolean {
-  if (schema.loop) return true
-  const children = schema.children
-  if (!Array.isArray(children)) return false
-  return (children as SchemaNode[]).some((c: SchemaNode) => hasLoopInSubtree(c))
+function createSubtreeChecker(
+  cache: WeakMap<SchemaNode, boolean>,
+  predicate: (schema: SchemaNode) => boolean
+): (schema: SchemaNode) => boolean {
+  const check = (schema: SchemaNode): boolean => {
+    const cached = cache.get(schema)
+    if (cached !== undefined) return cached
+    let result = predicate(schema)
+    if (!result) {
+      const children = schema.children
+      if (Array.isArray(children)) {
+        result = (children as SchemaNode[]).some((c: SchemaNode) => check(c))
+      }
+    }
+    cache.set(schema, result)
+    return result
+  }
+  return check
 }
 
 /** 当前节点是否有 model 绑定（会生成 value/onUpdate 等，依赖 state） */
@@ -93,16 +106,19 @@ function hasModelBinding(schema: SchemaNode): boolean {
   return false
 }
 
-/** 是否包含 model 绑定的子节点（含自身），含则不应缓存，否则缓存会返回旧 value 导致输入框等双向绑定失效 */
-export function hasModelInSubtree(schema: SchemaNode): boolean {
-  if (hasModelBinding(schema)) return true
-  const children = schema.children
-  if (!Array.isArray(children)) return false
-  return (children as SchemaNode[]).some((c: SchemaNode) => hasModelInSubtree(c))
-}
+/** 是否包含表达式引用的子节点（含自身），含则不应缓存 */
+export const hasExpressionInSubtree = createSubtreeChecker(_exprCache, hasExpressionBinding)
 
-/** 从 schema 生成稳定标识（不包含求值结果） */
+/** 是否包含 loop 子节点（含自身），含则不应缓存 */
+export const hasLoopInSubtree = createSubtreeChecker(_loopCache, (s) => !!s.loop)
+
+/** 是否包含 model 绑定的子节点（含自身），含则不应缓存 */
+export const hasModelInSubtree = createSubtreeChecker(_modelCache, hasModelBinding)
+
+/** 从 schema 生成稳定标识（不包含求值结果），WeakMap 缓存避免重复拼接 */
 export function buildSchemaId(schema: SchemaNode): string {
+  const cached = _schemaIdCache.get(schema)
+  if (cached !== undefined) return cached
   const type = schema.type ?? ''
   const cond = schema.cond ?? ''
   const show = schema.show ?? ''
@@ -112,7 +128,9 @@ export function buildSchemaId(schema: SchemaNode): string {
     : schema.children != null
       ? 1
       : 0
-  return `${type}|${cond}|${show}|${loop}|${childrenLen}`
+  const id = `${type}|${cond}|${show}|${loop}|${childrenLen}`
+  _schemaIdCache.set(schema, id)
+  return id
 }
 
 /** 依赖键：cond/show 的求值结果，用于缓存失效 */
@@ -124,19 +142,24 @@ export function getCacheKey(path: string, schemaId: string, depsKey: string): st
   return `${path}|${schemaId}|${depsKey}`
 }
 
-/** 按 path 的子树 VNode 缓存 */
+/** 按 path 的子树 VNode 缓存（带容量上限，防止无限增长） */
 export class PathMemoCache {
   private cache = new Map<string, VNode>()
+  private static MAX_SIZE = 5000
 
   get(key: string): VNode | undefined {
     return this.cache.get(key)
   }
 
   set(key: string, vnode: VNode): void {
+    // 超出上限时清空重建（简单策略，避免 LRU 开销）
+    if (this.cache.size >= PathMemoCache.MAX_SIZE) {
+      this.cache.clear()
+    }
     this.cache.set(key, vnode)
   }
 
-  /** 可选：清空缓存（如 schema 结构大变时） */
+  /** 清空缓存（如 schema 结构大变时） */
   clear(): void {
     this.cache.clear()
   }

@@ -11,12 +11,14 @@ import type { ModelPathResolver } from './path-resolver.js'
 import type { EventHandler } from './event-handler.js'
 import type { NodeContext } from './node-context.js'
 import type { ParentMap } from './node-context.js'
+import { parseStyleString } from './style-utils.js'
 
 /**
  * 属性构建器
  */
 export class AttrsBuilder {
   private staticAttrsCache = new WeakMap<SchemaNode, Record<string, any>>()
+  private staticPropsCache = new WeakMap<SchemaNode, boolean>()
 
   constructor(
     private getState: (() => any) | undefined,
@@ -38,26 +40,77 @@ export class AttrsBuilder {
   }
 
   /**
-   * 检查props是否完全静态（不包含表达式）
+   * 创建 model 绑定（主模型 / 具名模型共用）
+   *
+   * @param model      原始 schema model 值
+   * @param schema     当前 schema 节点（供 resolveModelPath 使用）
+   * @param ctx        运行时上下文
+   * @param component  已解析的组件
+   * @param modelPathStack  路径栈（扁平路径拼接用）
+   * @param modelName  具名 model 名称，undefined 表示默认 model
+   */
+  private resolveAndCreateBinding(
+    model: unknown,
+    schema: SchemaNode,
+    ctx: RuntimeContext,
+    component: any,
+    modelPathStack: PathSegment[],
+    modelName?: string
+  ): Record<string, any> | null {
+    const pathStr = this.pathResolver.getModelPath(model)
+    if (!pathStr) return null
+
+    // 默认 model 需要额外的 scope 检查
+    if (modelName === undefined) {
+      const scopeOnly =
+        typeof model === 'object' && model !== null && (model as { scope?: boolean }).scope === true
+      if (scopeOnly) return null
+    }
+
+    const modelPath = this.pathResolver.resolveModelPath(pathStr, schema, ctx, modelPathStack)
+    const schemaDefault = this.pathResolver.getModelDefault(model)
+    const schemaLazy = this.resolveModelLazy(model)
+    const schemaModifiers = this.pathResolver.getModelModifiers(model)
+    return createModelBinding(
+      schema.type,
+      modelPath,
+      ctx,
+      component,
+      this.getState,
+      modelName,
+      schemaDefault,
+      schemaLazy,
+      schemaModifiers
+    )
+  }
+
+  /**
+   * 检查props是否完全静态（不包含表达式），结果缓存到 WeakMap
    */
   hasStaticProps(schema: SchemaNode): boolean {
-    if (!schema.props) return true
+    const cached = this.staticPropsCache.get(schema)
+    if (cached !== undefined) return cached
     
-    for (const value of Object.values(schema.props)) {
-      if (typeof value === 'string' && (value.includes('{{') || value.includes('${'))) {
-        return false
-      }
-      if (typeof value === 'object' && value !== null) {
-        // 递归检查嵌套对象
-        const nested = value as Record<string, unknown>
-        for (const nestedValue of Object.values(nested)) {
-          if (typeof nestedValue === 'string' && (nestedValue.includes('{{') || nestedValue.includes('${'))) {
-            return false
+    let result = true
+    if (schema.props) {
+      outer: for (const value of Object.values(schema.props)) {
+        if (typeof value === 'string' && (value.includes('{{') || value.includes('${'))) {
+          result = false
+          break
+        }
+        if (typeof value === 'object' && value !== null) {
+          const nested = value as Record<string, unknown>
+          for (const nestedValue of Object.values(nested)) {
+            if (typeof nestedValue === 'string' && (nestedValue.includes('{{') || nestedValue.includes('${'))) {
+              result = false
+              break outer
+            }
           }
         }
       }
     }
-    return true
+    this.staticPropsCache.set(schema, result)
+    return result
   }
 
   /**
@@ -74,63 +127,17 @@ export class AttrsBuilder {
   ): Record<string, any> {
     const attrs = { ...staticAttrs }
 
-    // 有 path 且非仅作用域（scope: true）时创建绑定；对象形式可带 default
-    const modelPathStr = this.pathResolver.getModelPath(schema.model)
-    const scopeOnly =
-      typeof schema.model === 'object' && schema.model !== null && (schema.model as { scope?: boolean }).scope === true
-    const shouldBindModel = !!modelPathStr && !scopeOnly
-    if (shouldBindModel && modelPathStr) {
-      const modelPath = this.pathResolver.resolveModelPath(
-        modelPathStr,
-        schema,
-        ctx,
-        modelPathStack
-      )
-      const schemaDefault = this.pathResolver.getModelDefault(schema.model)
-      const schemaLazy = this.resolveModelLazy(schema.model)
-      const schemaModifiers = this.pathResolver.getModelModifiers(schema.model)
-      const binding = createModelBinding(
-        schema.type,
-        modelPath,
-        ctx,
-        component,
-        this.getState,
-        undefined,
-        schemaDefault,
-        schemaLazy,
-        schemaModifiers
-      )
-      Object.assign(attrs, binding)
-    }
+    // 默认 model 绑定
+    const defaultBinding = this.resolveAndCreateBinding(schema.model, schema, ctx, component, modelPathStack)
+    if (defaultBinding) Object.assign(attrs, defaultBinding)
     
-    // 添加具名 model 绑定（支持 path 字符串或 { path, default?, lazy?, modifiers? }）
+    // 具名 model 绑定（model:xxx）
     for (const key in schema) {
       if (key.startsWith('model:')) {
-        const modelName = key.slice(6)
-        const namedModel = (schema as any)[key]
-        const pathStr = this.pathResolver.getModelPath(namedModel)
-        if (!pathStr) continue
-        const modelPath = this.pathResolver.resolveModelPath(
-          pathStr,
-          schema,
-          ctx,
-          modelPathStack
+        const binding = this.resolveAndCreateBinding(
+          (schema as any)[key], schema, ctx, component, modelPathStack, key.slice(6)
         )
-        const schemaDefault = this.pathResolver.getModelDefault(namedModel)
-        const schemaLazy = this.resolveModelLazy(namedModel)
-        const schemaModifiers = this.pathResolver.getModelModifiers(namedModel)
-        const binding = createModelBinding(
-          schema.type,
-          modelPath,
-          ctx,
-          component,
-          this.getState,
-          modelName,
-          schemaDefault,
-          schemaLazy,
-          schemaModifiers
-        )
-        Object.assign(attrs, binding)
+        if (binding) Object.assign(attrs, binding)
       }
     }
     
@@ -189,65 +196,19 @@ export class AttrsBuilder {
       attrsParts.push(evalProps(schema.props, ctx))
     }
     
-    // 2. 处理双向绑定（支持多 model）。有 path 且非仅作用域时创建绑定，支持 model.default
-    const modelPathStr = this.pathResolver.getModelPath(schema.model)
-    const scopeOnly =
-      typeof schema.model === 'object' && schema.model !== null && (schema.model as { scope?: boolean }).scope === true
-    const shouldBindModel = !!modelPathStr && !scopeOnly
-    if (shouldBindModel && modelPathStr) {
-      const modelPath = this.pathResolver.resolveModelPath(
-        modelPathStr,
-        schema,
-        ctx,
-        modelPathStack
-      )
-      const schemaDefault = this.pathResolver.getModelDefault(schema.model)
-      const schemaLazy = this.resolveModelLazy(schema.model)
-      const schemaModifiers = this.pathResolver.getModelModifiers(schema.model)
-      const binding = createModelBinding(
-        schema.type,
-        modelPath,
-        ctx,
-        component,
-        this.getState,
-        undefined,
-        schemaDefault,
-        schemaLazy,
-        schemaModifiers
-      )
-      attrsParts.push(binding)
-    }
+    // 2. 处理双向绑定（默认 model）
+    const defaultBinding = this.resolveAndCreateBinding(schema.model, schema, ctx, component, modelPathStack)
+    if (defaultBinding) attrsParts.push(defaultBinding)
 
     // 处理具名 model（model:xxx，支持 path 字符串或 { path, default?, lazy? }）
     // 具名 model 使用 scopePathStack（如果当前节点是 scope）或 modelPathStack 来解析路径
     const namedModelPathStack = scopePathStack ?? modelPathStack
     for (const key in schema) {
       if (key.startsWith('model:')) {
-        const modelName = key.slice(6)
-        const namedModel = (schema as any)[key]
-        const pathStr = this.pathResolver.getModelPath(namedModel)
-        if (!pathStr) continue
-        const modelPath = this.pathResolver.resolveModelPath(
-          pathStr,
-          schema,
-          ctx,
-          namedModelPathStack
+        const binding = this.resolveAndCreateBinding(
+          (schema as any)[key], schema, ctx, component, namedModelPathStack, key.slice(6)
         )
-        const schemaDefault = this.pathResolver.getModelDefault(namedModel)
-        const schemaLazy = this.resolveModelLazy(namedModel)
-        const schemaModifiers = this.pathResolver.getModelModifiers(namedModel)
-        const binding = createModelBinding(
-          schema.type,
-          modelPath,
-          ctx,
-          component,
-          this.getState,
-          modelName,
-          schemaDefault,
-          schemaLazy,
-          schemaModifiers
-        )
-        attrsParts.push(binding)
+        if (binding) attrsParts.push(binding)
       }
     }
     
@@ -263,15 +224,7 @@ export class AttrsBuilder {
     // 4. 统一处理 style 格式（确保始终是对象）
     if (attrs.style) {
       if (typeof attrs.style === 'string') {
-        const styleObj: Record<string, string> = {}
-        attrs.style.split(';').forEach((rule: string) => {
-          const [key, value] = rule.split(':').map((s: string) => s.trim())
-          if (key && value) {
-            const camelKey = key.replace(/-([a-z])/g, (_: string, letter: string) => letter.toUpperCase())
-            styleObj[camelKey] = value
-          }
-        })
-        attrs.style = styleObj
+        attrs.style = parseStyleString(attrs.style)
       } else if (Array.isArray(attrs.style)) {
         attrs.style = {}
       }

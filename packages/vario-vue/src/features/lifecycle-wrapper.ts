@@ -10,6 +10,22 @@ import type { VueSchemaNode } from '../types.js'
 import { setupProvideInject } from './provide-inject.js'
 
 /**
+ * Schema 属性名 → Vue lifecycle 注册函数的映射表
+ * 数据驱动：新增钩子只需加一行，无需复制粘贴
+ */
+const LIFECYCLE_HOOKS: Array<{
+  key: keyof VueSchemaNode
+  register: (fn: () => void) => void
+}> = [
+  { key: 'onBeforeMount', register: onBeforeMount },
+  { key: 'onMounted', register: onMounted },
+  { key: 'onBeforeUpdate', register: onBeforeUpdate },
+  { key: 'onUpdated', register: onUpdated },
+  { key: 'onBeforeUnmount', register: onBeforeUnmount },
+  { key: 'onUnmounted', register: onUnmounted },
+]
+
+/**
  * 生命周期包装器
  */
 export class LifecycleWrapper {
@@ -27,7 +43,6 @@ export class LifecycleWrapper {
     return h(defineComponent({
       name: 'VarioLifecycleWrapper',
       setup() {
-        // 从 ctx.$methods 中查找生命周期钩子方法
         const methods = ctx.$methods || {}
         
         // 处理 provide/inject（在 setup 中调用）
@@ -38,73 +53,13 @@ export class LifecycleWrapper {
           ? { ...attrs, ...injectedValues }
           : attrs
         
-        // 注册生命周期钩子（按 Vue 3 生命周期顺序）
-        // 从 ctx.$methods 中查找对应的方法并注册为生命周期钩子
-        if (schema.onBeforeMount) {
-          const methodName = schema.onBeforeMount
+        // 数据驱动注册生命周期钩子
+        for (const { key, register } of LIFECYCLE_HOOKS) {
+          const methodName = schema[key] as string | undefined
+          if (!methodName) continue
           const hook = methods[methodName]
           if (hook && typeof hook === 'function') {
-            onBeforeMount(() => {
-              Promise.resolve(hook(ctx, undefined)).catch((err: unknown) => {
-                console.warn(`[Vario] Lifecycle hook "${methodName}" error:`, err)
-              })
-            })
-          }
-        }
-        
-        if (schema.onMounted) {
-          const methodName = schema.onMounted
-          const hook = methods[methodName]
-          if (hook && typeof hook === 'function') {
-            onMounted(() => {
-              Promise.resolve(hook(ctx, undefined)).catch((err: unknown) => {
-                console.warn(`[Vario] Lifecycle hook "${methodName}" error:`, err)
-              })
-            })
-          }
-        }
-        
-        if (schema.onBeforeUpdate) {
-          const methodName = schema.onBeforeUpdate
-          const hook = methods[methodName]
-          if (hook && typeof hook === 'function') {
-            onBeforeUpdate(() => {
-              Promise.resolve(hook(ctx, undefined)).catch((err: unknown) => {
-                console.warn(`[Vario] Lifecycle hook "${methodName}" error:`, err)
-              })
-            })
-          }
-        }
-        
-        if (schema.onUpdated) {
-          const methodName = schema.onUpdated
-          const hook = methods[methodName]
-          if (hook && typeof hook === 'function') {
-            onUpdated(() => {
-              Promise.resolve(hook(ctx, undefined)).catch((err: unknown) => {
-                console.warn(`[Vario] Lifecycle hook "${methodName}" error:`, err)
-              })
-            })
-          }
-        }
-        
-        if (schema.onBeforeUnmount) {
-          const methodName = schema.onBeforeUnmount
-          const hook = methods[methodName]
-          if (hook && typeof hook === 'function') {
-            onBeforeUnmount(() => {
-              Promise.resolve(hook(ctx, undefined)).catch((err: unknown) => {
-                console.warn(`[Vario] Lifecycle hook "${methodName}" error:`, err)
-              })
-            })
-          }
-        }
-        
-        if (schema.onUnmounted) {
-          const methodName = schema.onUnmounted
-          const hook = methods[methodName]
-          if (hook && typeof hook === 'function') {
-            onUnmounted(() => {
+            register(() => {
               Promise.resolve(hook(ctx, undefined)).catch((err: unknown) => {
                 console.warn(`[Vario] Lifecycle hook "${methodName}" error:`, err)
               })

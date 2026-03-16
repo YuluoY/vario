@@ -18,6 +18,8 @@ type PathCache = {
   parsed: Map<string, PathSegment[]>
 }
 
+const PATH_CACHE_MAX = 2000
+
 const pathCache: PathCache = {
   parsed: new Map()
 }
@@ -133,6 +135,9 @@ export function parsePathCached(path: string): PathSegment[] {
   }
 
   const segments = parsePath(path)
+  if (pathCache.parsed.size >= PATH_CACHE_MAX) {
+    pathCache.parsed.clear()
+  }
   pathCache.parsed.set(path, segments)
   return segments
 }

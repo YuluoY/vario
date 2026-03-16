@@ -1,4 +1,4 @@
-import { computed, type ComputedRef } from 'vue'
+import { computed, isRef, type ComputedRef } from 'vue'
 import type { Schema, SchemaNode } from '@variojs/schema'
 import { registerModelConfig } from '../../bindings.js'
 
@@ -16,14 +16,14 @@ export function resolveSchema<TState extends Record<string, unknown>>(
   if (typeof schema === 'function') {
     return computed(() => {
       const result = (schema as () => Schema<TState>)()
-      if (result && typeof result === 'object' && 'value' in result && 'effect' in result) {
+      if (isRef(result)) {
         return (result as unknown as ComputedRef<Schema<TState>>).value
       }
       return result
     })
   }
 
-  if (schema && typeof schema === 'object' && 'value' in schema && 'effect' in schema) {
+  if (isRef(schema)) {
     return schema as ComputedRef<Schema<TState>>
   }
 

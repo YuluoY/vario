@@ -474,7 +474,7 @@ interface LoopItemSegment {
 
 ### VarioNodeRenderer
 
-节点渲染器接口（用于自定义渲染器）。
+节点渲染器接口（内部类型，不作为公共 API 导出；`VueRenderer` 实现了此接口）。
 
 ```typescript
 interface VarioNodeRenderer {
@@ -629,8 +629,8 @@ export type {
   PathSegment,
   LoopItemSegment,
   
-  // 工具类型
-  VarioNodeRenderer,
+  // 工具类型（内部，不公开导出）
+  // VarioNodeRenderer,
   NodeContext,
   
   // 类型推导

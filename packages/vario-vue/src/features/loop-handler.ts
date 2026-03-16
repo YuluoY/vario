@@ -14,6 +14,7 @@ import type { ModelPathResolver } from './path-resolver.js'
 import type { ParentMap } from './node-context.js'
 import { LoopItemCell } from './loop-item-cell.js'
 import { computeLoopTemplateWeight, COMPONENT_OVERHEAD, type WeightCache } from './schema-weight.js'
+import { loopItemsMap } from './loop-items-map.js'
 
 export type CreateVNodeFn = (
   schema: SchemaNode,
@@ -189,18 +190,16 @@ export class LoopHandler {
   }
 
   /**
-   * 递归标记 schema 及其所有子节点的 __loopItems
+   * 递归标记 schema 及其所有子节点的循环数据源路径
    * 确保嵌套子节点中的 model 绑定也能正确解析循环变量
    */
   private markLoopSchema(schema: SchemaNode, loopItems: string): void {
-    // 设置当前节点
-    (schema as any).__loopItems = loopItems
+    loopItemsMap.set(schema, loopItems)
     
     // 递归处理 children
     if (schema.children) {
       if (Array.isArray(schema.children)) {
         schema.children.forEach(child => {
-          // 检查是否是 SchemaNode（有 type 属性的对象，但不是数组）
           if (child && typeof child === 'object' && !Array.isArray(child) && 'type' in child) {
             this.markLoopSchema(child as unknown as SchemaNode, loopItems)
           }

@@ -37,9 +37,10 @@ function createMockRenderer(): VarioNodeRenderer {
       if (typeof schema.children === 'string') return schema.children
       return null
     }),
-    createComponentWithLifecycle: vi.fn((component, attrs, children, vueSchema, ctx) => {
-      return h(component, attrs, children)
+    wrapComponent: vi.fn((component, attrs, children, vueSchema, ctx) => {
+      return null
     }),
+    decorateVNode: vi.fn((vnode, vueSchema, ctx) => vnode),
     attachRef: vi.fn((vnode, vueSchema) => vnode),
     getUpdatedModelPathStack: vi.fn((schema, stack, ctx) => stack)
   }

@@ -15,14 +15,13 @@ import {
   computed,
   type VNode,
   type PropType,
-  Transition,
-  KeepAlive
 } from 'vue'
 import type { SchemaNode } from '@variojs/schema'
 import type { RuntimeContext, PathSegment } from '@variojs/core'
 import type { NodeContext, ParentMap } from './node-context.js'
 import type { VueSchemaNode } from '../types.js'
 import { isScopeBoundary, computeWeight, COMPONENT_OVERHEAD, type WeightCache } from './schema-weight.js'
+import { parseStyleString } from './style-utils.js'
 
 /**
  * VarioNode 组件的 Props
@@ -71,11 +70,17 @@ export interface VarioNodeRenderer {
     parentMap?: ParentMap,
     path?: string
   ) => any
-  /** 处理生命周期 */
-  createComponentWithLifecycle?: (
+  /** 尝试通过插件包装组件（lifecycle/provide-inject 等），返回 null 则走默认 h() */
+  wrapComponent?: (
     component: any,
     attrs: Record<string, any>,
     children: any,
+    vueSchema: VueSchemaNode,
+    ctx: RuntimeContext
+  ) => VNode | null
+  /** 通过插件装饰 VNode（keepAlive/transition/teleport 等） */
+  decorateVNode?: (
+    vnode: VNode,
     vueSchema: VueSchemaNode,
     ctx: RuntimeContext
   ) => VNode
@@ -89,14 +94,6 @@ export interface VarioNodeRenderer {
   ) => PathSegment[]
 }
 
-/**
- * @deprecated 保留类型以兼容旧测试，内部已不再使用手动配置
- */
-export interface SubtreeComponentOptions {
-  enabled?: boolean
-  granularity?: 'all' | 'boundary'
-  maxDepth?: number
-}
 
 /**
  * 判断是否应该组件化该节点（方案 C：Scope-Weight Hybrid）
@@ -251,14 +248,7 @@ export const VarioNode = defineComponent({
       if (schema.show && !showValue.value) {
         const currentStyle = finalAttrs.style
         if (typeof currentStyle === 'string') {
-          const styleObj: Record<string, string> = {}
-          currentStyle.split(';').forEach((rule: string) => {
-            const [key, value] = rule.split(':').map((s: string) => s.trim())
-            if (key && value) {
-              styleObj[key] = value
-            }
-          })
-          finalAttrs.style = { ...styleObj, display: 'none' }
+          finalAttrs.style = { ...parseStyleString(currentStyle, false), display: 'none' }
         } else {
           finalAttrs.style = { ...(currentStyle || {}), display: 'none' }
         }
@@ -286,17 +276,13 @@ export const VarioNode = defineComponent({
         }
       }
 
-      // 检查是否需要生命周期包装
+      // 通过插件创建 VNode（lifecycle/provide-inject 等走 wrapComponent）
       const vueSchema = schema as VueSchemaNode
-      const hasLifecycle = vueSchema.onMounted || vueSchema.onUnmounted || vueSchema.onUpdated ||
-                           vueSchema.onBeforeMount || vueSchema.onBeforeUnmount || vueSchema.onBeforeUpdate
-      const hasProvideInject = (vueSchema.provide && Object.keys(vueSchema.provide).length > 0) ||
-                               (vueSchema.inject && (Array.isArray(vueSchema.inject) ? vueSchema.inject.length > 0 : Object.keys(vueSchema.inject).length > 0))
-
       let vnode: VNode
 
-      if ((hasLifecycle || hasProvideInject) && renderer.createComponentWithLifecycle) {
-        vnode = renderer.createComponentWithLifecycle(resolvedComponent, finalAttrs, finalChildren, vueSchema, ctx)
+      const wrapped = renderer.wrapComponent?.(resolvedComponent, finalAttrs, finalChildren, vueSchema, ctx)
+      if (wrapped) {
+        vnode = wrapped
       } else {
         try {
           vnode = h(resolvedComponent, finalAttrs, finalChildren)
@@ -310,18 +296,9 @@ export const VarioNode = defineComponent({
         vnode = renderer.attachRef(vnode, vueSchema)
       }
 
-      // 处理 keep-alive
-      if (vueSchema.keepAlive) {
-        const keepAliveProps = typeof vueSchema.keepAlive === 'object' ? vueSchema.keepAlive : {}
-        vnode = h(KeepAlive, keepAliveProps, () => vnode)
-      }
-
-      // 处理 transition
-      if (vueSchema.transition) {
-        const transitionProps = typeof vueSchema.transition === 'string'
-          ? { name: vueSchema.transition }
-          : { ...vueSchema.transition }
-        vnode = h(Transition, transitionProps as any, () => vnode)
+      // 通过插件装饰 VNode（keepAlive/transition/teleport 等）
+      if (renderer.decorateVNode) {
+        vnode = renderer.decorateVNode(vnode, vueSchema, ctx)
       }
 
       return vnode
