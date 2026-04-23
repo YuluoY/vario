@@ -24,6 +24,20 @@ describe('path-memo', () => {
       expect(buildSchemaId({ type: 'span', show: 'visible' })).toContain('visible')
       expect(buildSchemaId({ type: 'div', children: [{ type: 'span' }, { type: 'p' }] })).toContain('2')
     })
+
+    // 回归：ComputedRef<Schema> 每次重算产生全新节点对象时，新对象不能和旧对象共享 schemaId，
+    // 否则 PathMemoCache 会错误命中旧 VNode，导致 props 动态变化不刷新
+    // （典型案例：右侧配置面板上传图片后 ElImage 的 src 不更新）
+    it('结构相同但对象不同的节点应拥有不同的 schemaId（防止缓存误命中）', () => {
+      const a: SchemaNode = { type: 'div', children: [{ type: 'span' }] }
+      const b: SchemaNode = { type: 'div', children: [{ type: 'span' }] }
+      expect(buildSchemaId(a)).not.toBe(buildSchemaId(b))
+    })
+
+    it('同一节点对象多次调用返回相同 schemaId（保证静态 schema 缓存命中）', () => {
+      const node: SchemaNode = { type: 'div', children: [{ type: 'span' }] }
+      expect(buildSchemaId(node)).toBe(buildSchemaId(node))
+    })
   })
 
   describe('buildDepsKey', () => {

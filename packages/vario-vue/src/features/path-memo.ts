@@ -3,6 +3,11 @@
  *
  * 缓存 key = path + schema 标识 + 依赖值（cond/show 等），
  * 再次渲染时若输入未变则直接返回缓存 VNode，不递归子节点。
+ *
+ * schema 标识由节点身份 uid + 结构字段组成：
+ * - 节点身份 uid：确保 ComputedRef<Schema> 每次重算产生的新节点对象不会误命中旧缓存
+ * - 结构字段：type/cond/show/loop/childrenLen，用于同一节点重渲染时判断结构稳定性
+ *
  * 含 loop 或 model 绑定的节点（及子树）不缓存（依赖 state，缓存会返回旧 VNode 导致双向绑定失效）。
  * 含表达式引用（{{ }} 或 ${}）的节点（及子树）也不缓存，否则 state 变化后无法触发重新渲染。
  */
@@ -15,6 +20,23 @@ const _exprCache = new WeakMap<SchemaNode, boolean>()
 const _loopCache = new WeakMap<SchemaNode, boolean>()
 const _modelCache = new WeakMap<SchemaNode, boolean>()
 const _schemaIdCache = new WeakMap<SchemaNode, string>()
+
+/**
+ * 为每个 SchemaNode 引用分配单调递增的身份 uid
+ *
+ * 背景：path-memo 的缓存键历史上只包含结构字段（type/cond/show/loop/childrenLen），
+ * 当 schema 以 `computed(() => ({...}))` 的形式每次重算产生全新节点对象时，新对象
+ * 与旧缓存在结构上完全相同，会错误命中旧 VNode，导致 props 动态变化不生效
+ * （典型症状：右侧配置面板里上传图片后 ElImage 不刷新）。
+ *
+ * 加入节点身份后：
+ * - 静态 / 工厂 schema：同一对象 → 同一 uid → 缓存行为与之前完全一致（基准不退化）
+ * - ComputedRef 重算：新对象 → 新 uid → 缓存未命中 → 正确重渲染
+ *
+ * WeakMap 以节点引用为键，schema 被 GC 时 uid 自动释放，无内存泄漏。
+ */
+const _schemaUidCache = new WeakMap<SchemaNode, number>()
+let _schemaUidCounter = 0
 
 /**
  * 检查字符串是否包含表达式引用（{{ }} 或 ${} 格式）
@@ -119,6 +141,13 @@ export const hasModelInSubtree = createSubtreeChecker(_modelCache, hasModelBindi
 export function buildSchemaId(schema: SchemaNode): string {
   const cached = _schemaIdCache.get(schema)
   if (cached !== undefined) return cached
+  // 节点身份 uid：让不同节点对象即使结构相同也产生不同缓存键，
+  // 修复 ComputedRef<Schema> 重算时误命中缓存导致的 props 不刷新问题
+  let uid = _schemaUidCache.get(schema)
+  if (uid === undefined) {
+    uid = ++_schemaUidCounter
+    _schemaUidCache.set(schema, uid)
+  }
   const type = schema.type ?? ''
   const cond = schema.cond ?? ''
   const show = schema.show ?? ''
@@ -128,7 +157,7 @@ export function buildSchemaId(schema: SchemaNode): string {
     : schema.children != null
       ? 1
       : 0
-  const id = `${type}|${cond}|${show}|${loop}|${childrenLen}`
+  const id = `#${uid}|${type}|${cond}|${show}|${loop}|${childrenLen}`
   _schemaIdCache.set(schema, id)
   return id
 }

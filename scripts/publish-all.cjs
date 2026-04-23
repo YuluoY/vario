@@ -7,6 +7,18 @@ const inquirer = require('inquirer')
 const _chalk = require('chalk')
 const chalk = _chalk && _chalk.default ? _chalk.default : _chalk
 
+// 从本地 secrets 文件读取 npm token（该文件已加入 .gitignore，不会提交）
+let localNpmToken = process.env.NPM_TOKEN || null
+const secretsFile = path.join(__dirname, '..', '.publish-secrets.cjs')
+if (fs.existsSync(secretsFile)) {
+  try {
+    const secrets = require(secretsFile)
+    if (secrets.npmToken) localNpmToken = secrets.npmToken
+  } catch (e) {
+    // secrets 文件格式错误时忽略，继续用系统 ~/.npmrc 的 token
+  }
+}
+
 const packages = [
   'vario-types',
   'vario-core',
@@ -268,12 +280,31 @@ async function main() {
   // Check npm authentication before publishing
   // 指定 registry，避免代理或其它 registry 干扰；capture 输出以便判断
   console.log(chalk.yellow('\n检查 npm 认证状态...'))
+
+  /**
+   * 若 secrets 文件中有 token，写入临时 .npmrc 并通过 --userconfig 传入，
+   * 确保 npm 正确识别（env var 无法承载带斜杠的 registry 路径 key）。
+   * 发布完成后统一删除临时文件。
+   */
+  const tmpNpmrcPath = localNpmToken
+    ? path.join(require('os').tmpdir(), `.vario-publish-${Date.now()}.npmrc`)
+    : null
+  if (tmpNpmrcPath && localNpmToken) {
+    fs.writeFileSync(tmpNpmrcPath, `//registry.npmjs.org/:_authToken=${localNpmToken}\nregistry=https://registry.npmjs.org/\n`)
+  }
+  /** npm 命令公共额外参数（若有临时 .npmrc 则追加 --userconfig） */
+  const npmUserConfigArg = tmpNpmrcPath ? ` --userconfig="${tmpNpmrcPath}"` : ''
+  const cleanupTmpNpmrc = () => {
+    if (tmpNpmrcPath && fs.existsSync(tmpNpmrcPath)) {
+      try { fs.unlinkSync(tmpNpmrcPath) } catch (e) {}
+    }
+  }
+
   let authOk = false
   try {
-    const out = execSync('npm whoami --registry=https://registry.npmjs.org', {
+    const out = execSync(`npm whoami --registry=https://registry.npmjs.org${npmUserConfigArg}`, {
       encoding: 'utf8',
-      stdio: ['inherit', 'pipe', 'pipe'],
-      env: { ...process.env, npm_config_registry: 'https://registry.npmjs.org' }
+      stdio: ['inherit', 'pipe', 'pipe']
     })
     const user = (out && String(out).trim()) || ''
     if (user && !/^\s*$/.test(user)) {
@@ -496,7 +527,7 @@ async function main() {
         }
       }
       
-      const output = execSync(publishCmd, { 
+      const output = execSync(publishCmd + npmUserConfigArg, { 
         cwd: pkgPath, 
         stdio: 'pipe',
         encoding: 'utf8'
@@ -508,6 +539,7 @@ async function main() {
       console.log(chalk.bgRed.white(`✗ 发布失败: ${pkgName}`))
       process.off('SIGINT', onExit)
       process.off('SIGTERM', onExit)
+      cleanupTmpNpmrc()
       restoreAll()
       
       // Combine stdout and stderr for error detection
@@ -566,7 +598,8 @@ async function main() {
     console.log(chalk.bold(`------------------------------\n`))
   }
 
-  // 发布流程已结束，取消「退出时还原」监听，避免后续 tag 询问时误还原
+  // 发布流程已结束，清理临时 npmrc 并取消「退出时还原」监听
+  cleanupTmpNpmrc()
   process.off('SIGINT', onExit)
   process.off('SIGTERM', onExit)
 }
