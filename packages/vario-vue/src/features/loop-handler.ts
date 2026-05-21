@@ -2,8 +2,7 @@
  * 循环处理模块
  *
  * 负责处理 Schema 中的循环渲染；支持 parentMap / nodeContext 供事件中 $parent 使用。
- * 基于 Scope-Weight Hybrid 策略的列表项组件化：当循环模板权重 > COMPONENT_OVERHEAD 时，
- * 自动将每项渲染为独立 Vue 组件，仅该项 props 变化时 re-render。
+ * 循环项自动组件化：当模板含子节点时，每项渲染为独立 Vue 组件，仅该项 props 变化时 re-render。
  */
 
 import { h, Fragment, type VNode } from 'vue'
@@ -13,7 +12,7 @@ import { createLoopContext, type PathSegment } from '@variojs/core'
 import type { ModelPathResolver } from './path-resolver.js'
 import type { ParentMap } from './node-context.js'
 import { LoopItemCell } from './loop-item-cell.js'
-import { computeLoopTemplateWeight, COMPONENT_OVERHEAD, type WeightCache } from './schema-weight.js'
+import { countDescendants } from './vario-node.js'
 import { loopItemsMap } from './loop-items-map.js'
 
 export type CreateVNodeFn = (
@@ -41,14 +40,13 @@ export class LoopHandler {
     private pathResolver: ModelPathResolver,
     private createVNode: CreateVNodeFn,
     private evaluateExpr: (expr: string, ctx: RuntimeContext) => any,
-    private getRenderNodeForLoopItem?: (parentMap: ParentMap) => RenderNodeForLoopItemFn,
-    private weightCache?: WeightCache
+    private getRenderNodeForLoopItem?: (parentMap: ParentMap) => RenderNodeForLoopItemFn
   ) {}
 
   /**
    * 创建循环渲染的 VNode
    * @param parentMap 节点→父节点映射，循环项父节点为带 loop 的 schema
-   * @param parentPath 父节点 path，供 path-memo 子项 path 使用（如 "0.[1]"）
+   * @param parentPath 父节点 path，供子项 path 使用（如 "0.[1]"）
    */
   createLoopVNode(
     schema: SchemaNode,
@@ -102,10 +100,9 @@ export class LoopHandler {
       )
     }
 
-    // Scope-Weight 循环项组件化：当模板权重 > COMPONENT_OVERHEAD 时自动启用
+    // 循环项组件化：模板后代 >= COMPONENT_OVERHEAD(5) 时启用
     const useLoopItemComponent =
-      this.weightCache != null &&
-      computeLoopTemplateWeight(schema, this.weightCache) > COMPONENT_OVERHEAD &&
+      countDescendants(schema, 5) >= 5 &&
       this.getRenderNodeForLoopItem != null &&
       parentMap != null
     const renderNodeForItem = useLoopItemComponent

@@ -1,12 +1,8 @@
 /**
- * 方案 C：子树组件化（Scope-Weight Hybrid）
+ * 子树组件化
  *
- * 核心思路：
- * - 在「响应式作用域边界」且「子树权重 > 组件开销」的节点自动包装为 VarioNode
- * - 组件化位置由 isScopeBoundary + computeWeight 共同决定
- * - 一个参数（COMPONENT_OVERHEAD）映射到物理量（组件实例等价 VNode 成本）
- *
- * 用户写法完全不变，内部架构优化
+ * 在响应式作用域边界自动包装为 VarioNode。
+ * Vue 的组件级 diff 自动跳过 props 未变的组件。
  */
 
 import {
@@ -20,7 +16,7 @@ import type { SchemaNode } from '@variojs/schema'
 import type { RuntimeContext, PathSegment } from '@variojs/core'
 import type { NodeContext, ParentMap } from './node-context.js'
 import type { VueSchemaNode } from '../types.js'
-import { isScopeBoundary, computeWeight, COMPONENT_OVERHEAD, type WeightCache } from './schema-weight.js'
+import { isScopeBoundary } from './schema-weight.js'
 import { parseStyleString } from './style-utils.js'
 
 /**
@@ -96,39 +92,32 @@ export interface VarioNodeRenderer {
 
 
 /**
- * 判断是否应该组件化该节点（方案 C：Scope-Weight Hybrid）
- *
- * 决策公式：
- *   shouldComponentize = !loop && isScopeBoundary(node) && weight(node) > COMPONENT_OVERHEAD
- *
- * 特殊规则：
- * 1. 含 loop 的节点必须由 LoopHandler 在 createVNode 层面处理，不可组件化
- * 2. 有 lifecycle/provide/inject 的节点始终组件化（需要独立 setup 环境）
- * 3. 其他 scope boundary（model 绑定、自定义组件）只在权重 > COMPONENT_OVERHEAD 时组件化
- *
- * @param schema   当前 schema 节点
- * @param weightCache  子树权重缓存（WeakMap，跨 render 复用）
+ * 递归统计子树后代节点总数（不含自身），达到 threshold 即提前返回。
+ * 只在 scope boundary 上调用，单次遍历无缓存，超大树 early-exit 避免全量遍历。
  */
-export function shouldComponentize(
-  schema: SchemaNode,
-  weightCache: WeightCache
-): boolean {
-  // 含 loop 的节点不可组件化：LoopHandler 需要在 renderer.createVNode 层面
-  // 展开循环、创建 LoopItemCell 等，VarioNode 无法处理此逻辑。
+export function countDescendants(schema: SchemaNode, threshold?: number): number {
+  if (!Array.isArray(schema.children)) return 0
+  let total = schema.children.length
+  if (threshold != null && total >= threshold) return total
+  for (const child of schema.children) {
+    if (child && typeof child === 'object' && 'type' in child) {
+      total += countDescendants(child as SchemaNode, threshold != null ? threshold - total : undefined)
+      if (threshold != null && total >= threshold) return total
+    }
+  }
+  return total
+}
+
+/**
+ * 判断是否应该组件化该节点。
+ *
+ * 规则：scope boundary 且后代节点总数 >= COMPONENT_OVERHEAD(5) 时组件化。
+ * countDescendants 同时覆盖扁平列表（5+ 叶节点）和嵌套结构（2-3 节点各有子树）。
+ */
+export function shouldComponentize(schema: SchemaNode): boolean {
   if (schema.loop) return false
-
-  const s = schema as Record<string, unknown>
-  const hasLifecycle = !!(s.onMounted || s.provide || s.inject)
-
-  // 有生命周期/provide/inject 的节点始终组件化（需要独立 setup 环境）
-  if (hasLifecycle) return true
-
-  // 非 scope boundary → 永不组件化
   if (!isScopeBoundary(schema)) return false
-
-  // scope boundary + weight > COMPONENT_OVERHEAD → 组件化有净收益
-  const weight = computeWeight(schema, weightCache)
-  return weight > COMPONENT_OVERHEAD
+  return countDescendants(schema, 5) >= 5
 }
 
 /**

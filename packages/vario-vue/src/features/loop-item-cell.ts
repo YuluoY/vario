@@ -1,6 +1,5 @@
 /**
  * 列表项组件化：每项独立 Vue 组件，仅该项 props 变化时 re-render。
- * 与 path-memo 并存：列表用 B，其它用 A。
  */
 
 import { defineComponent, type VNode } from 'vue'

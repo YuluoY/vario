@@ -8,7 +8,7 @@
  * - 高频状态更新
  * - 内存压力测试
  * 
- * 所有优化现由渲染器内部自适应管理（path-memo / subtree / loop 组件化），无需手动配置。
+ * 组件化由渲染器内部自动管理（scope boundary 始终组件化，循环项含子节点时组件化）。
  */
 import { describe, it, expect } from 'vitest'
 import { VueRenderer } from '../../src/renderer'
@@ -400,8 +400,8 @@ describe('边界压力测试', () => {
       console.log('║                                                                              ║')
       console.log('╠══════════════════════════════════════════════════════════════════════════════╣')
       console.log('║ 说明:                                                                        ║')
-      console.log('║   所有优化（path-memo / subtree / loop 组件化）由渲染器自适应管理            ║')
-      console.log('║   无需手动配置，系统根据 Scope-Weight Hybrid 策略自动形成最优解              ║')
+      console.log('║   组件化策略：scope boundary 始终组件化，循环项含子节点时组件化              ║')
+      console.log('║   Vue 组件级 diff 自动跳过未变组件                                          ║')
       console.log('╚══════════════════════════════════════════════════════════════════════════════╝')
       
       expect(true).toBe(true)

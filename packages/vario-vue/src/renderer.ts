@@ -27,18 +27,7 @@ import type { VNodePlugin } from './plugins/types.js'
 import { defaultPlugins } from './plugins/index.js'
 import type { NodeContext } from './features/node-context.js'
 import type { ParentMap } from './features/node-context.js'
-import {
-  PathMemoCache,
-  buildSchemaId,
-  buildDepsKey,
-  getCacheKey,
-  hasLoopInSubtree,
-  hasModelInSubtree,
-  hasExpressionInSubtree
-} from './features/path-memo.js'
 import { shouldComponentize, type VarioNodeRenderer, createVarioNodeVNode } from './features/vario-node.js'
-import { createSchemaStore, type SchemaStore } from './features/schema-store.js'
-import { createWeightCache, type WeightCache } from './features/schema-weight.js'
 import type { VueSchemaNode } from './types.js'
 
 
@@ -56,11 +45,8 @@ export interface ModelOptions {
 /**
  * Vue 渲染器配置
  *
- * 性能优化说明：渲染器内部基于 Scope-Weight Hybrid 策略自适应管理组件化决策：
- * - path-memo 始终开启，缓存静态子树
- * - 子树组件化：在响应式 scope boundary 且子树权重 > COMPONENT_OVERHEAD 时自动拆分
- * - 循环项组件化：当循环模板权重 > COMPONENT_OVERHEAD 时自动包装 LoopItemCell
- * 无需手动配置，系统内部根据 schema 结构自动形成最优解。
+ * 组件化策略：scope boundary 始终组件化（model 绑定 / 自定义组件 / lifecycle）。
+ * 循环项含子节点时自动包装 LoopItemCell。Vue 组件级 diff 自动跳过未变组件。
  */
 export interface VueRendererOptions {
   instance?: ComponentInternalInstance | null
@@ -85,12 +71,6 @@ export class VueRenderer implements VarioNodeRenderer {
   public refsRegistry: RefsRegistry
   private instance: ComponentInternalInstance | null
   private getState?: () => any
-  /** path-memo：按 path 缓存子树 VNode，未变分支复用（始终开启） */
-  private pathMemoCache: PathMemoCache
-  /** Schema Store（用于精确失效，内部管理） */
-  private schemaStore?: SchemaStore
-  /** Scope-Weight 权重缓存（WeakMap，schema GC 自动清理） */
-  private weightCache: WeightCache
 
   // 功能模块
   private pathResolver: ModelPathResolver
@@ -152,10 +132,8 @@ export class VueRenderer implements VarioNodeRenderer {
       options.modelOptions?.lazy
     )
     this.plugins = options.plugins ?? defaultPlugins
-    this.pathMemoCache = new PathMemoCache()
-    this.weightCache = createWeightCache()
 
-    // LoopHandler 和 ChildrenResolver 需要 createVNode，支持 nodeContext / parentMap / path（path-memo）
+    // LoopHandler 和 ChildrenResolver 需要 createVNode
     const createVNodeFn = (
       schema: SchemaNode,
       ctx: RuntimeContext,
@@ -189,8 +167,7 @@ export class VueRenderer implements VarioNodeRenderer {
       this.pathResolver,
       createVNodeFn,
       (expr, ctx) => this.expressionEvaluator.evaluateExpr(expr, ctx),
-      getRenderNodeForLoopItem,
-      this.weightCache
+      getRenderNodeForLoopItem
     )
     this.childrenResolver = new ChildrenResolver(
       createVNodeFn,
@@ -202,12 +179,7 @@ export class VueRenderer implements VarioNodeRenderer {
    * 渲染 Schema 为 VNode
    */
   render(schema: SchemaNode, ctx: RuntimeContext): VNode | null {
-    // 复用稳定的 parentMap 引用，避免 VarioNode 因 parentMap prop 变化而级联重渲染
-    // WeakMap 中旧 schema 节点的条目由 GC 自动清理；
-    // 当前 render 中 createVNode 会覆写同一 schema 节点的条目，保证正确性
     const vnode = this.createVNode(schema, ctx, [], undefined, this._stableParentMap, '')
-    // 如果返回 null，返回一个空的 Fragment 作为占位符
-    // Vue 需要有效的 VNode，不能是 null
     if (vnode === null || vnode === undefined) {
       return h(Fragment, null, [])
     }
@@ -217,11 +189,8 @@ export class VueRenderer implements VarioNodeRenderer {
   /**
    * 创建 VNode — 渲染管线
    *
-   * 每个阶段职责单一：校验 → parentMap → cond → show → memo → componentize → loop
-   * → resolve → model → attrs → children → show-style → slots → lifecycle → h() → decorators → cache
-   *
-   * @param path  节点在 schema 树中的路径（如 ""、"0"、"0.1"、"0.[2]"），供 path-memo 缓存
-   * @param depth 当前节点深度（从 0 开始），用于方案 C 子树组件化
+   * 校验 → parentMap → cond → show → componentize → loop → resolve → model
+   * → attrs → children → show-style → slots → lifecycle → h() → decorators
    */
   private createVNode(
     schema: SchemaNode | VueSchemaNode,
@@ -229,8 +198,7 @@ export class VueRenderer implements VarioNodeRenderer {
     modelPathStack: PathSegment[] = [],
     nodeContext?: NodeContext,
     parentMap?: ParentMap,
-    path: string = '',
-    depth: number = 0
+    path: string = ''
   ): VNode {
     // ── 1. 校验 ──
     if (!schema || typeof schema !== 'object') {
@@ -245,7 +213,7 @@ export class VueRenderer implements VarioNodeRenderer {
 
     // ── 3. 条件渲染（cond） ──
     const condValue = this.evaluateCond(schema, ctx)
-    if (condValue === null) return null as any  // cond 为 false
+    if (condValue === null) return null as any
     if (condValue instanceof Error) {
       return this.createErrorVNode(`Condition evaluation error: ${condValue.message}`, true)
     }
@@ -253,35 +221,28 @@ export class VueRenderer implements VarioNodeRenderer {
     // ── 4. show 求值 ──
     const showValue = this.evaluateShow(schema, ctx)
 
-    // ── 5. path-memo 缓存命中 ──
-    const canMemo = this.canMemoize(schema, path)
-    if (canMemo) {
-      const cached = this.tryGetMemoCache(schema, path, condValue, showValue)
-      if (cached) return cached
-    }
-
-    // ── 6. Scope-Weight 子树组件化 ──
-    if (shouldComponentize(schema, this.weightCache)) {
+    // ── 5. 子树组件化 ──
+    if (shouldComponentize(schema)) {
       return createVarioNodeVNode(schema, ctx, path, this, {
-        modelPathStack, nodeContext, parentMap, depth, key: path || undefined
+        modelPathStack, nodeContext, parentMap, key: path || undefined
       })
     }
 
-    // ── 7. loop 处理 ──
+    // ── 6. loop 处理 ──
     if (schema.loop) {
       return this.loopHandler.createLoopVNode(schema, ctx, modelPathStack, parentMap, path) || null as any
     }
 
-    // ── 8. 组件解析 ──
+    // ── 7. 组件解析 ──
     const component = this.componentResolver.resolveComponent(schema.type)
     if (!component) {
       return this.createErrorVNode(`Component "${schema.type}" not found`)
     }
 
-    // ── 9. model 路径栈更新 ──
+    // ── 8. model 路径栈更新 ──
     const { currentModelPathStack, scopePath } = this.resolveModelStack(schema, modelPathStack, ctx)
 
-    // ── 10. 构建 attrs + children ──
+    // ── 9. 构建 attrs + children ──
     let attrs = this.attrsBuilder.buildAttrs(
       schema, ctx, component, modelPathStack,
       (props, rctx) => this.childrenResolver.evalProps(props, rctx),
@@ -290,23 +251,18 @@ export class VueRenderer implements VarioNodeRenderer {
     )
     const children = this.childrenResolver.resolveChildren(schema, ctx, currentModelPathStack, parentMap, path)
 
-    // ── 11. show → display:none ──
+    // ── 10. show → display:none ──
     if (schema.show) {
       attrs = this.applyShowDirective(attrs, showValue, schema)
     }
 
-    // ── 12. slots 规范化 + lifecycle → h() ──
+    // ── 11. slots 规范化 + lifecycle → h() ──
     const vueSchema = schema as VueSchemaNode
     const finalChildren = this.normalizeChildren(children, component)
     let vnode = this.createComponentVNode(component, attrs || {}, finalChildren, vueSchema, ctx)
 
-    // ── 13. 后处理装饰器 ──
+    // ── 12. 后处理装饰器 ──
     vnode = this.applyVNodeDecorators(vnode, schema, vueSchema, ctx)
-
-    // ── 14. path-memo 写入 ──
-    if (canMemo) {
-      this.setMemoCache(schema, path, condValue, showValue, vnode)
-    }
 
     return vnode
   }
@@ -349,27 +305,6 @@ export class VueRenderer implements VarioNodeRenderer {
     } catch {
       return true
     }
-  }
-
-  /** 判断节点是否可 path-memo 缓存 */
-  private canMemoize(schema: SchemaNode, path: string): boolean {
-    const isLoopItem = path.includes('[')
-    return !schema.loop && !isLoopItem
-      && !hasLoopInSubtree(schema)
-      && !hasModelInSubtree(schema)
-      && !hasExpressionInSubtree(schema)
-  }
-
-  /** 尝试从 path-memo 缓存获取 VNode */
-  private tryGetMemoCache(schema: SchemaNode, path: string, condValue: unknown, showValue: unknown): VNode | undefined {
-    const cacheKey = getCacheKey(path, buildSchemaId(schema), buildDepsKey(condValue, showValue))
-    return this.pathMemoCache.get(cacheKey)
-  }
-
-  /** 写入 path-memo 缓存 */
-  private setMemoCache(schema: SchemaNode, path: string, condValue: unknown, showValue: unknown, vnode: VNode): void {
-    const cacheKey = getCacheKey(path, buildSchemaId(schema), buildDepsKey(condValue, showValue))
-    this.pathMemoCache.set(cacheKey, vnode)
   }
 
   /** 解析 model 路径栈 */
@@ -605,50 +540,11 @@ export class VueRenderer implements VarioNodeRenderer {
     return modelPathStack
   }
 
-  // ============================================================================
-  // 方案 D：Schema Store 相关方法
-  // ============================================================================
-
-  /**
-   * 获取 Schema Store（方案 D）
-   */
-  getSchemaStore(): SchemaStore | undefined {
-    return this.schemaStore
-  }
-
-  /**
-   * 初始化 Schema Store（内部使用，用于 query API 的 patch 能力）
-   */
-  initSchemaStore(schema: SchemaNode): void {
-    this.schemaStore = createSchemaStore()
-    this.schemaStore.fromTree(schema)
-  }
-
-  /**
-   * 精确更新 Schema 节点（方案 D）
-   */
-  patchSchemaNode(path: string, patch: Partial<SchemaNode>): void {
-    if (this.schemaStore) {
-      this.schemaStore.patch(path, patch)
-      // 清除相关 path-memo 缓存
-      this.pathMemoCache.clear()
-    }
-  }
-
   /**
    * 清除组件解析缓存
-   * 用于组件注册变更后的缓存失效
    */
   public clearComponentCache(): void {
     this.componentResolver.clearComponentCache()
-  }
-
-  /**
-   * 清除 path-memo 缓存
-   * 用于 schema 结构大变或需强制全量重算时
-   */
-  public clearPathMemoCache(): void {
-    this.pathMemoCache.clear()
   }
 
   /**

@@ -30,7 +30,7 @@ export class ChildrenResolver {
 
   /**
    * 解析子节点
-   * 支持插槽（template 节点）和作用域插槽；传入 parentMap / parentPath 供 ctx.$parent 与 path-memo 使用
+   * 支持插槽（template 节点）和作用域插槽；传入 parentMap / parentPath 供 ctx.$parent 使用
    */
   resolveChildren(
     schema: SchemaNode,

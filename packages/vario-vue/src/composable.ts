@@ -125,7 +125,7 @@ export const useVario: UseVarioOverload = <TState extends Record<string, unknown
 
   // Phase 8: Query API
   const queryApi = useSchemaQuery(schemaRef, analyzer, {
-    patchNode: (path, patch) => renderer.patchSchemaNode(path, patch)
+    patchNode: () => {} // Schema mutation via query API is no longer supported
   })
 
   // Phase 9: Render（含 Error Boundary）

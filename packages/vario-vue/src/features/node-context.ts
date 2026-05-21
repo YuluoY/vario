@@ -14,7 +14,7 @@ export interface NodeContext {
   siblings?: SchemaNode[]
   /** 当前节点在 siblings 中的下标 */
   selfIndex?: number
-  /** 节点路径（可选，供 path-memo / patchNode 等使用） */
+  /** 节点路径（可选，供节点追踪使用） */
   path?: string
 }
 

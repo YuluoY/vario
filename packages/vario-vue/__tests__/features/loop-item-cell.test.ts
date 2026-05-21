@@ -5,7 +5,7 @@
  * - LoopItemCell 组件正确渲染循环项
  * - 自适应组件化：列表长度 >= 阈值时自动启用 LoopItemCell
  * - 单项更新时其他项不重渲染
- * - 与 path-memo 并存（列表用 B，其它用 A）
+ * - 循环项组件化始终开启（模板含子节点时）
  * - 嵌套循环场景
  * - 循环项中的事件处理与节点上下文
  */
@@ -200,8 +200,8 @@ describe('列表项组件化（方案 B）', () => {
     })
   })
 
-  describe('与 path-memo 并存', () => {
-    it('列表外的节点使用 path-memo 缓存', async () => {
+  describe('循环项组件化', () => {
+    it('列表外的节点与循环项正确共存', async () => {
       const schema: Schema<{ 
         title: string
         items: Array<{ id: number; name: string }> 

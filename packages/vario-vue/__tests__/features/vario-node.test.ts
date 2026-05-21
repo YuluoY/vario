@@ -7,14 +7,11 @@ import {
   VarioNode,
   createVarioNodeVNode,
   shouldComponentize,
+  countDescendants,
   type VarioNodeRenderer
 } from '../../src/features/vario-node'
 import {
-  COMPONENT_OVERHEAD,
-  createWeightCache,
-  computeWeight,
-  isScopeBoundary,
-  type WeightCache
+  isScopeBoundary
 } from '../../src/features/schema-weight'
 import type { SchemaNode } from '@variojs/schema'
 import type { RuntimeContext, PathSegment } from '@variojs/core'
@@ -56,111 +53,76 @@ function createMockContext(state: Record<string, any> = {}): RuntimeContext {
   return ctx
 }
 
-describe('schema-weight', () => {
-  describe('computeWeight', () => {
-    it('叶子节点 weight = 1', () => {
-      const cache = createWeightCache()
-      expect(computeWeight({ type: 'span' }, cache)).toBe(1)
-      expect(computeWeight({ type: 'div', children: 'text' }, cache)).toBe(1)
-    })
-
-    it('容器节点 weight = 1 + Σ children', () => {
-      const cache = createWeightCache()
-      const schema: SchemaNode = {
-        type: 'div',
-        children: [{ type: 'span' }, { type: 'span' }, { type: 'span' }]
-      }
-      expect(computeWeight(schema, cache)).toBe(4)
-    })
-
-    it('嵌套结构正确累加', () => {
-      const cache = createWeightCache()
-      const schema: SchemaNode = {
-        type: 'div',
-        children: [
-          { type: 'div', children: [{ type: 'span' }, { type: 'span' }] },
-          { type: 'span' }
-        ]
-      }
-      expect(computeWeight(schema, cache)).toBe(5)
-    })
-
-    it('结果应被缓存', () => {
-      const cache = createWeightCache()
-      const schema: SchemaNode = { type: 'div', children: [{ type: 'span' }] }
-      expect(computeWeight(schema, cache)).toBe(2)
-      expect(computeWeight(schema, cache)).toBe(2)
-    })
+describe('isScopeBoundary', () => {
+  it('有 lifecycle 的节点是 scope boundary', () => {
+    expect(isScopeBoundary({ type: 'div', onMounted: 'init' } as any)).toBe(true)
   })
-
-  describe('isScopeBoundary', () => {
-    it('有 lifecycle 的节点是 scope boundary', () => {
-      expect(isScopeBoundary({ type: 'div', onMounted: 'init' } as any)).toBe(true)
-    })
-    it('有 provide/inject 的节点是 scope boundary', () => {
-      expect(isScopeBoundary({ type: 'div', provide: { theme: 'dark' } } as any)).toBe(true)
-      expect(isScopeBoundary({ type: 'div', inject: ['theme'] } as any)).toBe(true)
-    })
-    it('有 model 绑定的节点是 scope boundary', () => {
-      expect(isScopeBoundary({ type: 'input', model: 'name' } as any)).toBe(true)
-    })
-    it('自定义组件是 scope boundary', () => {
-      expect(isScopeBoundary({ type: 'ElButton' })).toBe(true)
-    })
-    it('原生元素无 model 不是 scope boundary', () => {
-      expect(isScopeBoundary({ type: 'div' })).toBe(false)
-    })
+  it('有 provide/inject 的节点是 scope boundary', () => {
+    expect(isScopeBoundary({ type: 'div', provide: { theme: 'dark' } } as any)).toBe(true)
+    expect(isScopeBoundary({ type: 'div', inject: ['theme'] } as any)).toBe(true)
+  })
+  it('有 model 绑定的节点是 scope boundary', () => {
+    expect(isScopeBoundary({ type: 'input', model: 'name' } as any)).toBe(true)
+  })
+  it('自定义组件是 scope boundary', () => {
+    expect(isScopeBoundary({ type: 'ElButton' })).toBe(true)
+  })
+  it('原生元素无 model 不是 scope boundary', () => {
+    expect(isScopeBoundary({ type: 'div' })).toBe(false)
   })
 })
 
 describe('vario-node', () => {
-  describe('shouldComponentize (Scope-Weight Hybrid)', () => {
-    it('轻量 scope boundary 不组件化', () => {
-      const cache = createWeightCache()
-      expect(shouldComponentize({ type: 'ElButton' }, cache)).toBe(false)
+  describe('countDescendants', () => {
+    it('叶子节点 descendants=0', () => {
+      expect(countDescendants({ type: 'span' })).toBe(0)
     })
-
-    it('重量 scope boundary 应组件化', () => {
-      const cache = createWeightCache()
-      const schema: SchemaNode = {
-        type: 'ElCard',
-        children: Array.from({ length: 6 }, () => ({ type: 'span' }))
-      }
-      expect(shouldComponentize(schema, cache)).toBe(true)
+    it('flat 5 children = 5', () => {
+      expect(countDescendants({ type: 'div', children: Array.from({ length: 5 }, () => ({ type: 'span' })) })).toBe(5)
     })
-
-    it('原生元素即使很重也不组件化', () => {
-      const cache = createWeightCache()
-      const schema: SchemaNode = {
+    it('nested: 2 children each with 2 sub-children = 6', () => {
+      expect(countDescendants({
         type: 'div',
-        children: Array.from({ length: 20 }, () => ({ type: 'span' }))
-      }
-      expect(shouldComponentize(schema, cache)).toBe(false)
+        children: [
+          { type: 'div', children: [{ type: 'span' }, { type: 'span' }] },
+          { type: 'div', children: [{ type: 'span' }, { type: 'span' }] }
+        ]
+      })).toBe(6)
+    })
+  })
+
+describe('shouldComponentize', () => {
+    it('flat 5 leaves → descendants=5 → componentize', () => {
+      const children = Array.from({ length: 5 }, () => ({ type: 'span' }))
+      expect(shouldComponentize({ type: 'ElCard', children })).toBe(true)
     })
 
-    it('有 model 的原生元素且重量足够应组件化', () => {
-      const cache = createWeightCache()
-      const schema = {
-        type: 'div', model: 'form.address',
-        children: Array.from({ length: 6 }, () => ({ type: 'span' }))
-      } as any
-      expect(shouldComponentize(schema, cache)).toBe(true)
-    })
-
-    it('有 lifecycle/provide/inject 始终组件化', () => {
-      const cache = createWeightCache()
-      expect(shouldComponentize({ type: 'div', onMounted: 'init' } as any, cache)).toBe(true)
-      expect(shouldComponentize({ type: 'div', provide: { theme: 'dark' } } as any, cache)).toBe(true)
-      expect(shouldComponentize({ type: 'div', inject: ['theme'] } as any, cache)).toBe(true)
-    })
-
-    it('有 loop 的节点不组件化', () => {
-      const cache = createWeightCache()
+    it('nested 2x2 → descendants=6 → componentize', () => {
       expect(shouldComponentize({
-        type: 'ElButton',
-        loop: { items: '{{ items }}', itemKey: 'item' },
-        children: Array.from({ length: 20 }, () => ({ type: 'span' }))
-      } as any, cache)).toBe(false)
+        type: 'ElCard',
+        children: [
+          { type: 'div', children: [{ type: 'span' }, { type: 'span' }] },
+          { type: 'div', children: [{ type: 'span' }, { type: 'span' }] }
+        ]
+      })).toBe(true)
+    })
+
+    it('leaf scope boundary → descendants=0 → no componentize', () => {
+      expect(shouldComponentize({ type: 'ElButton' })).toBe(false)
+    })
+
+    it('flat 2 children → descendants=2 < 5 → no componentize', () => {
+      expect(shouldComponentize({
+        type: 'ElCard',
+        children: [{ type: 'span' }, { type: 'span' }]
+      })).toBe(false)
+    })
+
+    it('loop node never componentized', () => {
+      const children = Array.from({ length: 10 }, () => ({ type: 'span' }))
+      expect(shouldComponentize({
+        type: 'ElButton', loop: { items: 'x', itemKey: 'i' }, children
+      } as any)).toBe(false)
     })
   })
 

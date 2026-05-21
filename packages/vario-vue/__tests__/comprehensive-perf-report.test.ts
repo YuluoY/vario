@@ -637,43 +637,6 @@ describe('Vario Vue 综合性能基准', () => {
     })
   })
 
-  // ─── F. path-memo 命中率测试 ─────────────────────────────────────────────
-
-  describe('F. path-memo 缓存效果', () => {
-
-    it('F1. 静态面板：首次 vs 二次渲染', async () => {
-      const schema = makeDashboardSchema(100)
-      const { vnode, state } = useVario(schema, { components: Components })
-      await nextTick()
-
-      // 触发二次渲染 (state 不变, schema 不变 → 大量缓存命中)
-      const dur2nd = await measureMedian(async () => {
-        // 触发 re-render 但 schema 结构不变
-        ;(state as any).__trigger = Date.now()
-        await nextTick()
-      })
-      record('F-缓存效果', '静态面板二次渲染', '100面板', 'median', dur2nd, 'ms')
-    })
-
-    it('F2. 连续10次渲染（同schema） — 缓存预热', async () => {
-      const schema = makeDashboardSchema(200)
-      const { vnode, state } = useVario(schema, { components: Components })
-      await nextTick()
-
-      const durations: number[] = []
-      for (let round = 0; round < 10; round++) {
-        const start = performance.now()
-        ;(state as any).__trigger = round
-        await nextTick()
-        durations.push(performance.now() - start)
-      }
-
-      record('F-缓存效果', '10次连续重渲染-首次', '200面板', 'value', durations[0], 'ms')
-      record('F-缓存效果', '10次连续重渲染-第5次', '200面板', 'value', durations[4], 'ms')
-      record('F-缓存效果', '10次连续重渲染-第10次', '200面板', 'value', durations[9], 'ms')
-    })
-  })
-
   // ─── 汇总报告 ────────────────────────────────────────────────────────────
 
   afterAll(() => {
