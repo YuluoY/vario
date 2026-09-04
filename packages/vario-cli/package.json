@@ -1,6 +1,6 @@
 {
   "name": "@variojs/cli",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "Vario CLI Tools (experimental) - Development server, code generation, and build tools",
   "type": "module",
   "main": "./dist/index.js",

@@ -1,6 +1,6 @@
 {
   "name": "@variojs/core",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "description": "Vario Core Runtime - Instruction VM, Expression System, Runtime Context",
   "type": "module",
   "main": "./dist/index.js",
