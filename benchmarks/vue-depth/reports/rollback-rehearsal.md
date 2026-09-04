@@ -1,6 +1,6 @@
 # Rollback rehearsal
 
-- commit: 4cbd484db1f04c5b159526cc0a187322bbb7fa4e
+- commit: 9648dee0dfdb17c9d1352ac3ceac2c057700c99b
 - injected correctness/parity → rolledBack=true (evaluateCanary)
 - injected perf/heap → stop-expand, no API/Schema change
 - default runtime remains legacy
