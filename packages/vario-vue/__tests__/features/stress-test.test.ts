@@ -12,7 +12,7 @@
  */
 import { describe, it, expect } from 'vitest'
 import { VueRenderer } from '../../src/renderer'
-import { createRuntimeContext } from '@variojs/core'
+import { createRuntimeContext, SchemaDepthError } from '@variojs/core'
 import type { SchemaNode } from '@variojs/schema'
 
 // 性能测量工具
@@ -147,7 +147,12 @@ describe('边界压力测试', () => {
         const schema = generateDeepSchema(depth)
         const renderer = new VueRenderer()
         const ctx = createRuntimeContext({})
-        
+
+        if (depth >= 100) {
+          expect(() => renderer.render(schema, ctx)).toThrow(SchemaDepthError)
+          return
+        }
+
         const result = measure(`${depth}层`, () => {
           renderer.render(schema, ctx)
         }, 5)

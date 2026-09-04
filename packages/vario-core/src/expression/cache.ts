@@ -1,40 +1,40 @@
 /**
  * 表达式缓存系统
- * 
- * 功能：
- * - 每个 RuntimeContext 独立缓存（WeakMap 关联）
- * - LRU 淘汰策略
- * - 通配符依赖匹配
- * - 缓存失效机制
- * 
- * 设计原则：
- * - 惰性求值：只在需要时计算
- * - 依赖追踪：精确的缓存失效
- * - 内存友好：WeakMap + LRU 淘汰
+ *
+ * - 每个 RuntimeContext 独立缓存（WeakMap）
+ * - Map 插入顺序 LRU，O(1) 淘汰，满容量不全表清空
+ * - cache key 含 policyFingerprint
+ * - hit/miss sentinel：null/undefined/false/0 可命中
  */
 
 import type { RuntimeContext, ExpressionCache } from '@variojs/types'
 import { matchPath } from '../runtime/path.js'
+import { getPolicyFingerprint } from './policy.js'
 
-/**
- * 每个上下文独立缓存
- * 使用 RuntimeContext 作为键（WeakMap 自动回收）
- */
 const cacheMap = new WeakMap<RuntimeContext<Record<string, unknown>>, Map<string, ExpressionCache>>()
+const cacheBook = new WeakMap<RuntimeContext<Record<string, unknown>>, { hits: number; misses: number; evicts: number }>()
 
-/**
- * 缓存配置
- */
+function bookOf(ctx: RuntimeContext): { hits: number; misses: number; evicts: number } {
+  const key = ctx as RuntimeContext<Record<string, unknown>>
+  let book = cacheBook.get(key)
+  if (!book) {
+    book = { hits: 0, misses: 0, evicts: 0 }
+    cacheBook.set(key, book)
+  }
+  return book
+}
+
 const CACHE_CONFIG = {
-  /** 最大缓存条目数 */
-  maxSize: 100,
-  /** 缓存有效期（毫秒），0 表示不过期 */
+  maxSize: 2000,
   ttl: 0
 } as const
 
-/**
- * 获取上下文的缓存 Map
- */
+export const CACHE_MISS = Symbol.for('vario.expression.cache.miss')
+
+function cacheKey(expr: string, fingerprint: string): string {
+  return `${fingerprint}::${expr}`
+}
+
 function getCache(ctx: RuntimeContext): Map<string, ExpressionCache> {
   let cache = cacheMap.get(ctx as RuntimeContext<Record<string, unknown>>)
   if (!cache) {
@@ -44,156 +44,130 @@ function getCache(ctx: RuntimeContext): Map<string, ExpressionCache> {
   return cache
 }
 
-/**
- * 检查缓存条目是否有效
- */
-function isCacheValid(
-  entry: ExpressionCache,
-  ctx: RuntimeContext
-): boolean {
-  // TTL 检查
+function resolveFingerprint(ctx: RuntimeContext, fingerprint?: string): string {
+  return fingerprint ?? getPolicyFingerprint(ctx.$exprOptions)
+}
+
+function isCacheValid(entry: ExpressionCache): boolean {
   if (CACHE_CONFIG.ttl > 0 && Date.now() - entry.timestamp > CACHE_CONFIG.ttl) {
     return false
   }
-  
-  // 依赖检查：所有依赖的值必须存在
-  return entry.dependencies.every(dep => {
-    if (dep.includes('*')) {
-      // 通配符依赖：检查父路径是否存在
-      const parentPath = dep.split('.*')[0]
-      return ctx._get(parentPath) != null
-    }
-    // 具体路径：检查值是否存在
-    return ctx._get(dep) !== undefined
-  })
+  return true
 }
 
-/**
- * LRU 淘汰：删除最旧的缓存条目
- */
-function evictOldest(cache: Map<string, ExpressionCache>): void {
-  let oldestKey: string | null = null
-  let oldestTime = Infinity
-  
-  for (const [key, entry] of cache.entries()) {
-    if (entry.timestamp < oldestTime) {
-      oldestTime = entry.timestamp
-      oldestKey = key
-    }
-  }
-  
-  if (oldestKey) {
+function evictOldest(cache: Map<string, ExpressionCache>, ctx: RuntimeContext): void {
+  const oldestKey = cache.keys().next().value
+  if (oldestKey !== undefined) {
     cache.delete(oldestKey)
+    bookOf(ctx).evicts++
   }
 }
 
-/**
- * 获取缓存的表达式结果
- * 
- * @param expr 表达式字符串
- * @param ctx 运行时上下文
- * @returns 缓存的结果，无缓存或已失效返回 null
- */
+export type CacheLookup =
+  | { hit: true; value: unknown }
+  | { hit: false }
+
+export function lookupCachedExpression(
+  expr: string,
+  ctx: RuntimeContext,
+  fingerprint?: string
+): CacheLookup {
+  const cache = getCache(ctx)
+  const key = cacheKey(expr, resolveFingerprint(ctx, fingerprint))
+  const entry = cache.get(key)
+
+  if (!entry) {
+    bookOf(ctx).misses++
+    return { hit: false }
+  }
+
+  if (!isCacheValid(entry)) {
+    cache.delete(key)
+    bookOf(ctx).misses++
+    return { hit: false }
+  }
+
+  cache.delete(key)
+  cache.set(key, entry)
+  bookOf(ctx).hits++
+  return { hit: true, value: entry.result }
+}
+
 export function getCachedExpression(
   expr: string,
   ctx: RuntimeContext
 ): unknown | null {
-  const cache = getCache(ctx)
-  const entry = cache.get(expr)
-  
-  if (!entry) {
-    return null
-  }
-  
-  if (!isCacheValid(entry, ctx)) {
-    cache.delete(expr)
-    return null
-  }
-  
-  // 更新时间戳（LRU）
-  entry.timestamp = Date.now()
-  return entry.result
+  const looked = lookupCachedExpression(expr, ctx)
+  if (!looked.hit) return null
+  return looked.value === undefined ? null : looked.value
 }
 
-/**
- * 设置表达式缓存
- * 
- * @param expr 表达式字符串
- * @param result 求值结果
- * @param dependencies 依赖的状态路径
- * @param ctx 运行时上下文
- */
 export function setCachedExpression(
   expr: string,
   result: unknown,
   dependencies: string[],
-  ctx: RuntimeContext
+  ctx: RuntimeContext,
+  fingerprint?: string
 ): void {
   const cache = getCache(ctx)
-  
-  // LRU 淘汰
-  if (cache.size >= CACHE_CONFIG.maxSize) {
-    evictOldest(cache)
+  const fp = resolveFingerprint(ctx, fingerprint)
+  const key = cacheKey(expr, fp)
+
+  if (cache.has(key)) {
+    cache.delete(key)
+  } else if (cache.size >= CACHE_CONFIG.maxSize) {
+    evictOldest(cache, ctx)
   }
-  
-  cache.set(expr, {
+
+  cache.set(key, {
     expr,
     result,
     dependencies,
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    policyFingerprint: fp,
   })
 }
 
-/**
- * 使缓存失效
- * 
- * 当状态变化时调用，精确删除依赖该状态的缓存
- * 
- * @param changedPath 变化的状态路径
- * @param ctx 运行时上下文
- */
 export function invalidateCache(
   changedPath: string,
   ctx: RuntimeContext
 ): void {
   const cache = getCache(ctx)
   const toDelete: string[] = []
-  
+
   for (const [expr, entry] of cache.entries()) {
-    // 检查是否有依赖被影响
-    const isAffected = entry.dependencies.some(dep => 
+    const isAffected = entry.dependencies.some(dep =>
       matchPath(dep, changedPath) || matchPath(changedPath, dep)
     )
-    
     if (isAffected) {
       toDelete.push(expr)
     }
   }
-  
-  // 批量删除
+
   for (const expr of toDelete) {
     cache.delete(expr)
   }
 }
 
-/**
- * 清除指定上下文的所有缓存
- */
 export function clearCache(ctx: RuntimeContext): void {
   const cache = getCache(ctx)
   cache.clear()
 }
 
-/**
- * 获取缓存统计信息（调试用）
- */
 export function getCacheStats(ctx: RuntimeContext): {
   size: number
   expressions: string[]
+  hits: number
+  misses: number
+  evicts: number
 } {
   const cache = getCache(ctx)
+  const book = bookOf(ctx)
   return {
     size: cache.size,
-    expressions: Array.from(cache.keys())
+    expressions: Array.from(cache.values()).map(e => e.expr),
+    hits: book.hits,
+    misses: book.misses,
+    evicts: book.evicts
   }
 }

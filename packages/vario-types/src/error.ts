@@ -14,6 +14,14 @@ export interface ErrorContext {
   action?: Record<string, unknown>
   /** 修复建议 */
   suggestion?: string
+  engineId?: string
+  pageId?: string
+  schemaId?: string
+  revision?: number
+  nodeId?: string
+  actionId?: string
+  expressionId?: string
+  phase?: string
   /** 额外上下文信息 */
   metadata?: Record<string, unknown>
 }

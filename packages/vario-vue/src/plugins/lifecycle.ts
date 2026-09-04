@@ -15,6 +15,10 @@ const wrapper = new LifecycleWrapper()
 
 export const lifecyclePlugin: VNodePlugin = {
   name: 'lifecycle',
+  setup() {},
+  validate() {},
+  prepare() {},
+  dispose() {},
 
   wrapComponent(
     component: any,
@@ -25,6 +29,7 @@ export const lifecyclePlugin: VNodePlugin = {
   ): VNode | null {
     const hasLifecycle = schema.onMounted || schema.onUnmounted || schema.onUpdated
       || schema.onBeforeMount || schema.onBeforeUnmount || schema.onBeforeUpdate
+      || schema.onActivated || schema.onDeactivated
 
     const hasProvideInject =
       (schema.provide && Object.keys(schema.provide).length > 0)

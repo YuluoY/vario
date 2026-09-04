@@ -116,7 +116,7 @@ export function startDevServer(options: DevServerOptions = {}): ActiveServer {
       if (valid && jsonFiles.length > 0) {
         for (const file of jsonFiles) {
           try {
-            generateCode({ schema: file, output })
+            generateCode({ schema: file, output, root: absDir })
           } catch (err) {
             console.error(`[vario] Codegen failed for ${file}:`, err)
           }

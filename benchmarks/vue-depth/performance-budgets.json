@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "protocol": {
+    "warmup": 20,
+    "samples": 50,
+    "processCount": 3,
+    "modes": [
+      "legacy",
+      "prepared"
+    ]
+  },
+  "calibratedAt": "2026-09-04T21:59:14.643Z",
+  "commit": "0d513afa8c338729aba1e9fd3351e1b47c7cb582",
+  "p95": {
+    "PERF_T1": 20,
+    "PERF_T2": 16,
+    "PERF_T3": 50,
+    "PERF_T4": 8,
+    "PERF_T5": 50,
+    "PERF_T6": 8,
+    "PERF_T7": 50,
+    "PERF_T8": 4
+  }
+}

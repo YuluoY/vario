@@ -10,6 +10,10 @@ import type { VNodePlugin } from './types.js'
 
 export const keepAlivePlugin: VNodePlugin = {
   name: 'keep-alive',
+  setup() {},
+  validate() {},
+  prepare() {},
+  dispose() {},
 
   decorateVNode(vnode: VNode, schema: VueSchemaNode): VNode {
     if (!schema.keepAlive) return vnode

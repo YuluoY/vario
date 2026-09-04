@@ -8,14 +8,16 @@
 import { Command } from 'commander'
 import { startDevServer } from './dev-server.js'
 import { generateCode } from './codegen.js'
-import { validateFiles } from './validate.js'
+import { validateFiles, prepareFiles, migrateFiles, inspectFiles } from './validate.js'
+
+let lastExitCode = 0
 
 const program = new Command()
 
 program
   .name('vario')
   .description('Vario CLI - Development and build tools for Vario projects')
-  .version('0.1.0')
+  .version(process.env.npm_package_version ?? '0.1.5')
 
 program
   .command('dev')
@@ -36,11 +38,13 @@ program
   .option('-t, --template <template>', 'Template name')
   .option('-o, --output <output>', 'Output directory', './generated')
   .option('--schema <schema>', 'Schema file path')
-  .action((options: { template?: string; output: string; schema?: string }) => {
+  .option('--root <dir>', 'Root directory for page-relative output paths')
+  .action((options: { template?: string; output: string; schema?: string; root?: string }) => {
     generateCode({
       template: options.template,
       output: options.output,
-      schema: options.schema
+      schema: options.schema,
+      root: options.root
     })
   })
 
@@ -56,13 +60,71 @@ program
     } else {
       const failCount = result.fileResults.filter(r => !r.valid).length
       console.error(`\n✗ ${failCount} file(s) failed validation`)
-      process.exit(1)
+      lastExitCode = 1
     }
+  })
+
+program
+  .command('prepare')
+  .alias('compile')
+  .description('Prepare schema and print depth/budget diagnostics')
+  .argument('<files...>', 'Schema files to prepare')
+  .option('--profile <name>', 'performance profile name', 'default')
+  .option('--max-depth <n>', 'max depth budget', '100')
+  .action((files: string[], options: { profile?: string; maxDepth?: string }) => {
+    const results = prepareFiles(files, {
+      profile: options.profile,
+      maxDepth: Number(options.maxDepth)
+    })
+    for (const row of results) {
+      console.log(`prepare ${row.file} profile=${row.profile} nodes=${row.nodeCount} depth=${row.maxDepth} diagnostics=${row.diagnostics.length}`)
+    }
+    if (results.length === 0) lastExitCode = 1
+  })
+
+program
+  .command('migrate')
+  .description('Wrap legacy SchemaNode files as SchemaDocument v1')
+  .argument('<files...>', 'Schema files to migrate')
+  .action((files: string[]) => {
+    const results = migrateFiles(files)
+    for (const row of results) {
+      console.log(`migrate ${row.file} schemaVersion=${row.schemaVersion} id=${row.id}`)
+    }
+    if (results.length === 0) lastExitCode = 1
+  })
+
+program
+  .command('inspect')
+  .description('Inspect schema documents and prepared view budgets')
+  .argument('<files...>', 'Schema files to inspect')
+  .action((files: string[]) => {
+    const results = inspectFiles(files)
+    for (const row of results) {
+      console.log(`inspect ${row.file} id=${row.id} schemaVersion=${row.schemaVersion} nodes=${row.nodeCount} depth=${row.maxDepth} diagnostics=${row.diagnostics.length}`)
+    }
+    if (results.length === 0) lastExitCode = 1
   })
 
 // 如果直接运行此文件，执行CLI
 if (import.meta.url === `file://${process.argv[1]}`) {
-  program.parse()
+  runCli(process.argv)
+}
+
+export function runCli(argv: string[] = process.argv): number {
+  lastExitCode = 0
+  program.exitOverride()
+  try {
+    program.parse(argv)
+    return lastExitCode
+  } catch (error) {
+    const err = error as { code?: string; exitCode?: number }
+    if (err.code === 'commander.helpDisplayed' || err.code === 'commander.version') {
+      return 0
+    }
+    if (typeof err.exitCode === 'number') return err.exitCode
+    throw error
+  }
 }
 
 export { program }

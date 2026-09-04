@@ -19,7 +19,7 @@ describe('createTeleport', () => {
       const result = createTeleport(true, child)
 
       expect(result).not.toBeNull()
-      expect((result as any).type.name).toBe('Teleport')
+      expect((result as any).type.name).toBe('VarioTeleport')
       expect((result as any).props.to).toBe('body')
     })
 
@@ -36,8 +36,9 @@ describe('createTeleport', () => {
       const result = createTeleport('body', child)
 
       expect(result).not.toBeNull()
-      expect(Array.isArray((result as any).children)).toBe(true)
-      expect((result as any).children).toHaveLength(1)
+      const kids = (result as any).children.default()
+      expect(Array.isArray(kids)).toBe(true)
+      expect(kids).toHaveLength(1)
     })
 
     it('应该处理多个子节点', () => {
@@ -50,16 +51,18 @@ describe('createTeleport', () => {
       const result = createTeleport('body', children)
 
       expect(result).not.toBeNull()
-      expect(Array.isArray((result as any).children)).toBe(true)
-      expect((result as any).children).toHaveLength(3)
+      const kids = (result as any).children.default()
+      expect(Array.isArray(kids)).toBe(true)
+      expect(kids).toHaveLength(3)
     })
 
     it('应该处理 null 子节点', () => {
       const result = createTeleport('body', null)
 
       expect(result).not.toBeNull()
-      expect(Array.isArray((result as any).children)).toBe(true)
-      expect((result as any).children).toHaveLength(0)
+      const kids = (result as any).children.default()
+      expect(Array.isArray(kids)).toBe(true)
+      expect(kids).toHaveLength(0)
     })
   })
 

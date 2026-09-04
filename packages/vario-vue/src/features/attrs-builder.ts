@@ -6,7 +6,7 @@
 
 import type { RuntimeContext, PathSegment } from '@variojs/types'
 import type { SchemaNode } from '@variojs/schema'
-import { createModelBinding } from '../bindings.js'
+import { createModelBinding, type ModelConfig } from '../bindings.js'
 import type { ModelPathResolver } from './path-resolver.js'
 import type { EventHandler } from './event-handler.js'
 import type { NodeContext } from './node-context.js'
@@ -25,8 +25,13 @@ export class AttrsBuilder {
     private pathResolver: ModelPathResolver,
     private eventHandler: EventHandler,
     /** 整棵 schema 的 model 默认惰性，节点未显式设置 lazy 时使用 */
-    private modelLazy?: boolean
+    private modelLazy?: boolean,
+    private modelConfigs?: Map<string, ModelConfig>
   ) {}
+
+  release(): void {
+    this.getState = undefined
+  }
 
   /**
    * 解析当前节点的 model lazy：节点显式设置 lazy 时用节点值，否则用整棵 schema 的 modelLazy 默认值
@@ -80,7 +85,8 @@ export class AttrsBuilder {
       modelName,
       schemaDefault,
       schemaLazy,
-      schemaModifiers
+      schemaModifiers,
+      this.modelConfigs
     )
   }
 
@@ -92,22 +98,11 @@ export class AttrsBuilder {
     if (cached !== undefined) return cached
     
     let result = true
-    if (schema.props) {
-      outer: for (const value of Object.values(schema.props)) {
-        if (typeof value === 'string' && (value.includes('{{') || value.includes('${'))) {
-          result = false
-          break
-        }
-        if (typeof value === 'object' && value !== null) {
-          const nested = value as Record<string, unknown>
-          for (const nestedValue of Object.values(nested)) {
-            if (typeof nestedValue === 'string' && (nestedValue.includes('{{') || nestedValue.includes('${'))) {
-              result = false
-              break outer
-            }
-          }
-        }
-      }
+    if (schema.props && containsMustache(schema.props)) {
+      result = false
+    }
+    if (result && schema.events && hasExpressionInEvents(schema.events)) {
+      result = false
     }
     this.staticPropsCache.set(schema, result)
     return result
@@ -123,28 +118,35 @@ export class AttrsBuilder {
     staticAttrs: Record<string, any>,
     modelPathStack: PathSegment[] = [],
     nodeContext?: NodeContext,
-    parentMap?: ParentMap
+    parentMap?: ParentMap,
+    scopePathStack?: PathSegment[]
   ): Record<string, any> {
     const attrs = { ...staticAttrs }
 
-    // 默认 model 绑定
     const defaultBinding = this.resolveAndCreateBinding(schema.model, schema, ctx, component, modelPathStack)
     if (defaultBinding) Object.assign(attrs, defaultBinding)
-    
-    // 具名 model 绑定（model:xxx）
+
+    const namedModelPathStack = scopePathStack ?? modelPathStack
     for (const key in schema) {
       if (key.startsWith('model:')) {
         const binding = this.resolveAndCreateBinding(
-          (schema as any)[key], schema, ctx, component, modelPathStack, key.slice(6)
+          (schema as any)[key], schema, ctx, component, namedModelPathStack, key.slice(6)
         )
         if (binding) Object.assign(attrs, binding)
       }
     }
-    
-    // 添加事件处理器
+
     if (schema.events) {
       const eventHandlers = this.eventHandler.getEventHandlers(schema, ctx, nodeContext, parentMap)
       Object.assign(attrs, eventHandlers)
+    }
+
+    if (attrs.style) {
+      if (typeof attrs.style === 'string') {
+        attrs.style = parseStyleString(attrs.style)
+      } else if (Array.isArray(attrs.style)) {
+        attrs.style = {}
+      }
     }
 
     return attrs
@@ -173,68 +175,36 @@ export class AttrsBuilder {
     parentMap?: ParentMap
   ): Record<string, any> {
     const hasStaticProps = this.hasStaticProps(schema)
-    if (hasStaticProps) {
-      const cached = this.staticAttrsCache.get(schema)
-      if (cached) {
-        return this.mergeDynamicAttrs(
-          schema,
-          ctx,
-          component,
-          cached,
-          modelPathStack,
-          nodeContext,
-          parentMap
-        )
-      }
+    const cachedStatic = hasStaticProps ? this.staticAttrsCache.get(schema) : undefined
+    const staticAttrs = cachedStatic
+      ?? (schema.props ? evalProps(schema.props, ctx) : {})
+    if (hasStaticProps && !cachedStatic) {
+      this.staticAttrsCache.set(schema, { ...staticAttrs })
     }
 
-    // 批量构建属性数组，最后一次性合并
-    const attrsParts: Record<string, any>[] = []
-    
-    // 1. 合并 props（支持表达式插值）
-    if (schema.props) {
-      attrsParts.push(evalProps(schema.props, ctx))
-    }
-    
-    // 2. 处理双向绑定（默认 model）
-    const defaultBinding = this.resolveAndCreateBinding(schema.model, schema, ctx, component, modelPathStack)
-    if (defaultBinding) attrsParts.push(defaultBinding)
-
-    // 处理具名 model（model:xxx，支持 path 字符串或 { path, default?, lazy? }）
-    // 具名 model 使用 scopePathStack（如果当前节点是 scope）或 modelPathStack 来解析路径
-    const namedModelPathStack = scopePathStack ?? modelPathStack
-    for (const key in schema) {
-      if (key.startsWith('model:')) {
-        const binding = this.resolveAndCreateBinding(
-          (schema as any)[key], schema, ctx, component, namedModelPathStack, key.slice(6)
-        )
-        if (binding) attrsParts.push(binding)
-      }
-    }
-    
-    // 3. 处理事件（使用缓存）
-    if (schema.events) {
-      const eventHandlers = this.eventHandler.getEventHandlers(schema, ctx, nodeContext, parentMap)
-      attrsParts.push(eventHandlers)
-    }
-    
-    // 批量合并所有属性
-    const attrs = Object.assign({}, ...attrsParts)
-    
-    // 4. 统一处理 style 格式（确保始终是对象）
-    if (attrs.style) {
-      if (typeof attrs.style === 'string') {
-        attrs.style = parseStyleString(attrs.style)
-      } else if (Array.isArray(attrs.style)) {
-        attrs.style = {}
-      }
-    }
-    
-    // 缓存静态属性
-    if (hasStaticProps) {
-      this.staticAttrsCache.set(schema, { ...attrs })
-    }
-    
-    return attrs
+    return this.mergeDynamicAttrs(
+      schema,
+      ctx,
+      component,
+      staticAttrs,
+      modelPathStack,
+      nodeContext,
+      parentMap,
+      scopePathStack
+    )
   }
+}
+
+function hasExpressionInEvents(events: SchemaNode['events']): boolean {
+  if (!events) return false
+  return Object.values(events).some(handler => containsMustache(handler))
+}
+
+function containsMustache(value: unknown): boolean {
+  if (typeof value === 'string') return value.includes('{{') || value.includes('${')
+  if (Array.isArray(value)) return value.some(item => containsMustache(item))
+  if (value && typeof value === 'object') {
+    return Object.values(value as Record<string, unknown>).some(item => containsMustache(item))
+  }
+  return false
 }

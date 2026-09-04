@@ -50,7 +50,11 @@ interface UseVarioOptions<TState> {
 
 ```typescript
 interface UseVarioResult<TState> {
-  /** 渲染的 VNode */
+  /** 渲染的 VNode。
+   *  legacy + 有组件实例时为 VarioLegacyRoot 组件 vnode（内部承载 render 函数，
+   *  指令等特性依赖 Vue 的 withDirectives 在 render 函数内调用，不能脱离组件边界）；
+   *  prepared 模式为 VarioRoot 组件 vnode；无实例直出时为原生元素 vnode。
+   */
   vnode: Ref<VNode | null>
   
   /** 响应式状态（自动包裹） */
@@ -394,6 +398,8 @@ const { vnode } = useVario(schemaRef, {
 })
 ```
 
+> **注意**：对 `schemaRef` 的监听是**非 deep** 的——只有根引用变化（`schemaRef.value = newSchema`）才会触发重渲染。就地修改 schema 对象（如 `schema.children.push(...)`）不会被监听捕获，请改用 `patchNode`/`find(...).patch(...)` 精确更新，或直接替换整个 schema 引用。
+
 ### Schema 函数
 
 ```typescript
@@ -530,6 +536,13 @@ const { state } = useVario(schema, {
 // 使用 flush: 'sync' 确保状态同步在渲染前完成
 // 内部自动处理，无需手动配置
 ```
+
+### prepared 模式的 `deepStateWatch`
+
+prepared 运行时通过 `runtimeBudget.deepStateWatch` 控制对"直接修改 state"（`state.count++`、`state.list.push(...)`，即不经 `ctx._set` 的写入）的响应：
+
+- **默认 `true`（开启）**：state 使用 `reactive` + sync deep watch，直接修改 state 会按采集路径精确失效（`recordChange` → region token / ResultMemo 推进）。写入成本与 legacy 全量失效路径同量级（基准见 `specs/runtime-regression-fix/verification-report.md`）。
+- **`false`（关闭）**：state 使用 `shallowReactive`，无根级 deep watch；`ctx._set` 路径仍精确更新（且更快），但**直接修改 state 不会触发视图刷新**。适用于仅通过 `_set`/`model` 写入的高频更新场景。
 
 ## 注意事项
 

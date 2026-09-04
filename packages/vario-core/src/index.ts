@@ -17,6 +17,11 @@ export {
   // 循环上下文（供框架集成层使用）
   createLoopContext,
   releaseLoopContext,
+  // 转发/作用域上下文原语
+  createForwardingContext,
+  getParentContext,
+  createScopeContext,
+  isScopeContext,
   // 路径工具（供框架集成层使用）
   parsePath,
   parsePathCached,
@@ -49,22 +54,53 @@ export {
   extractDependencies,
   getCachedExpression,
   setCachedExpression,
+  lookupCachedExpression,
   invalidateCache,
   clearCache,
-  getCacheStats
+  getCacheStats,
+  compileExpressionPlan,
+  compileExpressionPlanUncached,
+  getCachedExpressionPlan,
+  getPlanCacheStats,
+  ResultMemo,
+  evaluateExpressionPlan
 } from './expression/index.js'
+export { registerCapability, getCapability, listCapabilities } from './expression/policy.js'
+export { createDiagnosticSink, noopDiagnosticSink } from './diagnostics/diagnostic-sink.js'
+export type { DiagnosticSink, DiagnosticEvent } from './diagnostics/diagnostic-sink.js'
+export {
+  createScopeFrame,
+  lookupBinding,
+  releaseScopeFrame
+} from './scope/index.js'
+export type { ScopeFrame, ScopeTable } from './scope/index.js'
+export {
+  subscribeChangeSet,
+  beginChangeTransaction,
+  endChangeTransaction,
+  recordChange,
+  flushChangeSet
+} from './runtime/change-set.js'
+export { RuntimeSession, getOrCreateEngine, registerEngineMaterial, getEngineMaterial } from './runtime/runtime-session.js'
+export { StateStore } from './state/index.js'
+export { PageSessionManager } from './runtime/page-session-manager.js'
 
 // VM
 export {
   execute,
+  runChild,
   registerBuiltinMethods
 } from './vm/index.js'
 export type { ExecuteOptions } from './vm/index.js'
+export { unbindExecutionSession, getExecutionSession, bindExecutionSession, createExecutionSession } from './vm/execution-session.js'
+export type { ExecutionSession } from './vm/execution-session.js'
 export {
   ActionError,
   ExpressionError,
   ServiceError,
   BatchError,
+  PathWriteError,
+  SchemaDepthError,
   VarioError,
   ErrorCodes,
   type ErrorCode
@@ -83,6 +119,12 @@ export {
   type QueryEngineOptions,
   type NodeResult
 } from './schema/index.js'
+export {
+  scanSchemaIterative,
+  DEFAULT_MOUNT_MAX_DEPTH,
+  DEFAULT_SCAN_MAX_DEPTH,
+  type SchemaScanResult
+} from './schema/scan.js'
 
 export type { 
   Action,

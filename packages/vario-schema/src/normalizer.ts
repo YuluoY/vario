@@ -14,12 +14,17 @@
  */
 
 import type { ModelScopeConfig, SchemaNode, EventHandler } from './schema.types.js'
+import { normalizeEventHandler } from './event-handler.js'
 
 /**
  * 规范化结果缓存（基于对象引用）
  * 用于避免重复规范化相同的 Schema 节点
  */
-const normalizationCache = new WeakMap<SchemaNode, SchemaNode>()
+let normalizationCache = new WeakMap<SchemaNode, SchemaNode>()
+
+const KNOWN_FIELDS = new Set([
+  'type', 'props', 'children', 'events', 'cond', 'show', 'loop', 'model'
+])
 
 /**
  * 规范化 Schema 节点
@@ -30,27 +35,22 @@ const normalizationCache = new WeakMap<SchemaNode, SchemaNode>()
 export function normalizeSchemaNode<TState extends Record<string, unknown>>(
   node: SchemaNode<TState>
 ): SchemaNode<TState> {
-  // 检查缓存
   const cached = normalizationCache.get(node)
   if (cached) {
     return cached as SchemaNode<TState>
   }
 
-  // 构建规范化对象，使用对象字面量一次性创建（避免 readonly 赋值问题）
-  const normalized: {
-    type: string
-    props?: Readonly<Record<string, unknown>>
-    children?: string | ReadonlyArray<SchemaNode<TState>>
-    events?: Readonly<Record<string, EventHandler>>
-    cond?: string
-    show?: string
-    loop?: Readonly<{ items: string; itemKey: string; indexKey?: string }>
-    model?: string | Readonly<{ path: string; scope?: boolean }>
-  } = {
-    type: node.type.trim()  // 规范化 type
+  const normalized: Record<string, unknown> = {}
+
+  for (const key of Object.keys(node)) {
+    if (!KNOWN_FIELDS.has(key) && !key.startsWith('model:')) {
+      normalized[key] = (node as Record<string, unknown>)[key]
+    }
   }
 
-  if (node.props !== undefined && Object.keys(node.props).length > 0) {
+  normalized.type = node.type.trim()
+
+  if (node.props !== undefined) {
     normalized.props = normalizeProps(node.props)
   }
 
@@ -64,18 +64,17 @@ export function normalizeSchemaNode<TState extends Record<string, unknown>>(
 
   if (node.events !== undefined && Object.keys(node.events).length > 0) {
     const normalizedEvents = normalizeEvents(node.events)
-    // 只有当规范化后仍有事件时才添加
     if (Object.keys(normalizedEvents).length > 0) {
       normalized.events = normalizedEvents
     }
   }
 
-  if (node.cond !== undefined && node.cond.trim().length > 0) {
-    normalized.cond = node.cond.trim()
+  if (node.cond !== undefined) {
+    normalized.cond = typeof node.cond === 'string' ? node.cond.trim() : node.cond
   }
 
-  if (node.show !== undefined && node.show.trim().length > 0) {
-    normalized.show = node.show.trim()
+  if (node.show !== undefined) {
+    normalized.show = typeof node.show === 'string' ? node.show.trim() : node.show
   }
 
   if (node.loop !== undefined) {
@@ -83,7 +82,7 @@ export function normalizeSchemaNode<TState extends Record<string, unknown>>(
   }
 
   if (node.model !== undefined) {
-    if (typeof node.model === 'string' && node.model.trim().length > 0) {
+    if (typeof node.model === 'string') {
       normalized.model = node.model.trim()
     } else if (
       typeof node.model === 'object' &&
@@ -91,25 +90,25 @@ export function normalizeSchemaNode<TState extends Record<string, unknown>>(
       typeof (node.model as ModelScopeConfig).path === 'string'
     ) {
       const mo = node.model as ModelScopeConfig
-      normalized.model = { path: mo.path.trim(), scope: mo.scope }
+      const model: Record<string, unknown> = { path: mo.path.trim() }
+      if (mo.scope !== undefined) model.scope = mo.scope
+      if (mo.default !== undefined) model.default = mo.default
+      if (mo.lazy !== undefined) model.lazy = mo.lazy
+      if (mo.modifiers !== undefined) model.modifiers = mo.modifiers
+      normalized.model = model
+    } else {
+      normalized.model = node.model
     }
   }
 
-  // 处理具名 model（model:xxx）
   for (const key in node) {
-    if (key.startsWith('model:') && typeof (node as any)[key] === 'string') {
-      const modelPath = ((node as any)[key] as string).trim()
-      if (modelPath.length > 0) {
-        (normalized as any)[key] = modelPath
-      }
+    if (key.startsWith('model:') && typeof (node as Record<string, unknown>)[key] === 'string') {
+      normalized[key] = ((node as Record<string, unknown>)[key] as string).trim()
     }
   }
 
   const result = normalized as SchemaNode<TState>
-  
-  // 缓存结果
   normalizationCache.set(node, result)
-  
   return result
 }
 
@@ -132,23 +131,16 @@ function normalizeProps(
 
     // 规范化字符串值（表达式插值）
     if (typeof value === 'string') {
-      const normalizedStr = normalizeExpressionString(value)
-      // 跳过空字符串（除非是表达式）
-      if (normalizedStr.length > 0 || normalizedStr.includes('{{')) {
-        normalized[key] = normalizedStr
-      }
+      normalized[key] = normalizeExpressionString(value)
+    } else if (value === null) {
+      normalized[key] = null
     } else if (Array.isArray(value)) {
-      // 规范化数组（移除空项）
-      const filtered = value.filter(item => item !== undefined && item !== null)
-      if (filtered.length > 0) {
-        normalized[key] = filtered
-      }
+      const filtered = value.filter(item => item !== undefined)
+      normalized[key] = filtered
     } else if (typeof value === 'object' && value !== null) {
       // 规范化嵌套对象（递归）
       const normalizedObj = normalizeProps(value as Record<string, unknown>)
-      if (Object.keys(normalizedObj).length > 0) {
-        normalized[key] = normalizedObj
-      }
+      normalized[key] = normalizedObj
     } else {
       normalized[key] = value
     }
@@ -199,13 +191,12 @@ function normalizeEvents(
     if (handler == null) {
       continue
     }
-    
-    // 跳过空数组
+
     if (Array.isArray(handler) && handler.length === 0) {
       continue
     }
 
-    normalized[eventName] = handler
+    normalized[eventName] = normalizeEventHandler(handler)
   }
 
   return normalized
@@ -246,6 +237,5 @@ export function normalizeSchema<TState extends Record<string, unknown>>(
  * 用于测试或内存管理
  */
 export function clearNormalizationCache(): void {
-  // WeakMap 会自动清理，但我们可以创建一个新的 WeakMap
-  // 这里只是提供一个清理接口，实际清理由 GC 处理
+  normalizationCache = new WeakMap<SchemaNode, SchemaNode>()
 }

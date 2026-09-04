@@ -1,0 +1,11 @@
+{
+  "collectedAt": "2026-09-01T00:32:46.451Z",
+  "note": "library interaction probe, not production RUM p75",
+  "inpMs": 40,
+  "eventTimingMs": 40,
+  "nodeId": "button",
+  "actionId": "call",
+  "correct": true,
+  "source": "event-timing",
+  "chrome": "151.0.7922.34"
+}

@@ -36,12 +36,31 @@ export type RenderNodeForLoopItemFn = (
  * 循环处理器
  */
 export class LoopHandler {
+  private readonly loopTemplates = new WeakMap<SchemaNode, SchemaNode>()
+
   constructor(
     private pathResolver: ModelPathResolver,
     private createVNode: CreateVNodeFn,
     private evaluateExpr: (expr: string, ctx: RuntimeContext) => any,
     private getRenderNodeForLoopItem?: (parentMap: ParentMap) => RenderNodeForLoopItemFn
   ) {}
+
+  private templateWithoutLoop(schema: SchemaNode, itemsPath: string, loopItems: string): SchemaNode {
+    const cached = this.loopTemplates.get(schema)
+    if (cached) return cached
+    const template = { ...schema } as SchemaNode
+    delete (template as { loop?: unknown }).loop
+    const modelPathVal = this.pathResolver.getModelPath(schema.model)
+    if (modelPathVal) {
+      const extracted = this.pathResolver.extractModelPath(modelPathVal)
+      if (extracted === itemsPath) {
+        delete (template as { model?: unknown }).model
+      }
+    }
+    this.markLoopSchema(template, loopItems)
+    this.loopTemplates.set(schema, template)
+    return template
+  }
 
   /**
    * 创建循环渲染的 VNode
@@ -77,6 +96,7 @@ export class LoopHandler {
       
       items = evaluated
     } catch (error) {
+      if (error instanceof RangeError) throw error
       const errorMessage = error instanceof Error ? error.message : String(error)
       return h('div', { 
         style: 'color: red; padding: 10px;' 
@@ -112,18 +132,8 @@ export class LoopHandler {
     // 创建循环子节点（优化：稳定的key生成）
     const children = items
       .map((item: any, index: number) => {
-        try {
           // 创建子节点 schema（排除 loop 和已处理的 model 属性）
-          const childSchema = { ...schema }
-          delete (childSchema as any).loop
-          const modelPathVal = this.pathResolver.getModelPath(schema.model)
-          if (modelPathVal) {
-            const extracted = this.pathResolver.extractModelPath(modelPathVal)
-            if (extracted === itemsPath) {
-              delete (childSchema as any).model
-            }
-          }
-          this.markLoopSchema(childSchema, loop.items)
+          const childSchema = this.templateWithoutLoop(schema, itemsPath, loop.items)
 
           const loopPathStack: PathSegment[] = [...basePathStack, index]
           const itemPath = parentPath ? `${parentPath}.[${index}]` : `[${index}]`
@@ -166,14 +176,6 @@ export class LoopHandler {
             ;(vnode as any).key = keyValue
           }
           return vnode
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error)
-          console.warn(`Loop item render error at index ${index}:`, errorMessage)
-          return h('div', {
-            key: `error-${index}`,
-            style: 'color: red; padding: 5px;'
-          }, `Render error: ${errorMessage}`)
-        }
       })
       .filter((vnode: any) => vnode !== null && vnode !== undefined)
 

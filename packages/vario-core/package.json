@@ -1,6 +1,6 @@
 {
   "name": "@variojs/core",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Vario Core Runtime - Instruction VM, Expression System, Runtime Context",
   "type": "module",
   "main": "./dist/index.js",
@@ -10,10 +10,30 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./runtime": {
+      "import": "./dist/runtime.js",
+      "types": "./dist/runtime.d.ts"
+    },
+    "./compiler": {
+      "import": "./dist/compiler.js",
+      "types": "./dist/compiler.d.ts"
+    },
+    "./expression": {
+      "import": "./dist/expression.js",
+      "types": "./dist/expression.d.ts"
+    },
+    "./vm": {
+      "import": "./dist/vm.js",
+      "types": "./dist/vm.d.ts"
+    },
+    "./schema-tools": {
+      "import": "./dist/schema-tools.js",
+      "types": "./dist/schema-tools.d.ts"
     }
   },
   "scripts": {
-    "build": "tsup",
+    "build": "rm -rf dist && tsup",
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -22,8 +42,7 @@
   "dependencies": {
     "@babel/parser": "^7.23.6",
     "@babel/types": "^7.23.6",
-    "@variojs/types": "workspace:*",
-    "@variojs/schema": "workspace:*"
+    "@variojs/types": "workspace:*"
   },
   "devDependencies": {
     "tsc-alias": "^1.8.8",

@@ -28,13 +28,14 @@ export async function handleEmit(
     )
   }
   
-  // 求值 data（支持表达式）
+  // 求值 data（支持表达式）。未写 data 时 payload 为 undefined；
+  // 需要 $event 时显式写 data: '{{ $event }}'（FR-14）。
   let finalData = data
   if (typeof data === 'string' && data.startsWith('{{') && data.endsWith('}}')) {
     const expr = data.slice(2, -2).trim()
     finalData = evaluate(expr, ctx)
   }
-  
+
   // 触发事件
   ctx.$emit(event, finalData)
 }

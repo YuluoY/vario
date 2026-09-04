@@ -24,3 +24,29 @@ export * from './features/refs.js'
 export * from './features/teleport.js'
 export * from './features/provide-inject.js'
 export * from './plugins/index.js'
+export { VarioRoot } from './components/vario-root.js'
+export { VarioNode } from './components/vario-node.js'
+export { useVarioPages } from './composables/useVarioPages.js'
+export { StaticRegion } from './components/static-region.js'
+export { DynamicRegion } from './components/dynamic-region.js'
+export { LoopRegion } from './components/loop-region.js'
+export { LoopItemCell } from './components/loop-item-cell.js'
+export { VarioLifecycleBoundary } from './components/lifecycle-boundary.js'
+export { VarioErrorBoundary } from './components/error-boundary.js'
+export {
+  getRuntimeMode,
+  setRuntimeMode,
+  PageSession,
+  getPageSessionForContext,
+  compareShadowPlans,
+  evaluateCanary,
+  detectVueCapabilities,
+  createSsrSession,
+  activePageSessionCount
+} from './runtime/runtime-mode.js'
+export { renderSsrToString, hydrateVarioApp } from './ssr/index.js'
+export { recordRuntimeMetric, recordInteractionBudget } from './runtime/runtime-metrics.js'
+export { adaptLegacySchema } from './runtime/legacy-prepared-adapter.js'
+export { createReferenceVirtualAdapter } from './runtime/virtual-list-adapter.js'
+export type { VirtualListAdapter } from './runtime/virtual-list-adapter.js'
+export { evaluateCanary as applyCanary } from './runtime/canary-controller.js'

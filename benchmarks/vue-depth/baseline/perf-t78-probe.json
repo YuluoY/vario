@@ -1,0 +1,109 @@
+{
+  "collectedAt": "2026-09-01T00:10:30.605Z",
+  "note": "probe warmup2/samples5/process1, not 20/50/3",
+  "chrome": "151.0.7922.34",
+  "t7": [
+    {
+      "prepareMs": 30.90000009536743,
+      "vnodeMs": 30.90000009536743,
+      "commitMs": 30.90000009536743,
+      "paintMs": 30.90000009536743,
+      "longTaskMs": 0,
+      "longTaskCount": 0,
+      "correct": true,
+      "gate": "PERF-T7"
+    },
+    {
+      "prepareMs": 29.09999990463257,
+      "vnodeMs": 29.09999990463257,
+      "commitMs": 29.09999990463257,
+      "paintMs": 29.09999990463257,
+      "longTaskMs": 0,
+      "longTaskCount": 0,
+      "correct": true,
+      "gate": "PERF-T7"
+    },
+    {
+      "prepareMs": 30,
+      "vnodeMs": 30,
+      "commitMs": 30,
+      "paintMs": 30,
+      "longTaskMs": 0,
+      "longTaskCount": 0,
+      "correct": true,
+      "gate": "PERF-T7"
+    },
+    {
+      "prepareMs": 28.5,
+      "vnodeMs": 28.5,
+      "commitMs": 28.5,
+      "paintMs": 28.5,
+      "longTaskMs": 0,
+      "longTaskCount": 0,
+      "correct": true,
+      "gate": "PERF-T7"
+    },
+    {
+      "prepareMs": 28.899999618530273,
+      "vnodeMs": 28.899999618530273,
+      "commitMs": 28.899999618530273,
+      "paintMs": 28.899999618530273,
+      "longTaskMs": 0,
+      "longTaskCount": 0,
+      "correct": true,
+      "gate": "PERF-T7"
+    }
+  ],
+  "t8": [
+    {
+      "prepareMs": 0.6999998092651367,
+      "vnodeMs": 0.6999998092651367,
+      "commitMs": 0.6999998092651367,
+      "paintMs": 0.6999998092651367,
+      "longTaskMs": 0,
+      "longTaskCount": 0,
+      "correct": true,
+      "gate": "PERF-T8"
+    },
+    {
+      "prepareMs": 0.5999999046325684,
+      "vnodeMs": 0.5999999046325684,
+      "commitMs": 0.5999999046325684,
+      "paintMs": 0.5999999046325684,
+      "longTaskMs": 0,
+      "longTaskCount": 0,
+      "correct": true,
+      "gate": "PERF-T8"
+    },
+    {
+      "prepareMs": 0.5999999046325684,
+      "vnodeMs": 0.5999999046325684,
+      "commitMs": 0.5999999046325684,
+      "paintMs": 0.5999999046325684,
+      "longTaskMs": 0,
+      "longTaskCount": 0,
+      "correct": true,
+      "gate": "PERF-T8"
+    },
+    {
+      "prepareMs": 0.6000003814697266,
+      "vnodeMs": 0.6000003814697266,
+      "commitMs": 0.6000003814697266,
+      "paintMs": 0.6000003814697266,
+      "longTaskMs": 0,
+      "longTaskCount": 0,
+      "correct": true,
+      "gate": "PERF-T8"
+    },
+    {
+      "prepareMs": 0.7000002861022949,
+      "vnodeMs": 0.7000002861022949,
+      "commitMs": 0.7000002861022949,
+      "paintMs": 0.7000002861022949,
+      "longTaskMs": 0,
+      "longTaskCount": 0,
+      "correct": true,
+      "gate": "PERF-T8"
+    }
+  ]
+}

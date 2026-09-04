@@ -4,7 +4,9 @@
 
 import type { SchemaNode } from '@variojs/types'
 import { getPathValue } from '../runtime/path.js'
+import { findNode } from './analyzer.js'
 import type { SchemaIndex } from './analyzer.js'
+import { ErrorCodes, VarioError } from '../errors.js'
 
 /**
  * 查询引擎配置
@@ -14,6 +16,8 @@ export interface QueryEngineOptions {
   schema: SchemaNode
   /** 索引（可选，用于加速 ID 查询） */
   index?: SchemaIndex
+  /** 只读文档不得 patch */
+  readonly?: boolean
 }
 
 /**
@@ -24,6 +28,8 @@ export interface NodeResult {
   node: SchemaNode
   /** 节点路径 */
   path: string
+  /** 原地 patch；只读输入抛 SCHEMA_READONLY */
+  patch: (partial: Partial<SchemaNode>) => SchemaNode
 }
 
 /**
@@ -31,8 +37,41 @@ export interface NodeResult {
  * 
  * 提供高性能的 Schema 查询能力
  */
+function isReadonlyHost(schema: SchemaNode, node: SchemaNode, readonly?: boolean): boolean {
+  return Boolean(readonly || Object.isFrozen(schema) || Object.isFrozen(node))
+}
+
+function attachPatch(
+  schema: SchemaNode,
+  result: { node: SchemaNode; path: string } | null,
+  readonly?: boolean
+): NodeResult | null {
+  if (!result) return null
+  return {
+    node: result.node,
+    path: result.path,
+    patch(partial: Partial<SchemaNode>) {
+      if (isReadonlyHost(schema, result.node, readonly)) {
+        throw new VarioError('Schema is readonly', ErrorCodes.SCHEMA_READONLY, {
+          schemaPath: result.path
+        })
+      }
+      if (partial.props && result.node.props && typeof partial.props === 'object') {
+        const mutable = result.node as SchemaNode & { props?: Record<string, unknown> }
+        mutable.props = { ...result.node.props, ...(partial.props as object) }
+        const rest = { ...partial }
+        delete (rest as { props?: unknown }).props
+        Object.assign(mutable, rest)
+      } else {
+        Object.assign(result.node, partial)
+      }
+      return result.node
+    }
+  }
+}
+
 export function createQueryEngine(options: QueryEngineOptions) {
-  const { schema, index } = options
+  const { schema, index, readonly } = options
 
   /**
    * 通过 ID 查找节点
@@ -41,21 +80,20 @@ export function createQueryEngine(options: QueryEngineOptions) {
     // 如果有索引，使用索引查找（O(1)）
     if (index?.idMap) {
       const path = index.idMap.get(id)
-      if (!path) return null
-
-      // 如果有 pathMap，直接返回
-      if (index.pathMap) {
-        const node = index.pathMap.get(path)
-        return node ? { node, path } : null
+      if (path !== undefined) {
+        if (index.pathMap) {
+          const node = index.pathMap.get(path)
+          return attachPatch(schema, node ? { node, path } : (path === '' ? { node: schema, path: '' } : null), readonly)
+        }
+        if (path === '') {
+          return attachPatch(schema, { node: schema, path: '' }, readonly)
+        }
+        const node = getPathValue(schema, path) as SchemaNode
+        return attachPatch(schema, node ? { node, path } : null, readonly)
       }
-
-      // 否则通过路径获取节点
-      const node = getPathValue(schema, path) as SchemaNode
-      return node ? { node, path } : null
     }
 
-    // 没有索引，需要遍历查找（回退方案）
-    return null
+    return attachPatch(schema, findNode(schema, (node) => (node as { id?: unknown }).id === id), readonly)
   }
 
   /**
@@ -76,8 +114,7 @@ export function createQueryEngine(options: QueryEngineOptions) {
     while (true) {
       const lastDot = currentPath.lastIndexOf('.')
       if (lastDot === -1) {
-        // 已经到达根级别，返回根节点
-        return { node: schema, path: '' }
+        return attachPatch(schema, { node: schema, path: '' }, readonly)
       }
       
       currentPath = currentPath.substring(0, lastDot)
@@ -97,7 +134,7 @@ export function createQueryEngine(options: QueryEngineOptions) {
       }
       
       if (node && typeof node === 'object') {
-        return { node, path: currentPath }
+        return attachPatch(schema, { node, path: currentPath }, readonly)
       }
     }
   }

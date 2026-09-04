@@ -39,9 +39,15 @@ export interface ReactiveAdapter {
  * 
  * 注意：动作处理器也通过 $methods 注册，但它们的参数是 Action
  */
+export interface ExecutionMetadata {
+  readonly signal?: AbortSignal
+  readonly executionId?: string
+}
+
 export type MethodHandler<TParams = unknown, TResult = unknown> = (
   ctx: any,  // 避免循环依赖，实际上是 RuntimeContext
-  params: TParams
+  params: TParams,
+  metadata?: ExecutionMetadata
 ) => Promise<TResult> | TResult
 
 /**
@@ -92,7 +98,7 @@ export type RuntimeContext<TState extends Record<string, unknown> = Record<strin
     $children?: SchemaNode<TState>[]
     // 内部方法（路径解析，不对外暴露）
     _get: <TPath extends string>(path: TPath) => GetPathValue<TState, TPath>
-    _set: <TPath extends string>(path: TPath, value: SetPathValue<TState, TPath>, options?: { skipCallback?: boolean }) => void
+    _set: <TPath extends string>(path: TPath, value: SetPathValue<TState, TPath>, options?: { skipCallback?: boolean; bypassSession?: boolean }) => void
   } &
   // 允许动态添加状态属性（运行时扩展）
   Record<string, unknown>

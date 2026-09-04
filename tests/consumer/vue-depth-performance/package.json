@@ -1,0 +1,6 @@
+{
+  "name": "vario-vue-depth-performance-consumer",
+  "private": true,
+  "type": "module",
+  "description": "T5.6 Vue 3.4/3.5 CSR/SSR 200/1000 node consumer fixture"
+}

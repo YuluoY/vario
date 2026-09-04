@@ -56,4 +56,33 @@ describe('AST 白名单验证', () => {
     // 注意：实际测试中，this 可能无法作为独立表达式解析
     // 这里主要验证白名单机制工作正常
   })
+
+  it('EXPR-3 allowed AST forms evaluate; forbidden stay rejected', async () => {
+    const { evaluate, createRuntimeContext } = await import('../../src/index.js')
+    const ctx = createRuntimeContext({
+      user: { name: 'Ada' },
+      items: [1],
+      age: 20,
+      flag: true
+    })
+    const allowed = [
+      'user.name',
+      'user?.name',
+      'items[0]',
+      'age > 18',
+      'flag && age > 0',
+      '!flag',
+      'flag ? 1 : 0',
+      'Math.max(1, 2)',
+      'user.name ?? "x"',
+      '`n-${age}`'
+    ]
+    for (const expr of allowed) {
+      expect(() => validateAST(parseExpression(expr))).not.toThrow()
+      expect(evaluate(expr, ctx)).not.toBe(undefined)
+    }
+    for (const expr of ['count++', 'user.name = 1', '() => 1', 'new Date()']) {
+      expect(() => validateAST(parseExpression(expr))).toThrow(ExpressionError)
+    }
+  })
 })

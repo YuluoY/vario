@@ -87,7 +87,7 @@ export function useSchemaQuery(
 
     findById: (id) => {
       const path = analyzer.getPathById(id)
-      if (!path) return null
+      if (path === undefined) return null
       
       const root = getRoot()
       const node = getPathValue(root, path) as SchemaNode

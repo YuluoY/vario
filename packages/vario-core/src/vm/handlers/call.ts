@@ -17,6 +17,7 @@ import type { RuntimeContext, Action } from '@variojs/types'
 import { ActionError, ServiceError, ErrorCodes } from '@/errors.js'
 import { evaluate } from '@/expression/evaluate.js'
 import { invalidateCache } from '@/expression/cache.js'
+import { getExecutionSession } from '../execution-session.js'
 
 /**
  * 处理 call 动作
@@ -94,11 +95,13 @@ export async function handleCall(
       finalParams = rawParams
     }
     
-    // 调用 method
-    const result = await handler(ctx, finalParams)
+    const session = getExecutionSession(ctx)
+    const result = handler.length >= 3
+      ? await handler(ctx, finalParams, session?.metadata)
+      : await handler(ctx, finalParams)
     
-    // 如果指定了 resultTo，保存结果到状态
     if (resultTo) {
+      session?.throwIfCancelled(action)
       ctx._set(resultTo, result)
       invalidateCache(resultTo, ctx)
     }
@@ -107,6 +110,9 @@ export async function handleCall(
   } catch (error: unknown) {
     // 如果错误已经是 ServiceError，直接抛出
     if (error instanceof ServiceError) {
+      throw error
+    }
+    if (error instanceof ActionError) {
       throw error
     }
     

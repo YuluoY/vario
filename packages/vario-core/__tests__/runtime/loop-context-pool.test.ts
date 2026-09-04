@@ -23,6 +23,9 @@ describe('循环上下文对象池', () => {
     expect(loopCtx.$item).toBe('item1')
     expect(loopCtx.$index).toBe(0)
     expect(loopCtx.count).toBe(0)
+    expect(Object.getPrototypeOf(loopCtx)).toBe(Object.prototype)
+    expect(Object.getPrototypeOf(loopCtx)).not.toBe(parentCtx)
+    releaseLoopContext(loopCtx)
   })
 
   it('应该复用父上下文的属性', () => {
@@ -33,16 +36,12 @@ describe('循环上下文对象池', () => {
     expect(loopCtx.$item).toBe('item')
   })
 
-  it('应该释放循环上下文回对象池', () => {
+  it('应该释放循环上下文且公开 pool 不跨调用保留 locals', () => {
     const pool = getLoopContextPool()
-    const initialSize = pool.size
-    
     const parentCtx = createRuntimeContext({ count: 0 })
     const loopCtx = createLoopContext(parentCtx, 'item', 0)
-    
     releaseLoopContext(loopCtx)
-    
-    expect(pool.size).toBeGreaterThan(initialSize)
+    expect(pool.size).toBe(0)
   })
 
   it('应该清理循环相关属性', () => {
@@ -51,6 +50,7 @@ describe('循环上下文对象池', () => {
     loopCtx.tempVar = 'temp'
     
     releaseLoopContext(loopCtx)
+    expect(Object.getPrototypeOf(loopCtx)).toBe(Object.prototype)
     
     // 再次获取应该清理了循环属性
     const newCtx = createLoopContext(parentCtx, 'newItem', 1)
@@ -58,17 +58,22 @@ describe('循环上下文对象池', () => {
     expect(newCtx.$index).toBe(1)
   })
 
-  it('应该复用对象池中的对象', () => {
+  it('公开 pool shim 不在全局保留 locals', () => {
     const pool = getLoopContextPool()
     const parentCtx = createRuntimeContext({ count: 0 })
-    
-    // 创建并释放多个上下文
     for (let i = 0; i < 5; i++) {
       const loopCtx = createLoopContext(parentCtx, `item${i}`, i)
       releaseLoopContext(loopCtx)
     }
-    
-    // 对象池应该有一些对象
-    expect(pool.size).toBeGreaterThan(0)
+    expect(pool.size).toBe(0)
+  })
+
+  it('MEM-1 released frame does not keep parent RuntimeContext as prototype', () => {
+    const parentCtx = createRuntimeContext({ secret: 1 })
+    const loopCtx = createLoopContext(parentCtx, 'item', 0)
+    expect(Object.getPrototypeOf(loopCtx)).not.toBe(parentCtx)
+    releaseLoopContext(loopCtx)
+    expect(Object.getPrototypeOf(loopCtx)).toBe(Object.prototype)
+    expect(Object.prototype.hasOwnProperty.call(loopCtx, 'secret')).toBe(false)
   })
 })

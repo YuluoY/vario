@@ -1,0 +1,78 @@
+{
+  "collectedAt": "2026-08-31T18:41:24.199Z",
+  "chrome": "151.0.7922.34",
+  "protocol": {
+    "warmup": 20,
+    "samples": 50,
+    "processCount": 3,
+    "mode": "production"
+  },
+  "samples": [
+    {
+      "prepareMs": 0.8000001907348633,
+      "vnodeMs": 0.8000001907348633,
+      "commitMs": 0.8000001907348633,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "longTaskCount": 0,
+      "correct": true,
+      "gate": "PERF-T1",
+      "chrome": "151.0.7922.34"
+    },
+    {
+      "prepareMs": 33.19999980926514,
+      "vnodeMs": 5.099999904632568,
+      "commitMs": 5.099999904632568,
+      "paintMs": 5.400000095367432,
+      "longTaskMs": 0,
+      "longTaskCount": 0,
+      "correct": true,
+      "gate": "PERF-T2",
+      "chrome": "151.0.7922.34"
+    },
+    {
+      "prepareMs": 41.5,
+      "vnodeMs": 19.199999809265137,
+      "commitMs": 19.199999809265137,
+      "paintMs": 21.199999809265137,
+      "longTaskMs": 0,
+      "longTaskCount": 0,
+      "correct": true,
+      "gate": "PERF-T3",
+      "chrome": "151.0.7922.34"
+    },
+    {
+      "prepareMs": 57.90000009536743,
+      "vnodeMs": 0.20000028610229492,
+      "commitMs": 0.20000028610229492,
+      "paintMs": 20.200000286102295,
+      "longTaskMs": 0,
+      "longTaskCount": 0,
+      "correct": true,
+      "gate": "PERF-T4",
+      "chrome": "151.0.7922.34"
+    },
+    {
+      "prepareMs": 33.09999990463257,
+      "vnodeMs": 6.300000190734863,
+      "commitMs": 6.300000190734863,
+      "paintMs": 15.199999809265137,
+      "longTaskMs": 0,
+      "longTaskCount": 0,
+      "correct": true,
+      "gate": "PERF-T5",
+      "chrome": "151.0.7922.34"
+    },
+    {
+      "prepareMs": 50.69999980926514,
+      "vnodeMs": 1.1000003814697266,
+      "commitMs": 1.1000003814697266,
+      "paintMs": 14.699999809265137,
+      "longTaskMs": 0,
+      "longTaskCount": 0,
+      "correct": true,
+      "gate": "PERF-T6",
+      "chrome": "151.0.7922.34"
+    }
+  ]
+}

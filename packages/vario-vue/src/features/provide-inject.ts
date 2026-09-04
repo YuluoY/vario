@@ -12,7 +12,7 @@
 
 import { provide, inject, type InjectionKey } from 'vue'
 import type { RuntimeContext } from '@variojs/types'
-import { evaluate } from '@variojs/core'
+import { evaluate, extractExpression } from '@variojs/core'
 import type { VueSchemaNode } from '../types.js'
 
 /**
@@ -66,11 +66,13 @@ export function setupProvide(
     // 如果值是字符串且看起来像表达式，尝试求值
     if (typeof value === 'string' && looksLikeExpression(value)) {
       try {
-        const result = evaluate(value, ctx)
+        // 统一走 core evaluate()（provide 发生在组件 setup，频率低；
+        // 不再按"能否查到 PageSession"推断走 memo 路径，决策 2）
+        const result = evaluate(extractExpression(value), ctx)
         // 只有当结果不是 undefined 时才使用求值结果
         resolvedValue = result !== undefined ? result : value
-      } catch {
-        // 表达式求值失败，使用原始字符串
+      } catch (error) {
+        if (error instanceof RangeError) throw error
         resolvedValue = value
       }
     } else {

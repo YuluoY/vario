@@ -8,6 +8,10 @@
  */
 
 import type { RuntimeContext, ReactiveAdapter } from '@variojs/types'
+import { recordChange } from './change-set.js'
+import { invalidateCache } from '../expression/cache.js'
+import { isContextDisposed, emitContextDiagnostic } from './runtime-session.js'
+import { ErrorCodes } from '../errors.js'
 
 /**
  * 创建受保护的 Proxy 上下文
@@ -19,7 +23,7 @@ import type { RuntimeContext, ReactiveAdapter } from '@variojs/types'
  * @returns 受保护的 Proxy 包装的上下文
  */
 export function createProxy<T extends RuntimeContext>(ctx: T, adapter?: ReactiveAdapter): T {
-  // 允许设置和删除的特殊变量（循环/事件上下文变量；vario-vue 节点关系扩展）
+  // 允许设置和删除的特殊变量（循环/事件上下文变量；vario-vue 节点关系扩展；weft 命名空间注入）
   // 注意：$methods 不在此列表中，不允许被整体覆盖
   const allowedSpecialVars = [
     '$event',
@@ -28,7 +32,12 @@ export function createProxy<T extends RuntimeContext>(ctx: T, adapter?: Reactive
     '$self',
     '$parent',
     '$siblings',
-    '$children'
+    '$children',
+    // weft 命名空间：由宿主应用注入，运行时可更新
+    '$variables',
+    '$datasources',
+    '$functions',
+    '$utils'
   ]
 
   /**
@@ -41,17 +50,24 @@ export function createProxy<T extends RuntimeContext>(ctx: T, adapter?: Reactive
     return !key.startsWith('$') && !key.startsWith('_')
   }
   
-  return new Proxy(ctx, {
-    set(target, prop, value) {
+  const proxy: T = new Proxy(ctx, {
+    set(target, prop, value, receiver) {
       const propName = String(prop)
-      
+
       // 禁止覆盖系统 API
       if (propName.startsWith('$') || propName.startsWith('_')) {
         // 允许设置特殊变量
         if (allowedSpecialVars.includes(propName)) {
-          return Reflect.set(target, prop, value)
+          // 传 receiver：当此 proxy 作为原型（如 Object.create(proxy)）时，
+          // 子对象上的赋值应在子对象（receiver）上创建自有属性，而非污染 target。
+          const ok = Reflect.set(target, prop, value, receiver)
+          if (ok) {
+            // 特殊变量（$event/$self/...）赋值即失效相关缓存（FR-3）
+            invalidateCache(propName, proxy)
+          }
+          return ok
         }
-        
+
         throw new Error(
           `Cannot override system API: ${propName}. ` +
           `Properties starting with "$" or "_" are protected.`
@@ -59,12 +75,54 @@ export function createProxy<T extends RuntimeContext>(ctx: T, adapter?: Reactive
       }
 
       // 有 adapter 时，状态写入路由到 adapter
+      // 但仅当直接在 proxy 上设置时路由；通过原型链继承的对象（如 loopCtx = Object.create(proxy)）
+      // 上设置局部变量（如 item/index）时，应在 receiver 上创建自有属性，
+      // 否则会误写入 Vue reactiveState，触发 VarioNode 递归更新。
       if (adapter && isStateKey(prop)) {
-        adapter.setProperty(propName, value)
-        return true
+        if (receiver === proxy) {
+          if (isContextDisposed(proxy)) {
+            // disposed 后写入：静默忽略 + 诊断（FR-7）
+            emitContextDiagnostic(proxy, {
+              name: 'state-write',
+              diagnostic: {
+                code: ErrorCodes.SESSION_DISPOSED_WRITE,
+                message: 'write to disposed context ignored',
+                path: propName,
+                phase: 'runtime'
+              }
+            })
+            return true
+          }
+          adapter.setProperty(propName, value)
+          invalidateCache(propName, proxy)
+          recordChange(proxy, propName, value)
+          return true
+        }
+        return Reflect.set(target, prop, value, receiver)
       }
-      
-      return Reflect.set(target, prop, value)
+
+      if (isStateKey(prop) && receiver === proxy) {
+        if (isContextDisposed(proxy)) {
+          emitContextDiagnostic(proxy, {
+            name: 'state-write',
+            diagnostic: {
+              code: ErrorCodes.SESSION_DISPOSED_WRITE,
+              message: 'write to disposed context ignored',
+              path: propName,
+              phase: 'runtime'
+            }
+          })
+          return true
+        }
+        const ok = Reflect.set(target, prop, value, receiver)
+        if (ok) {
+          invalidateCache(propName, proxy)
+          recordChange(proxy, propName, value)
+        }
+        return ok
+      }
+
+      return Reflect.set(target, prop, value, receiver)
     },
     
     get(target, prop) {
@@ -108,8 +166,12 @@ export function createProxy<T extends RuntimeContext>(ctx: T, adapter?: Reactive
         return {
           configurable: true,
           enumerable: true,
-          writable: true,
-          value: adapter.getProperty(prop)
+          get: () => adapter.getProperty(prop),
+          set: (value: unknown) => {
+            adapter.setProperty(prop, value)
+            invalidateCache(prop, proxy)
+            recordChange(proxy, prop, value)
+          }
         }
       }
       return Reflect.getOwnPropertyDescriptor(target, prop)
@@ -130,4 +192,5 @@ export function createProxy<T extends RuntimeContext>(ctx: T, adapter?: Reactive
       return Reflect.deleteProperty(target, prop)
     }
   })
+  return proxy
 }

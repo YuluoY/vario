@@ -29,6 +29,8 @@ describe('defineSchema 转换器', () => {
 
     expect(view.schema.type).toBe('div')
     expect(Array.isArray(view.schema.children)).toBe(true)
+    expect(view.document?.schemaVersion).toBe(1)
+    expect(view.document?.initialState).toMatchObject({ count: 0 })
   })
 
   it('应该支持服务注册', () => {

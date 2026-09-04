@@ -11,6 +11,10 @@ import { shouldTeleport, createTeleport } from '../features/teleport.js'
 
 export const teleportPlugin: VNodePlugin = {
   name: 'teleport',
+  setup() {},
+  validate() {},
+  prepare() {},
+  dispose() {},
 
   decorateVNode(vnode: VNode, schema: VueSchemaNode): VNode {
     if (!shouldTeleport(schema.teleport)) return vnode

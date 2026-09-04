@@ -326,6 +326,16 @@ export interface LoopConfig {
    * @example "index"
    */
   readonly indexKey?: string
+
+  /**
+   * 稳定 item key 表达式（可选）。缺省回退 item.id，再回退 index。
+   */
+  readonly key?: string
+
+  /**
+   * 是否对该 loop 使用宿主虚拟化。false 时全量展开但仍受预算约束。
+   */
+  readonly virtual?: boolean
 }
 
 /**
@@ -480,4 +490,5 @@ export interface VarioView<TState extends Record<string, unknown> = Record<strin
    * 服务类型（用于类型推导）
    */
   readonly servicesType?: Record<string, (...args: unknown[]) => unknown>
+  readonly document?: import('./document.js').SchemaDocument
 }

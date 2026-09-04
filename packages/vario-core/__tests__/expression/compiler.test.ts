@@ -103,9 +103,29 @@ describe('表达式编译器', () => {
     it('应该为无法编译的表达式返回 null', () => {
       const expr = 'user.name + 1'
       const ast = parseExpression(expr)
-      
+
       const compiled = getCompiledExpression(expr, ast)
       expect(compiled).toBeNull()
+    })
+
+    it('SEC-4: 满容量后只淘汰最旧 1 项，不全表清空', () => {
+      // 先填充 COMPILED_CACHE_MAX 项并记录引用；再插入一项触发淘汰
+      const compiledOf = new Map<string, unknown>()
+      for (let i = 0; i < 2000; i++) {
+        const expr = `user.k${i}`
+        compiledOf.set(expr, getCompiledExpression(expr, parseExpression(expr)))
+      }
+      const firstExpr = 'user.first'
+      const firstCompiled = getCompiledExpression(firstExpr, parseExpression(firstExpr))
+
+      // 插入 first 时只淘汰最旧项 user.k0；其余项保持原引用，证明不是全表清空
+      expect(getCompiledExpression('user.k1', parseExpression('user.k1'))).toBe(compiledOf.get('user.k1'))
+      expect(getCompiledExpression(firstExpr, parseExpression(firstExpr))).toBe(firstCompiled)
+
+      // 被淘汰的 user.k0 重新编译返回新函数（引用变化）
+      const k0After = getCompiledExpression('user.k0', parseExpression('user.k0'))
+      expect(k0After).not.toBe(compiledOf.get('user.k0'))
+      expect(typeof k0After).toBe('function')
     })
   })
 })

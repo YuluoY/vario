@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Vario CDP heap result",
+  "type": "object",
+  "required": ["collectedAt", "slope", "samples"],
+  "properties": {
+    "collectedAt": { "type": "string", "format": "date-time" },
+    "slope": { "type": "number" },
+    "protocol": { "type": "string" },
+    "samples": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "gcBefore", "heapAfter", "retainedBytes", "objectCount", "collectedAt"],
+        "properties": {
+          "label": { "type": "string" },
+          "gcBefore": { "type": "number" },
+          "heapAfter": { "type": "number" },
+          "retainedBytes": { "type": "number" },
+          "objectCount": { "type": "number" },
+          "snapshotPath": { "type": ["string", "null"] },
+          "collectedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  }
+}

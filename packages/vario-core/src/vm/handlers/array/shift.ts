@@ -7,7 +7,6 @@
 
 import type { RuntimeContext, Action } from '@variojs/types'
 import { ActionError, ErrorCodes } from '@/errors.js'
-import { invalidateCache } from '@/expression/cache.js'
 
 /**
  * 处理 shift 动作
@@ -39,10 +38,6 @@ export async function handleShift(
     )
   }
   
-  // 删除首元素
-  array.shift()
-  
-  // 使相关缓存失效
-  invalidateCache(path, ctx)
-  invalidateCache(`${path}.*`, ctx)
+  const next = array.slice(1)
+  ctx._set(path, next)
 }

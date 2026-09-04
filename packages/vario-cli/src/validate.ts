@@ -5,7 +5,7 @@
  */
 
 import { readFileSync } from 'fs'
-import { validateSchemaWithResult } from '@variojs/schema'
+import { validateSchemaWithResult, prepareView, wrapLegacy, describeDocument } from '@variojs/schema'
 import type { ValidationOptions } from '@variojs/schema'
 
 export type ValidateOptions = ValidationOptions
@@ -56,4 +56,94 @@ export function validateFiles(files: string[], options: ValidateOptions = {}): V
   }
 
   return { valid: allValid, fileResults }
+}
+
+export type PrepareFileResult = {
+  file: string
+  profile: string
+  nodeCount: number
+  maxDepth: number
+  diagnostics: Array<{ code: string; message: string; path: string; phase: string }>
+}
+
+export function prepareFiles(
+  files: string[],
+  options: { profile?: string; maxDepth?: number; maxNodes?: number } = {}
+): PrepareFileResult[] {
+  const profile = options.profile ?? 'default'
+  const results: PrepareFileResult[] = []
+  for (const file of files) {
+    if (!file.endsWith('.json')) continue
+    const schema = JSON.parse(readFileSync(file, 'utf-8'))
+    const view = prepareView(wrapLegacy(schema).root, { maxDepth: options.maxDepth, maxNodes: options.maxNodes })
+    results.push({
+      file,
+      profile,
+      nodeCount: view.nodeCount,
+      maxDepth: view.maxDepth,
+      diagnostics: view.diagnostics.map(d => ({
+        code: d.code,
+        message: d.message,
+        path: d.path,
+        phase: d.phase
+      }))
+    })
+  }
+  return results
+}
+
+export type MigrateFileResult = {
+  file: string
+  schemaVersion: number
+  id: string
+}
+
+export function migrateFiles(files: string[]): MigrateFileResult[] {
+  const results: MigrateFileResult[] = []
+  for (const file of files) {
+    if (!file.endsWith('.json')) continue
+    const doc = wrapLegacy(JSON.parse(readFileSync(file, 'utf-8')))
+    results.push({
+      file,
+      schemaVersion: doc.schemaVersion ?? doc.version,
+      id: doc.id ?? 'doc:root'
+    })
+  }
+  return results
+}
+
+export type InspectFileResult = {
+  file: string
+  id: string
+  schemaVersion: number
+  nodeCount: number
+  maxDepth: number
+  diagnostics: Array<{ code: string; message: string; path: string; phase: string }>
+}
+
+export function inspectFiles(files: string[]): InspectFileResult[] {
+  const results: InspectFileResult[] = []
+  for (const file of files) {
+    if (!file.endsWith('.json')) continue
+    const doc = wrapLegacy(JSON.parse(readFileSync(file, 'utf-8')))
+    const view = prepareView(doc.root)
+    const described = describeDocument(doc)
+    results.push({
+      file,
+      id: doc.id ?? 'doc:root',
+      schemaVersion: doc.schemaVersion ?? doc.version,
+      nodeCount: view.nodeCount,
+      maxDepth: view.maxDepth,
+      diagnostics: [
+        { code: described.code, message: described.message, path: described.path, phase: described.phase },
+        ...view.diagnostics.map(d => ({
+          code: d.code,
+          message: d.message,
+          path: d.path,
+          phase: d.phase
+        }))
+      ]
+    })
+  }
+  return results
 }

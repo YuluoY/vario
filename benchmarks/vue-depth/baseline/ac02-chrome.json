@@ -1,0 +1,70 @@
+{
+  "collectedAt": "2026-09-01T00:10:28.231Z",
+  "passed": true,
+  "results": [
+    {
+      "d": 32,
+      "kind": "native",
+      "mounted": true,
+      "updated": true,
+      "unmounted": true
+    },
+    {
+      "d": 32,
+      "kind": "forced",
+      "mounted": true,
+      "updated": true,
+      "unmounted": true
+    },
+    {
+      "d": 32,
+      "kind": "registered",
+      "mounted": true,
+      "updated": true,
+      "unmounted": true
+    },
+    {
+      "d": 64,
+      "kind": "native",
+      "mounted": true,
+      "updated": true,
+      "unmounted": true
+    },
+    {
+      "d": 64,
+      "kind": "forced",
+      "mounted": true,
+      "updated": true,
+      "unmounted": true
+    },
+    {
+      "d": 64,
+      "kind": "registered",
+      "mounted": true,
+      "updated": true,
+      "unmounted": true
+    },
+    {
+      "d": 100,
+      "kind": "native",
+      "mounted": true,
+      "updated": true,
+      "unmounted": true
+    },
+    {
+      "d": 100,
+      "kind": "forced",
+      "mounted": true,
+      "updated": true,
+      "unmounted": true
+    },
+    {
+      "d": 100,
+      "kind": "registered",
+      "mounted": true,
+      "updated": true,
+      "unmounted": true
+    }
+  ],
+  "chrome": "151.0.7922.34"
+}

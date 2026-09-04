@@ -5,7 +5,7 @@
  * 并通过 useVario 返回的 refs 对象访问组件实例
  */
 
-import { ref, type Ref } from 'vue'
+import { ref, getCurrentInstance, type Ref } from 'vue'
 import type { ComponentInternalInstance, VNode } from 'vue'
 import type { VueSchemaNode } from '../types.js'
 
@@ -106,10 +106,17 @@ export class RefsRegistry {
     return this.refs.get(name)
   }
 
+  get size(): number {
+    return this.refs.size
+  }
+
   /**
    * 清除所有 refs（组件卸载时调用）
    */
   clear(): void {
+    for (const item of this.refs.values()) {
+      item.value = null
+    }
     this.refs.clear()
   }
   
@@ -128,7 +135,8 @@ export function attachRef(
   vnode: VNode,
   schema: VueSchemaNode,
   refsRegistry: RefsRegistry,
-  owner: ComponentInternalInstance | null = null
+  owner: ComponentInternalInstance | null = null,
+  options: { inLoop?: boolean } = {}
 ): VNode {
   if (!schema.ref) {
     return vnode
@@ -137,7 +145,8 @@ export function attachRef(
   const refValue = refsRegistry.register(schema.ref)
   const vnodeAny = vnode as any
   const existingNormalizedRefs = normalizeVNodeRefs(vnodeAny.ref, owner)
-  const resolvedOwner = owner || existingNormalizedRefs.find(refAtom => refAtom.i)?.i || null
+  // owner 为空时用当前渲染实例兜底（VarioLegacyRoot / region 组件 render 内）
+  const resolvedOwner = owner || getCurrentInstance() || existingNormalizedRefs.find(refAtom => refAtom.i)?.i || null
 
   if (!resolvedOwner) {
     return vnode
@@ -146,7 +155,8 @@ export function attachRef(
   const normalizedRef: NormalizedVNodeRef = {
     i: resolvedOwner,
     r: refValue,
-    k: schema.ref
+    k: schema.ref,
+    ...(options.inLoop ? { f: true } : {})
   }
 
   const mergedRefs = existingNormalizedRefs.length > 0

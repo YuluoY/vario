@@ -170,4 +170,27 @@ describe('Action VM', () => {
       console.log = originalLog
     }
   })
+
+  it('does not copy builtin actions onto public $methods', async () => {
+    await execute([{ type: 'set', path: 'count', value: 4 }], ctx)
+    expect(ctx._get('count')).toBe(4)
+    expect(ctx.$methods.set).toBeUndefined()
+    expect(Object.prototype.hasOwnProperty.call(ctx.$methods, 'set')).toBe(false)
+  })
+
+  it('ExecutionSession exposes id, diagnostics, scope and deadline metadata', async () => {
+    const { getExecutionSession } = await import('../../src/vm/execution-session.js')
+    let seen = false
+    ctx.$methods.inspect = (_c, _action, meta) => {
+      expect(meta?.executionId).toBeTruthy()
+      expect(meta?.deadline).toBeGreaterThan(Date.now() - 1000)
+      expect(meta?.signal).toBeInstanceOf(AbortSignal)
+      expect(getExecutionSession(ctx)?.callStack.length).toBeGreaterThan(0)
+      seen = true
+    }
+    await execute([{ type: 'call', method: 'inspect' }], ctx)
+    expect(seen).toBe(true)
+    // execute 结束后 session 必须解绑，不得残留（FR-1 / AC-1）
+    expect(getExecutionSession(ctx)).toBeUndefined()
+  })
 })

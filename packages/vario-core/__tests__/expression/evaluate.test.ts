@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { createRuntimeContext } from '../../src/runtime/create-context'
 import { evaluate } from '../../src/expression/evaluate'
 import { registerBuiltinMethods } from '../../src/vm/handlers'
+import { registerCapability } from '../../src/expression/policy'
 
 describe('表达式求值', () => {
   let ctx: ReturnType<typeof createRuntimeContext>
@@ -61,6 +62,18 @@ describe('表达式求值', () => {
     expect(evaluate('Math.max(1, 2, 3)', ctx)).toBe(3)
     expect(evaluate('Array.isArray(items)', ctx)).toBe(true)
     expect(evaluate('String(user.age)', ctx)).toBe('30')
+  })
+
+  it('应该允许调用已注册的 capability（$functions / $utils）', () => {
+    registerCapability({
+      name: '$functions.upper',
+      pure: true,
+      cost: 1,
+      inputLimit: 1,
+      allowInExpression: true,
+      impl: (value: unknown) => String(value).toUpperCase()
+    })
+    expect(evaluate('$functions.upper("ab")', ctx)).toBe('AB')
   })
   
   it('应该拒绝禁止的语法', () => {

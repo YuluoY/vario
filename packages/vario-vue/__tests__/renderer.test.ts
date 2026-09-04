@@ -14,6 +14,7 @@ import { h } from 'vue'
 import { VueRenderer } from '../src/renderer.js'
 import { createRuntimeContext } from '@variojs/core'
 import type { SchemaNode } from '@variojs/schema'
+import { defaultPlugins } from '../src/plugins/index.js'
 
 describe('VueRenderer', () => {
   let renderer: VueRenderer
@@ -280,6 +281,46 @@ describe('VueRenderer', () => {
       expect(vnode).not.toBeNull()
       expect(vnode!.props).toBeDefined()
       expect(typeof (vnode!.props as any).onClick).toBe('function')
+    })
+  })
+
+  describe('LIFE-4 plugin registry', () => {
+    it('release does not empty shared defaultPlugins', () => {
+      expect(defaultPlugins.length).toBe(4)
+      const owned = [{ name: 'owned' }]
+      const r = new VueRenderer({ plugins: owned })
+      r.release()
+      expect(owned.length).toBe(1)
+      expect(defaultPlugins.length).toBe(4)
+      const again = new VueRenderer()
+      again.release()
+      expect(defaultPlugins.length).toBe(4)
+    })
+
+    it('emits plugin-resolve for each registered plugin', () => {
+      const names: string[] = []
+      const r = new VueRenderer({
+        plugins: [{ name: 'probe', setup() {} }],
+        diagnosticSink: { emit(event) { names.push(event.name) } }
+      })
+      expect(names).toContain('plugin-resolve')
+      r.release()
+    })
+
+    it('calls plugin validate and prepare during render', () => {
+      const calls: string[] = []
+      const r = new VueRenderer({
+        plugins: [{
+          name: 'hooks',
+          validate() { calls.push('validate') },
+          prepare() { calls.push('prepare') }
+        }]
+      })
+      const ctx = createRuntimeContext({})
+      r.render({ type: 'div', children: 'ok' }, ctx)
+      expect(calls).toContain('validate')
+      expect(calls).toContain('prepare')
+      r.release()
     })
   })
 })

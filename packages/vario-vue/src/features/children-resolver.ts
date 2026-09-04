@@ -4,9 +4,8 @@
  * 负责解析 Schema 的子节点，包括作用域插槽和文本内容；支持 parentMap / nodeContext 供事件中 $parent / $siblings 使用。
  */
 
-import type { RuntimeContext } from '@variojs/core'
+import { createScopeContext, type RuntimeContext, type PathSegment } from '@variojs/core'
 import type { SchemaNode } from '@variojs/schema'
-import type { PathSegment } from '@variojs/core'
 import type { ExpressionEvaluator } from './expression-evaluator.js'
 import type { ParentMap } from './node-context.js'
 
@@ -61,17 +60,13 @@ export class ChildrenResolver {
     }
     const vnodes = (children as SchemaNode[])
       .map((child: SchemaNode, i: number) => {
-        try {
-          const childPath = parentPath ? `${parentPath}.${i}` : String(i)
-          return this.createVNode(child, ctx, modelPathStack, {
-            parent: schema,
-            siblings: children as SchemaNode[],
-            selfIndex: i,
-            path: childPath
-          }, parentMap, childPath)
-        } catch (error) {
-          return null
-        }
+        const childPath = parentPath ? `${parentPath}.${i}` : String(i)
+        return this.createVNode(child, ctx, modelPathStack, {
+          parent: schema,
+          siblings: children as SchemaNode[],
+          selfIndex: i,
+          path: childPath
+        }, parentMap, childPath)
       })
       .filter((vnode: any) => vnode !== null && vnode !== undefined)
     return vnodes.length > 0 ? vnodes : null
@@ -86,80 +81,69 @@ export class ChildrenResolver {
     ctx: RuntimeContext,
     modelPathStack: PathSegment[] = [],
     parentMap?: ParentMap,
-    parentSchema?: SchemaNode,
+    _parentSchema?: SchemaNode,
     parentPath: string = ''
   ): Record<string, (scope?: any) => any> {
-    const slots: Record<string, (scope?: any) => any> = {}
-    const regularChildren: any[] = []
+    const s: Record<string, (scope?: any) => any> = {}
+    const r: any[] = []
     const createVNode = this.createVNode
 
     children.forEach((child: SchemaNode, idx: number) => {
       const childPath = parentPath ? `${parentPath}.${idx}` : String(idx)
       if (child.type === 'template' && (child as any).slot) {
-        const template = child as any
-        const slotName = template.slot
-        const scopeVarName = template.props?.scope
-        const isScoped = !!scopeVarName
-
-        slots[slotName] = (scope?: any) => {
+        const t = child as any
+        const k = t.slot
+        const n = t.props?.scope
+        // 每帧重建插槽函数：插槽 ctx 用 createScopeContext（只多一层局部绑定，
+        // 不注入 $item/$index，外层循环项可穿透，FR-5）
+        s[k] = (scope?: any) => {
           let slotCtx = ctx
-          if (isScoped && scope !== undefined) {
-            slotCtx = Object.create(ctx)
-            slotCtx[scopeVarName] = scope
+          if (n && scope !== undefined) {
+            slotCtx = createScopeContext(ctx, { [n]: scope })
           }
-          if (typeof template.children === 'string') {
-            return this.resolveTextContent(template.children, slotCtx)
+          if (typeof t.children === 'string') {
+            return this.resolveTextContent(t.children, slotCtx)
           }
-          if (Array.isArray(template.children)) {
-            return (template.children as SchemaNode[])
+          if (Array.isArray(t.children)) {
+            return (t.children as SchemaNode[])
               .map((c: SchemaNode, i: number) => {
-                try {
-                  const cPath = childPath ? `${childPath}.${i}` : String(i)
-                  return createVNode(c, slotCtx, modelPathStack, {
-                    parent: template,
-                    siblings: template.children as SchemaNode[],
-                    selfIndex: i,
-                    path: cPath
-                  }, parentMap, cPath)
-                } catch (error) {
-                  return null
-                }
+                const cPath = childPath ? `${childPath}.${i}` : String(i)
+                return createVNode(c, slotCtx, modelPathStack, {
+                  parent: t,
+                  siblings: t.children as SchemaNode[],
+                  selfIndex: i,
+                  path: cPath
+                }, parentMap, cPath)
               })
               .filter((v: any) => v !== null && v !== undefined)
           }
           return null
         }
       } else {
-        try {
-          const vnode = createVNode(child, ctx, modelPathStack, {
-            parent: parentSchema,
-            siblings: children,
-            selfIndex: idx,
-            path: childPath
-          }, parentMap, childPath)
-          if (vnode) {
-            regularChildren.push(vnode)
-          }
-        } catch (error) {
-          // ignore
-        }
+        const vnode = createVNode(child, ctx, modelPathStack, {
+          parent: _parentSchema,
+          siblings: children,
+          selfIndex: idx,
+          path: childPath
+        }, parentMap, childPath)
+        if (vnode) r.push(vnode)
       }
     })
-    
-    // 如果有普通子节点，添加到 default 插槽
-    if (regularChildren.length > 0) {
+
+    if (r.length > 0) {
+      const slots = Object.assign({}, s)
       if (!slots.default) {
-        slots.default = () => regularChildren
+        slots.default = () => r
       } else {
-        const existingDefault = slots.default
+        const d = slots.default
         slots.default = (scope?: any) => {
-          const scoped = existingDefault(scope)
-          return Array.isArray(scoped) ? [...scoped, ...regularChildren] : regularChildren
+          const v = d(scope)
+          return Array.isArray(v) ? [...v, ...r] : r
         }
       }
+      return slots
     }
-    
-    return slots
+    return s
   }
 
   /**
@@ -175,6 +159,7 @@ export class ChildrenResolver {
         
         return value != null ? String(value) : ''
       } catch (error) {
+        if (error instanceof RangeError) throw error
         console.warn('[Expression Error]', expr, error)
         return match
       }

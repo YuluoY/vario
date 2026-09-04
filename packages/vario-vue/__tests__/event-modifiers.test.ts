@@ -224,7 +224,9 @@ describe('事件修饰符', () => {
       const eventHandler = new EventHandler(evaluateExpr)
       const handlers = eventHandler.getEventHandlers(schema, runtime, null as any)
 
-      expect((handlers.onScroll as any).__modifiers).toEqual({ capture: false, passive: true })
+      expect(handlers.onScrollPassive).toBeTypeOf('function')
+      expect(handlers.onScroll).toBeUndefined()
+      expect((handlers.onScrollPassive as any).__modifiers).toEqual({ capture: false, passive: true })
     })
 
     it('应该同时标记 capture 和 passive', () => {
@@ -246,10 +248,48 @@ describe('事件修饰符', () => {
       const eventHandler = new EventHandler(evaluateExpr)
       const handlers = eventHandler.getEventHandlers(schema, runtime, null as any)
 
-      expect((handlers.onScroll as any).__modifiers).toEqual({ 
+      expect(handlers.onScrollCapturePassive).toBeTypeOf('function')
+      expect(handlers.onScroll).toBeUndefined()
+      expect((handlers.onScrollCapturePassive as any).__modifiers).toEqual({ 
         capture: true, 
         passive: true 
       })
+    })
+  })
+
+  describe('key/system/mouse modifiers', () => {
+    it('keydown.enter only runs for Enter', () => {
+      const pressed = vi.fn()
+      const schema: SchemaNode = {
+        type: 'input',
+        events: {
+          'keydown.enter': [{ type: 'call', method: 'onEnter' }]
+        }
+      }
+      const runtime = createRuntimeContext({}, { methods: { onEnter: pressed } })
+      const eventHandler = new EventHandler(evaluateExpr)
+      const handlers = eventHandler.getEventHandlers(schema, runtime, null as any)
+      handlers.onKeydown({ key: 'Tab', type: 'keydown' } as Event)
+      expect(pressed).not.toHaveBeenCalled()
+      handlers.onKeydown({ key: 'Enter', type: 'keydown' } as Event)
+      expect(pressed).toHaveBeenCalledTimes(1)
+    })
+
+    it('click.ctrl requires ctrlKey', () => {
+      const clicked = vi.fn()
+      const schema: SchemaNode = {
+        type: 'button',
+        events: {
+          'click.ctrl': [{ type: 'call', method: 'onClick' }]
+        }
+      }
+      const runtime = createRuntimeContext({}, { methods: { onClick: clicked } })
+      const eventHandler = new EventHandler(evaluateExpr)
+      const handlers = eventHandler.getEventHandlers(schema, runtime, null as any)
+      handlers.onClick({ type: 'click', ctrlKey: false } as Event)
+      expect(clicked).not.toHaveBeenCalled()
+      handlers.onClick({ type: 'click', ctrlKey: true } as Event)
+      expect(clicked).toHaveBeenCalledTimes(1)
     })
   })
 })

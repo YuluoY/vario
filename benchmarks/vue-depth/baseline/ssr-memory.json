@@ -1,0 +1,309 @@
+{
+  "collectedAt": "2026-09-01T01:02:40.221Z",
+  "protocol": "cdp HeapProfiler.collectGarbage + Runtime.getHeapUsage + expose-gc + takeHeapSnapshot retainer path",
+  "chrome": "151.0.7922.34",
+  "slope": 20944.8,
+  "mem2Slope": 20944.8,
+  "emptySlope": 25823.6,
+  "mem3Retained": 11988,
+  "mem3Live": 0,
+  "gcAvailable": true,
+  "retainers": [
+    "native_bind#43327-[property:i]->Object#43325",
+    "<div>#43503-[property:__vueParentComponent]->Object#43325",
+    "Array#56045-[element:2]->Object#43325",
+    "(object elements)#56049-[internal:2]->Object#43325",
+    "Array#56075-[element:3]->Object#43325",
+    "(object elements)#56089-[internal:3]->Object#43325",
+    "Array#56101-[element:2]->Object#43325",
+    "(object elements)#56105-[internal:2]->Object#43325",
+    "Array#56143-[element:2]->Object#43325",
+    "(object elements)#56147-[internal:2]->Object#43325",
+    "Array#56201-[element:2]->Object#43325",
+    "(object elements)#56203-[internal:2]->Object#43325",
+    "Array#56231-[element:2]->Object#43325",
+    "(object elements)#56249-[internal:2]->Object#43325",
+    "Array#56323-[element:2]->Object#43325",
+    "(object elements)#56327-[internal:2]->Object#43325",
+    "Array#56437-[element:2]->Object#43325",
+    "(object elements)#56441-[internal:2]->Object#43325",
+    "Array#56465-[element:2]->Object#43325",
+    "(object elements)#56469-[internal:2]->Object#43325",
+    "native_bind#56493-[shortcut:bound_argument_0]->Object#43325",
+    "(bound arguments)#56495-[internal:0]->Object#43325",
+    "owner:Object#43325 inbound=29 context:y×1,property:root×1,property:i×1,property:ctx×1,property:__vueParentComponent×1,property:component×1",
+    "Object#43325(y) <- system / Context / scope @43321#43323(context) <- R#43153(fn) <- tc#43151(effect)",
+    "Object#47801(2) <- (object elements)#47799(elements) <- Array#47805(args) <- Object#47811(h24) <- Array#120549(yr) <- system / Context / scope @43301#43303(previous)",
+    "system / PropertyArray#55973(properties) <- Object#43325(y) <- system / Context / scope @43321#43323(context) <- R#43153(fn) <- tc#43151(effect)"
+  ],
+  "nodeNames": [
+    {
+      "name": "int",
+      "count": 7796
+    },
+    {
+      "name": "system / CodeWrapper",
+      "count": 3157
+    },
+    {
+      "name": "system / AccessorPair",
+      "count": 3097
+    },
+    {
+      "name": "system / FunctionTemplateInfo",
+      "count": 3046
+    },
+    {
+      "name": "system / FeedbackCell",
+      "count": 2651
+    },
+    {
+      "name": "system / PropertyCell",
+      "count": 2510
+    },
+    {
+      "name": "system / Map",
+      "count": 2430
+    },
+    {
+      "name": "Object",
+      "count": 2305
+    },
+    {
+      "name": "system / AccessorInfo",
+      "count": 2025
+    },
+    {
+      "name": "system / UncompiledDataWithoutPreparseData",
+      "count": 1967
+    },
+    {
+      "name": "system / TrustedByteArray",
+      "count": 1456
+    },
+    {
+      "name": "get",
+      "count": 1278
+    },
+    {
+      "name": "Array",
+      "count": 1221
+    },
+    {
+      "name": "system / Context / scope @56519",
+      "count": 1050
+    },
+    {
+      "name": "system / DescriptorArray",
+      "count": 1041
+    },
+    {
+      "name": "(object elements)",
+      "count": 920
+    },
+    {
+      "name": "system / ScopeInfo",
+      "count": 791
+    },
+    {
+      "name": "",
+      "count": 687
+    },
+    {
+      "name": "system / Code",
+      "count": 685
+    },
+    {
+      "name": "system / InstructionStream",
+      "count": 685
+    }
+  ],
+  "constructorCounts": {
+    "PageSession": 0,
+    "RuntimeContext": 0,
+    "VueStateBridge": 0,
+    "RuntimeSession": 0
+  },
+  "samples": [
+    {
+      "label": "round-0",
+      "gcBefore": 2158864,
+      "heapAfter": 2972352,
+      "retainedBytes": 813488,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:1",
+      "collectedAt": "2026-09-01T01:02:39.367Z"
+    },
+    {
+      "label": "round-1",
+      "gcBefore": 2951388,
+      "heapAfter": 3086916,
+      "retainedBytes": 135528,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:2",
+      "collectedAt": "2026-09-01T01:02:39.399Z"
+    },
+    {
+      "label": "round-2",
+      "gcBefore": 3067676,
+      "heapAfter": 3170236,
+      "retainedBytes": 102560,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:3",
+      "collectedAt": "2026-09-01T01:02:39.431Z"
+    },
+    {
+      "label": "round-3",
+      "gcBefore": 3151296,
+      "heapAfter": 3193424,
+      "retainedBytes": 42128,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:4",
+      "collectedAt": "2026-09-01T01:02:39.465Z"
+    },
+    {
+      "label": "round-4",
+      "gcBefore": 3174484,
+      "heapAfter": 3254588,
+      "retainedBytes": 80104,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:5",
+      "collectedAt": "2026-09-01T01:02:39.498Z"
+    },
+    {
+      "label": "round-5",
+      "gcBefore": 3235540,
+      "heapAfter": 3269424,
+      "retainedBytes": 33884,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:6",
+      "collectedAt": "2026-09-01T01:02:39.532Z"
+    },
+    {
+      "label": "round-6",
+      "gcBefore": 3250376,
+      "heapAfter": 3284412,
+      "retainedBytes": 34036,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:7",
+      "collectedAt": "2026-09-01T01:02:39.565Z"
+    },
+    {
+      "label": "round-7",
+      "gcBefore": 3265364,
+      "heapAfter": 3297136,
+      "retainedBytes": 31772,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:8",
+      "collectedAt": "2026-09-01T01:02:39.599Z"
+    },
+    {
+      "label": "round-8",
+      "gcBefore": 3278088,
+      "heapAfter": 3419400,
+      "retainedBytes": 141312,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:9",
+      "collectedAt": "2026-09-01T01:02:39.635Z"
+    },
+    {
+      "label": "round-9",
+      "gcBefore": 3400128,
+      "heapAfter": 3433332,
+      "retainedBytes": 33204,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:10",
+      "collectedAt": "2026-09-01T01:02:39.665Z"
+    },
+    {
+      "label": "round-10",
+      "gcBefore": 3414044,
+      "heapAfter": 3455748,
+      "retainedBytes": 41704,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:11",
+      "collectedAt": "2026-09-01T01:02:39.698Z"
+    },
+    {
+      "label": "round-11",
+      "gcBefore": 3436908,
+      "heapAfter": 3467916,
+      "retainedBytes": 31008,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:12",
+      "collectedAt": "2026-09-01T01:02:39.732Z"
+    },
+    {
+      "label": "round-12",
+      "gcBefore": 3449108,
+      "heapAfter": 3480752,
+      "retainedBytes": 31644,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:13",
+      "collectedAt": "2026-09-01T01:02:39.766Z"
+    },
+    {
+      "label": "round-13",
+      "gcBefore": 3461944,
+      "heapAfter": 3497584,
+      "retainedBytes": 35640,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:14",
+      "collectedAt": "2026-09-01T01:02:39.799Z"
+    },
+    {
+      "label": "round-14",
+      "gcBefore": 3478776,
+      "heapAfter": 3510172,
+      "retainedBytes": 31396,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:15",
+      "collectedAt": "2026-09-01T01:02:39.832Z"
+    },
+    {
+      "label": "round-15",
+      "gcBefore": 3491364,
+      "heapAfter": 3524960,
+      "retainedBytes": 33596,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:16",
+      "collectedAt": "2026-09-01T01:02:39.865Z"
+    },
+    {
+      "label": "round-16",
+      "gcBefore": 3506152,
+      "heapAfter": 3537996,
+      "retainedBytes": 31844,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:17",
+      "collectedAt": "2026-09-01T01:02:39.898Z"
+    },
+    {
+      "label": "round-17",
+      "gcBefore": 3518848,
+      "heapAfter": 3554652,
+      "retainedBytes": 35804,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:18",
+      "collectedAt": "2026-09-01T01:02:39.932Z"
+    },
+    {
+      "label": "round-18",
+      "gcBefore": 3535324,
+      "heapAfter": 3570720,
+      "retainedBytes": 35396,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:19",
+      "collectedAt": "2026-09-01T01:02:39.965Z"
+    },
+    {
+      "label": "round-19",
+      "gcBefore": 3551392,
+      "heapAfter": 3583596,
+      "retainedBytes": 32204,
+      "objectCount": 0,
+      "snapshotPath": "items:false,app:false,spans:0,body:1,inst:true,ses:0,cells:null,hist:20",
+      "collectedAt": "2026-09-01T01:02:39.999Z"
+    }
+  ]
+}

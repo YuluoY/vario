@@ -27,13 +27,14 @@ export default defineConfig({
       { text: 'Core', link: '/packages/core/overview' },
       { text: 'Schema', link: '/packages/schema/overview' },
       { text: 'Vue', link: '/packages/vue/overview' },
-      { text: 'CLI', link: '/packages/cli/overview' }
+      { text: 'CLI', link: '/packages/cli/overview' },
+      { text: '架构审计', link: '/architecture-audit/' }
     ],
     sidebar: [
       { text: '介绍', link: '/' },
       { text: '快速开始', link: '/guide/quick-start' },
       {
-        text: '@vario/core',
+        text: '@variojs/core',
         collapsed: true,
         items: [
           { text: '概述', link: '/packages/core/overview' },
@@ -48,7 +49,7 @@ export default defineConfig({
         ]
       },
       {
-        text: '@vario/schema',
+        text: '@variojs/schema',
         collapsed: true,
         items: [
           { text: '概述', link: '/packages/schema/overview' },
@@ -61,7 +62,7 @@ export default defineConfig({
         ]
       },
       {
-        text: '@vario/vue',
+        text: '@variojs/vue',
         collapsed: true,
         items: [
           { text: '概述', link: '/packages/vue/overview' },
@@ -120,13 +121,43 @@ export default defineConfig({
         ]
       },
       {
-        text: '@vario/cli',
+        text: '@variojs/cli',
         collapsed: true,
         items: [
           { text: '概述', link: '/packages/cli/overview' },
           { text: 'dev 开发服务器', link: '/packages/cli/dev' },
           { text: 'generate 代码生成', link: '/packages/cli/generate' },
           { text: '最佳实践', link: '/packages/cli/best-practices' }
+        ]
+      },
+      {
+        text: '架构审计',
+        collapsed: true,
+        items: [
+          { text: '结论总览', link: '/architecture-audit/' },
+          { text: '范围与口径', link: '/architecture-audit/spec' },
+          { text: '证据报告', link: '/architecture-audit/research-report' },
+          { text: '当前源码架构', link: '/architecture-audit/current-architecture' },
+          { text: '生产适用性', link: '/architecture-audit/production-readiness' },
+          { text: '性能基准', link: '/architecture-audit/performance-benchmarks' },
+          {
+            text: 'Vue 3 深层运行时专项',
+            collapsed: true,
+            items: [
+              { text: '专项总览', link: '/architecture-audit/vue3-deep-runtime/' },
+              { text: '调研证据', link: '/architecture-audit/vue3-deep-runtime/research-report' },
+              { text: '需求规格', link: '/architecture-audit/vue3-deep-runtime/spec' },
+              { text: '执行方案', link: '/architecture-audit/vue3-deep-runtime/plans/README' },
+              { text: '阶段任务', link: '/architecture-audit/vue3-deep-runtime/tasks/README' },
+              { text: '专项验收', link: '/architecture-audit/vue3-deep-runtime/verification-report' },
+              { text: '复盘', link: '/architecture-audit/vue3-deep-runtime/retrospective' }
+            ]
+          },
+          { text: '目标架构', link: '/architecture-audit/target-architecture' },
+          { text: '执行计划总入口', link: '/architecture-audit/plans/README' },
+          { text: '实施路线', link: '/architecture-audit/implementation-roadmap' },
+          { text: '验收门禁', link: '/architecture-audit/acceptance-gates' },
+          { text: '审计验收', link: '/architecture-audit/verification-report' }
         ]
       },
       { text: '示例', link: '/guide/examples' }

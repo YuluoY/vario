@@ -10,7 +10,7 @@
  * - createObject/createArray 使用 reactive() 确保新建结构也是响应式的
  */
 
-import { reactive } from 'vue'
+import { reactive, toRaw } from 'vue'
 import type { ReactiveAdapter } from '@variojs/types'
 import { getPathValue, setPathValue } from '@variojs/core'
 
@@ -21,15 +21,23 @@ import { getPathValue, setPathValue } from '@variojs/core'
  * @returns ReactiveAdapter 实例
  */
 export function createVueReactiveAdapter<TState extends Record<string, unknown>>(
-  state: TState
-): ReactiveAdapter {
+  state: TState,
+  options: { untrackReads?: boolean } = {}
+): ReactiveAdapter & { release: () => void } {
+  let held: TState | null = state
+  const untrackReads = options.untrackReads === true
   return {
     get(path: string): unknown {
-      return getPathValue(state as Record<string, unknown>, path)
+      if (!held) return undefined
+      const source = untrackReads
+        ? toRaw(held) as Record<string, unknown>
+        : held as Record<string, unknown>
+      return getPathValue(source, path)
     },
 
     set(path: string, value: unknown): void {
-      setPathValue(state as Record<string, unknown>, path, value, {
+      if (!held) return
+      setPathValue(held as Record<string, unknown>, path, value, {
         createObject: () => reactive({}),
         createArray: () => reactive([]),
         createIntermediate: true
@@ -37,19 +45,49 @@ export function createVueReactiveAdapter<TState extends Record<string, unknown>>
     },
 
     getProperty(key: string): unknown {
-      return (state as Record<string, unknown>)[key]
+      if (!held) return undefined
+      const source = untrackReads
+        ? toRaw(held) as Record<string, unknown>
+        : held as Record<string, unknown>
+      return source[key]
     },
 
     setProperty(key: string, value: unknown): void {
-      (state as Record<string, unknown>)[key] = value
+      if (!held) return
+      (held as Record<string, unknown>)[key] = value
     },
 
     has(key: string): boolean {
-      return key in state
+      if (!held) return false
+      const source = untrackReads
+        ? toRaw(held) as Record<string, unknown>
+        : held as Record<string, unknown>
+      return key in source
     },
 
     keys(): string[] {
-      return Object.keys(state)
+      if (!held) return []
+      const source = untrackReads
+        ? toRaw(held) as Record<string, unknown>
+        : held as Record<string, unknown>
+      return Object.keys(source)
+    },
+
+    release() {
+      // FR-7：只断引用，不删宿主对象的 key——
+      // isReactive(options.state) 时 held 就是宿主（pinia/父组件）共享的 reactive 对象
+      held = null
     }
   }
+}
+
+const adapterByCtx = new WeakMap<object, { release: () => void }>()
+
+export function bindAdapterRelease(ctx: object, adapter: { release: () => void }): void {
+  adapterByCtx.set(ctx, adapter)
+}
+
+export function releaseVueAdapter(ctx: object | null | undefined): void {
+  if (!ctx) return
+  adapterByCtx.get(ctx)?.release()
 }

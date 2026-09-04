@@ -9,6 +9,7 @@
 
 import type * as ESTree from '@babel/types'
 import type { RuntimeContext } from '@variojs/types'
+import { readPathWithLexical } from '../runtime/lexical.js'
 
 /**
  * 编译后的表达式函数类型
@@ -118,7 +119,7 @@ export function compileSimpleExpression(ast: ESTree.Node): CompiledExpression | 
     if (globalObjectNames.includes(name)) {
       return null  // 回退到解释执行
     }
-    return (ctx: RuntimeContext) => ctx._get(name)
+    return (ctx: RuntimeContext) => readPathWithLexical(ctx, name)
   }
   
   // 静态成员访问：{{ user.name }} → (ctx) => ctx._get('user.name')
@@ -140,7 +141,7 @@ export function compileSimpleExpression(ast: ESTree.Node): CompiledExpression | 
     if (containsDangerousProperty(path)) {
       return null  // 回退到解释执行以进行安全检查
     }
-    return (ctx: RuntimeContext) => ctx._get(path)
+    return (ctx: RuntimeContext) => readPathWithLexical(ctx, path)
   }
   
   return null  // 复杂表达式，无法编译
@@ -157,18 +158,23 @@ export function getCompiledExpression(
   expr: string,
   ast: ESTree.Node
 ): CompiledExpression | null {
-  // 检查缓存
+  // 检查缓存（命中时刷新 LRU 位置）
   if (compiledCache.has(expr)) {
-    return compiledCache.get(expr) || null
+    const hit = compiledCache.get(expr)!
+    compiledCache.delete(expr)
+    compiledCache.set(expr, hit)
+    return hit || null
   }
-  
+
   // 尝试编译
   const compiled = compileSimpleExpression(ast)
   if (compiledCache.size >= COMPILED_CACHE_MAX) {
-    compiledCache.clear()
+    // LRU：满容量只淘汰最久未使用的一项，禁止整表清空引起周期性冷启动（SEC-4）
+    const oldest = compiledCache.keys().next().value
+    if (oldest !== undefined) compiledCache.delete(oldest)
   }
   compiledCache.set(expr, compiled)
-  
+
   return compiled
 }
 

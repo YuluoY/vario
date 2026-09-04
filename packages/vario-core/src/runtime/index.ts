@@ -9,8 +9,13 @@ export {
   createLoopContext,
   releaseLoopContext,
   getLoopContextPool,
-  clearLoopContextPool
+  clearLoopContextPool,
+  getLoopLocals,
+  setLoopDiagnosticSink,
+  type LoopContextOptions
 } from './loop-context-pool.js'
+export { createForwardingContext, getParentContext } from './forwarding-context.js'
+export { createScopeContext, isScopeContext } from './scope-context.js'
 export type { RuntimeContext } from '@variojs/types'
 
 // 路径工具（供框架集成层使用）

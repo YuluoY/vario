@@ -27,28 +27,26 @@ export function traverseSchema(
     path: string,
     depth: number,
     parent: SchemaNode | null
-  ) {
+  ): boolean | void {
     if (!node || typeof node !== 'object') return
 
-    // 执行回调，如果返回 false 则停止遍历当前分支的子节点
     const shouldContinue = callback(node, path, depth, parent)
-    if (shouldContinue === false) return
+    if (shouldContinue === false) return false
 
     // 处理 children (Schema 树结构)
     // 根据 Vario Schema 定义，主要是 children 属性
     if (node.children) {
       if (Array.isArray(node.children)) {
-        node.children.forEach((child: any, index: number) => {
+        for (let index = 0; index < node.children.length; index++) {
+          const child = node.children[index] as unknown
           if (child && typeof child === 'object') {
-             const childPath = path ? `${path}${separator}children${separator}${index}` : `children${separator}${index}`
-             walk(child as SchemaNode, childPath, depth + 1, node)
-          } 
-          // ignore string children as they are text content
-        })
+            const childPath = path ? `${path}${separator}children${separator}${index}` : `children${separator}${index}`
+            if (walk(child as SchemaNode, childPath, depth + 1, node) === false) return false
+          }
+        }
       } else if (typeof node.children === 'object') {
-         // 虽然类型定义说 children 是 array | string，但防御性处理单对象情况
-         const childPath = path ? `${path}${separator}children` : `children`
-         walk(node.children as unknown as SchemaNode, childPath, depth + 1, node)
+        const childPath = path ? `${path}${separator}children` : `children`
+        if (walk(node.children as unknown as SchemaNode, childPath, depth + 1, node) === false) return false
       }
     }
   }

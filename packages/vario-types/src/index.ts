@@ -22,3 +22,6 @@ export * from './error.js'
 
 // Utils 类型
 export * from './utils.js'
+export * from './prepared.js'
+export * from './document.js'
+export * from './material.js'

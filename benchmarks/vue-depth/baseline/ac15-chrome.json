@@ -1,0 +1,10 @@
+{
+  "collectedAt": "2026-09-01T00:10:31.474Z",
+  "textMatch": true,
+  "namedSlot": true,
+  "directive": true,
+  "click": true,
+  "teleport": true,
+  "provide": true,
+  "chrome": "151.0.7922.34"
+}

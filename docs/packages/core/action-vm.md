@@ -29,7 +29,8 @@ await execute(
 - **set**：写状态  
   `{ type: 'set', path: 'user.name', value: 'Jane' }` 或 `value: '{{ newName }}'`（字符串会当表达式求值）
 - **emit**：发事件  
-  `{ type: 'emit', event: 'submit', data: { id: 1 } }`
+  `{ type: 'emit', event: 'submit', data: { id: 1 } }`  
+  未提供 `data` 时 payload 为 `undefined`（不会回退为 `$event` 或旧值）。
 - **navigate**：导航（由集成层实现）  
   `{ type: 'navigate', to: '/home' }`
 - **log**：打日志  

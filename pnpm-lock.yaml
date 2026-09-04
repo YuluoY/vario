@@ -14,6 +14,9 @@ importers:
       '@types/node':
         specifier: ^20.11.0
         version: 20.19.30
+      '@vitejs/plugin-vue':
+        specifier: ^5.2.4
+        version: 5.2.4(vite@5.4.21(@types/node@20.19.30)(sass-embedded@1.97.2)(sass@1.97.2))(vue@3.5.27(typescript@5.9.3))
       chalk:
         specifier: ^5.3.0
         version: 5.6.2
@@ -35,6 +38,9 @@ importers:
       inquirer:
         specifier: ^8.2.4
         version: 8.2.7(@types/node@20.19.30)
+      playwright:
+        specifier: ^1.62.1
+        version: 1.62.1
       tsc-alias:
         specifier: ^1.8.16
         version: 1.8.16
@@ -47,12 +53,15 @@ importers:
       typescript-eslint:
         specifier: ^8.57.0
         version: 8.57.0(eslint@10.0.3)(typescript@5.9.3)
+      vite:
+        specifier: ^5.4.21
+        version: 5.4.21(@types/node@20.19.30)(sass-embedded@1.97.2)(sass@1.97.2)
       vite-tsconfig-paths:
         specifier: ^6.0.4
         version: 6.0.4(typescript@5.9.3)(vite@5.4.21(@types/node@20.19.30)(sass-embedded@1.97.2)(sass@1.97.2))
       vitest:
         specifier: ^1.2.0
-        version: 1.6.1(@types/node@20.19.30)(sass-embedded@1.97.2)(sass@1.97.2)
+        version: 1.6.1(@types/node@20.19.30)(happy-dom@20.12.0)(sass-embedded@1.97.2)(sass@1.97.2)
       vue:
         specifier: ^3.5.27
         version: 3.5.27(typescript@5.9.3)
@@ -65,15 +74,9 @@ importers:
 
   packages/vario-cli:
     dependencies:
-      '@variojs/core':
-        specifier: workspace:*
-        version: link:../vario-core
       '@variojs/schema':
         specifier: workspace:*
         version: link:../vario-schema
-      '@variojs/vue':
-        specifier: workspace:*
-        version: link:../vario-vue
       commander:
         specifier: ^11.1.0
         version: 11.1.0
@@ -83,7 +86,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.2.0
-        version: 1.6.1(@types/node@20.19.30)(sass-embedded@1.97.2)(sass@1.97.2)
+        version: 1.6.1(@types/node@20.19.30)(happy-dom@20.12.0)(sass-embedded@1.97.2)(sass@1.97.2)
 
   packages/vario-core:
     dependencies:
@@ -93,9 +96,6 @@ importers:
       '@babel/types':
         specifier: ^7.23.6
         version: 7.28.6
-      '@variojs/schema':
-        specifier: workspace:*
-        version: link:../vario-schema
       '@variojs/types':
         specifier: workspace:*
         version: link:../vario-types
@@ -108,7 +108,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.2.0
-        version: 1.6.1(@types/node@20.19.30)(sass-embedded@1.97.2)(sass@1.97.2)
+        version: 1.6.1(@types/node@20.19.30)(happy-dom@20.12.0)(sass-embedded@1.97.2)(sass@1.97.2)
 
   packages/vario-schema:
     dependencies:
@@ -124,7 +124,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.2.0
-        version: 1.6.1(@types/node@20.19.30)(sass-embedded@1.97.2)(sass@1.97.2)
+        version: 1.6.1(@types/node@20.19.30)(happy-dom@20.12.0)(sass-embedded@1.97.2)(sass@1.97.2)
 
   packages/vario-types:
     devDependencies:
@@ -150,12 +150,15 @@ importers:
       element-plus:
         specifier: ^2.4.0
         version: 2.13.1(vue@3.5.27(typescript@5.9.3))
+      happy-dom:
+        specifier: ^20.12.0
+        version: 20.12.0
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
       vitest:
         specifier: ^1.2.0
-        version: 1.6.1(@types/node@20.19.30)(sass-embedded@1.97.2)(sass@1.97.2)
+        version: 1.6.1(@types/node@20.19.30)(happy-dom@20.12.0)(sass-embedded@1.97.2)(sass@1.97.2)
       vue:
         specifier: ^3.4.0
         version: 3.5.27(typescript@5.9.3)
@@ -1241,6 +1244,12 @@ packages:
   '@types/webxr@0.5.24':
     resolution: {integrity: sha512-h8fgEd/DpoS9CBrjEQXR+dIDraopAEfu4wYVNY2tEPwk60stPWhvZMf4Foo5FakuQ7HFZoa8WceaWFervK2Ovg==}
 
+  '@types/whatwg-mimetype@3.0.2':
+    resolution: {integrity: sha512-c2AKvDT8ToxLIOUlN51gTiHXflsfIFisS4pO7pDPoKouJCESkhZnEy623gwP9laCy5lnLDAw1vAzu2vM2YLOrA==}
+
+  '@types/ws@8.18.1':
+    resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
+
   '@typescript-eslint/eslint-plugin@8.57.0':
     resolution: {integrity: sha512-qeu4rTHR3/IaFORbD16gmjq9+rEs9fGKdX0kF6BKSfi+gCuG3RCKLlSBYzn/bGsY9Tj7KE/DAQStbp8AHJGHEQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -1570,6 +1579,10 @@ packages:
   buffer-builder@0.2.0:
     resolution: {integrity: sha512-7VPMEPuYznPSoR21NE1zvd2Xna6c/CloiZCfcMXR1Jny6PjX0N4Nsa38zcBFo/FMK+BlA+FLKbJCQ0i2yxp+Xg==}
 
+  buffer-image-size@0.6.4:
+    resolution: {integrity: sha512-nEh+kZOPY1w+gcCMobZ6ETUp9WfibndnosbpwB1iJk/8Gt5ZF2bhS6+B6bPYz424KtwsR6Rflc3tCz1/ghX2dQ==}
+    engines: {node: '>=4.0'}
+
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
 
@@ -1762,6 +1775,10 @@ packages:
     resolution: {integrity: sha512-FDWG5cmEYf2Z00IkYRhbFrwIwvdFKH07uV8dvNy0omp/Qb1xcyCWp2UDtcwJF4QZZvk0sLudP6/hAu42TaqVhQ==}
     engines: {node: '>=0.12'}
 
+  entities@7.0.1:
+    resolution: {integrity: sha512-TWrgLOFUQTH994YUyl1yT4uyavY5nNB5muff+RtWaqNVCAK408b5ZnnbNAUEWLTCpum9w6arT70i1XdQ4UeOPA==}
+    engines: {node: '>=0.12'}
+
   esbuild@0.19.12:
     resolution: {integrity: sha512-aARqgq8roFBj054KvQr5f1sFu0D65G+miZRCuJyJ0G13Zwx7vRar5Zhn2tkQNzIXcBrNVsv/8stehpj+GAjgbg==}
     engines: {node: '>=12'}
@@ -1901,6 +1918,11 @@ packages:
   focus-trap@7.8.0:
     resolution: {integrity: sha512-/yNdlIkpWbM0ptxno3ONTuf+2g318kh2ez3KSeZN5dZ8YC6AAmgeWz+GasYYiBJPFaYcSAPeu4GfhUaChzIJXA==}
 
+  fsevents@2.3.2:
+    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
+    os: [darwin]
+
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -1950,6 +1972,10 @@ packages:
 
   gsap@3.14.2:
     resolution: {integrity: sha512-P8/mMxVLU7o4+55+1TCnQrPmgjPKnwkzkXOK1asnR9Jg2lna4tEY5qBJjMmAaOBDDZWtlRjBXjLa0w53G/uBLA==}
+
+  happy-dom@20.12.0:
+    resolution: {integrity: sha512-7uMYJu2SEwwL8vVcKp0C0lnt6d2LSGGe+T+oY79PiCJNNSgFpbxW8n5KuzpDQvrU4mt+fYiK1+Jy7Z2v39YR6g==}
+    engines: {node: '>=20.0.0'}
 
   has-flag@4.0.0:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
@@ -2331,6 +2357,16 @@ packages:
 
   pkg-types@1.3.1:
     resolution: {integrity: sha512-/Jm5M4RvtBFVkKWRu2BLUTNP8/M2a+UwuAX+ae4770q1qVGtfjG+WTCupoZixokjmHiry8uI+dlY8KXYV5HVVQ==}
+
+  playwright-core@1.62.1:
+    resolution: {integrity: sha512-wPYSwEBJY9GHraISXqyqtx0na0LpO3XEX7jNDhntbex7tzUS7kLnZsOlFruFJB4Hi/rhDMjXGqHewDZ68nYZVw==}
+    engines: {node: '>=20'}
+    hasBin: true
+
+  playwright@1.62.1:
+    resolution: {integrity: sha512-0M+L3LAD8/nm554LOla9Ayx0j0tmFZ0FBcoQ7F1VuVHpM/XpiC8RcDzBQB8W5+hA8L22THxELzeF+2WcUzvcLg==}
+    engines: {node: '>=20'}
+    hasBin: true
 
   plimit-lit@1.6.1:
     resolution: {integrity: sha512-B7+VDyb8Tl6oMJT9oSO2CW8XC/T4UcJGrwOVoNGwOQsQYhlpfajmrMj5xeejqaASq3V/EqThyOeATEOMuSEXiA==}
@@ -2987,6 +3023,10 @@ packages:
   wcwidth@1.0.1:
     resolution: {integrity: sha512-XHPEwS0q6TaxcvG85+8EYkbiCux2XtWG2mkc47Ng2A77BQu9+DqIOJldST4HgPkuea7dvKSj5VgX3P1d4rW8Tg==}
 
+  whatwg-mimetype@3.0.0:
+    resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
+    engines: {node: '>=12'}
+
   which@2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
     engines: {node: '>= 8'}
@@ -3008,6 +3048,18 @@ packages:
   wrap-ansi@7.0.0:
     resolution: {integrity: sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==}
     engines: {node: '>=10'}
+
+  ws@8.21.3:
+    resolution: {integrity: sha512-201TZ/kPWxoPr/OKWjquZR1SWKXcvxdH+e1xrx89b3YbmzLMFCLfnaG1HFIgWzJOEWZ7MvpK++odZufgYR50Rw==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
 
   xtend@4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
@@ -3800,6 +3852,12 @@ snapshots:
 
   '@types/webxr@0.5.24': {}
 
+  '@types/whatwg-mimetype@3.0.2': {}
+
+  '@types/ws@8.18.1':
+    dependencies:
+      '@types/node': 20.19.30
+
   '@typescript-eslint/eslint-plugin@8.57.0(@typescript-eslint/parser@8.57.0(eslint@10.0.3)(typescript@5.9.3))(eslint@10.0.3)(typescript@5.9.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.2
@@ -4199,6 +4257,10 @@ snapshots:
 
   buffer-builder@0.2.0: {}
 
+  buffer-image-size@0.6.4:
+    dependencies:
+      '@types/node': 20.19.30
+
   buffer@5.7.1:
     dependencies:
       base64-js: 1.5.1
@@ -4388,6 +4450,8 @@ snapshots:
   emoji-regex@8.0.0: {}
 
   entities@7.0.0: {}
+
+  entities@7.0.1: {}
 
   esbuild@0.19.12:
     optionalDependencies:
@@ -4618,6 +4682,9 @@ snapshots:
     dependencies:
       tabbable: 6.4.0
 
+  fsevents@2.3.2:
+    optional: true
+
   fsevents@2.3.3:
     optional: true
 
@@ -4661,6 +4728,19 @@ snapshots:
       through2: 0.6.5
 
   gsap@3.14.2: {}
+
+  happy-dom@20.12.0:
+    dependencies:
+      '@types/node': 20.19.30
+      '@types/whatwg-mimetype': 3.0.2
+      '@types/ws': 8.18.1
+      buffer-image-size: 0.6.4
+      entities: 7.0.1
+      whatwg-mimetype: 3.0.0
+      ws: 8.21.3
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   has-flag@4.0.0: {}
 
@@ -5013,6 +5093,14 @@ snapshots:
       confbox: 0.1.8
       mlly: 1.8.0
       pathe: 2.0.3
+
+  playwright-core@1.62.1: {}
+
+  playwright@1.62.1:
+    dependencies:
+      playwright-core: 1.62.1
+    optionalDependencies:
+      fsevents: 2.3.2
 
   plimit-lit@1.6.1:
     dependencies:
@@ -5610,7 +5698,7 @@ snapshots:
       - typescript
       - universal-cookie
 
-  vitest@1.6.1(@types/node@20.19.30)(sass-embedded@1.97.2)(sass@1.97.2):
+  vitest@1.6.1(@types/node@20.19.30)(happy-dom@20.12.0)(sass-embedded@1.97.2)(sass@1.97.2):
     dependencies:
       '@vitest/expect': 1.6.1
       '@vitest/runner': 1.6.1
@@ -5634,6 +5722,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 20.19.30
+      happy-dom: 20.12.0
     transitivePeerDependencies:
       - less
       - lightningcss
@@ -5682,6 +5771,8 @@ snapshots:
     dependencies:
       defaults: 1.0.4
 
+  whatwg-mimetype@3.0.0: {}
+
   which@2.0.2:
     dependencies:
       isexe: 2.0.0
@@ -5704,6 +5795,8 @@ snapshots:
       ansi-styles: 4.3.0
       string-width: 4.2.3
       strip-ansi: 6.0.1
+
+  ws@8.21.3: {}
 
   xtend@4.0.2: {}
 

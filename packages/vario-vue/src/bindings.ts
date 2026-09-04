@@ -15,7 +15,28 @@
 
 import { resolveComponent } from 'vue'
 import type { RuntimeContext } from '@variojs/types'
+import type { SchemaNode } from '@variojs/schema'
 import { getPathValue } from '@variojs/core'
+
+/** VUE-8：每个 ctx+path 只激活一次，不为每轮 render 创建 timer */
+const lazyActivated = new WeakMap<object, Map<string, boolean>>()
+
+function isLazyModelActive(ctx: object, path: string): boolean {
+  return lazyActivated.get(ctx)?.get(path) === true
+}
+
+function scheduleLazyModelActivation(ctx: object, path: string): void {
+  let paths = lazyActivated.get(ctx)
+  if (!paths) {
+    paths = new Map()
+    lazyActivated.set(ctx, paths)
+  }
+  if (paths.has(path)) return
+  paths.set(path, false)
+  queueMicrotask(() => {
+    lazyActivated.get(ctx)?.set(path, true)
+  })
+}
 
 /**
  * 组件 model 配置
@@ -57,9 +78,13 @@ const VUE3_DEFAULT_CONFIG: ModelConfig = {
 /**
  * 获取组件的 model 配置
  */
-function getModelConfig(componentType: string, component?: unknown): ModelConfig {
-  // 1. 自定义配置优先
-  const custom = customConfigs.get(componentType)
+function getModelConfig(
+  componentType: string,
+  component?: unknown,
+  pageConfigs?: Map<string, ModelConfig>
+): ModelConfig {
+  // 1. 页面级配置优先，再查全局自定义配置
+  const custom = pageConfigs?.get(componentType) ?? customConfigs.get(componentType)
   if (custom) return custom
   
   // 2. 原生表单元素
@@ -134,6 +159,7 @@ function getDefaultValue(prop: string): unknown {
  * @param schemaDefault 当状态未初始化时使用的默认值（来自 schema model.default）
  * @param schemaLazy true 时不预写 state，仅当用户修改该绑定值后才写入 state
  * @param modifiers v-model 修饰符（可选，如 { trim: true, lazy: true, number: true }）
+ * @param pageConfigs 页面级 model 配置，优先于全局 registerModelConfig
  * @returns 包含 prop 和 event handler 的对象
  */
 export function createModelBinding(
@@ -145,25 +171,29 @@ export function createModelBinding(
   modelName?: string,
   schemaDefault?: unknown,
   schemaLazy?: boolean,
-  modifiers: Record<string, boolean> = {}
+  modifiers: Record<string, boolean> = {},
+  pageConfigs?: Map<string, ModelConfig>
 ): Record<string, unknown> {
   // 尝试解析组件（如果未提供或者是字符串）
   let resolvedComponent = component
   if (!resolvedComponent || typeof resolvedComponent === 'string') {
-    try {
-      const resolved = resolveComponent(componentType)
-      if (resolved && typeof resolved !== 'string') {
-        resolvedComponent = resolved
+    const looksCustom = /[A-Z-]/.test(componentType)
+    if (looksCustom) {
+      try {
+        const resolved = resolveComponent(componentType)
+        if (resolved && typeof resolved !== 'string') {
+          resolvedComponent = resolved
+        }
+      } catch {
+        // 解析失败，使用默认配置
       }
-    } catch {
-      // 解析失败，使用默认配置
     }
   }
   
   // 获取配置（支持具名 model）
   const config = modelName 
-    ? getNamedModelConfig(componentType, resolvedComponent, modelName)
-    : getModelConfig(componentType, resolvedComponent)
+    ? getNamedModelConfig(componentType, resolvedComponent, modelName, pageConfigs)
+    : getModelConfig(componentType, resolvedComponent, pageConfigs)
   
   // 获取当前值（从用户传入的 state 或 context 中）
   let value = getState
@@ -187,13 +217,8 @@ export function createModelBinding(
     }
   }
   
-  // 标记是否已激活（用于区分挂载阶段自动触发与用户交互）
-  // lazy 模式下，使用 setTimeout 延迟激活，避免组件挂载时的自动触发写入 state
-  let isActive = !schemaLazy
   if (schemaLazy) {
-    setTimeout(() => {
-      isActive = true
-    }, 0)
+    scheduleLazyModelActivation(ctx, modelPath)
   }
 
   /**
@@ -229,7 +254,7 @@ export function createModelBinding(
     }
 
     // lazy 模式：未激活前（挂载阶段）的更新不写入 state
-    if (schemaLazy && !isActive) {
+    if (schemaLazy && !isLazyModelActive(ctx, modelPath)) {
       return
     }
 
@@ -256,11 +281,12 @@ export function createModelBinding(
 function getNamedModelConfig(
   componentType: string, 
   component: unknown, 
-  modelName: string
+  modelName: string,
+  pageConfigs?: Map<string, ModelConfig>
 ): ModelConfig {
-  // 1. 检查自定义配置
+  // 1. 页面级配置优先，再查全局自定义配置
   const customKey = `${componentType}:${modelName}`
-  const custom = customConfigs.get(customKey)
+  const custom = pageConfigs?.get(customKey) ?? customConfigs.get(customKey)
   if (custom) return custom
   
   // 2. 尝试从组件定义检测
@@ -307,4 +333,91 @@ export function registerModelConfig(
  */
 export function clearModelConfigs(): void {
   customConfigs.clear()
+}
+
+/**
+ * LIFE-4：把 useVario modelBindings 编成页面级表，不写入全局 customConfigs。
+ */
+export function createBindingConfigTable(bindings?: Record<string, ModelConfig>): Map<string, ModelConfig> {
+  const table = new Map<string, ModelConfig>()
+  if (!bindings) return table
+  for (const [key, config] of Object.entries(bindings)) {
+    if (!config) continue
+    if (key.includes(':')) {
+      const [component, modelName] = key.split(':')
+      table.set(`${component}:${modelName}`, config)
+    } else {
+      table.set(key, config)
+    }
+  }
+  return table
+}
+
+function joinModelPath(prefix: string, path: string): string {
+  if (!prefix) return path
+  if (!path) return prefix
+  return `${prefix}.${path}`
+}
+
+function readModelField(model: unknown): { path?: string; scope: boolean; lazy: boolean; defaultValue: unknown } {
+  if (typeof model === 'string') {
+    return { path: model, scope: false, lazy: false, defaultValue: undefined }
+  }
+  if (model && typeof model === 'object') {
+    const rec = model as { path?: string; scope?: boolean; lazy?: boolean; default?: unknown }
+    return {
+      path: typeof rec.path === 'string' ? rec.path : undefined,
+      scope: rec.scope === true,
+      lazy: rec.lazy === true,
+      defaultValue: rec.default
+    }
+  }
+  return { scope: false, lazy: false, defaultValue: undefined }
+}
+
+/**
+ * SSR-3 / VUE-8：在首帧 render 前把 model.default 写入 state，避免 render 中写持久 store。
+ */
+export function applySchemaModelDefaults(
+  schema: SchemaNode,
+  ctx: RuntimeContext,
+  options: { lazy?: boolean } = {}
+): void {
+  const globalLazy = options.lazy === true
+  const walk = (node: unknown, prefix: string, inLoop: boolean): void => {
+    if (!node || typeof node !== 'object') return
+    const rec = node as SchemaNode & Record<string, unknown>
+    let nextPrefix = prefix
+    const applyField = (model: unknown, allowScope: boolean): void => {
+      const field = readModelField(model)
+      if (!field.path) return
+      const full = joinModelPath(prefix, field.path)
+      if (!inLoop && !globalLazy && !field.lazy && field.defaultValue !== undefined && ctx._get(full) === undefined) {
+        ctx._set(full as never, field.defaultValue as never)
+      }
+      if (allowScope && field.scope) nextPrefix = full
+    }
+    applyField(rec.model, true)
+    for (const [key, value] of Object.entries(rec)) {
+      if (key.startsWith('model:') && key !== 'model') applyField(value, false)
+    }
+    const nestedLoop = inLoop || rec.loop != null
+    const children = rec.children
+    if (Array.isArray(children)) {
+      for (const child of children) walk(child, nextPrefix, nestedLoop)
+    } else if (children && typeof children === 'object') {
+      walk(children, nextPrefix, nestedLoop)
+    }
+    const slots = rec.slots
+    if (slots && typeof slots === 'object') {
+      for (const slot of Object.values(slots as Record<string, unknown>)) {
+        if (Array.isArray(slot)) {
+          for (const child of slot) walk(child, nextPrefix, nestedLoop)
+        } else {
+          walk(slot, nextPrefix, nestedLoop)
+        }
+      }
+    }
+  }
+  walk(schema, '', false)
 }

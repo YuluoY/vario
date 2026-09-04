@@ -71,6 +71,14 @@ describe('RefsRegistry', () => {
       
       expect(Object.keys(registry.getAll())).toHaveLength(0)
     })
+
+    it('VUE-9 clear 将已持有的 ref.value 置为 null', () => {
+      const held = registry.register('stale')
+      held.value = { tagName: 'DIV' }
+      registry.clear()
+      expect(held.value).toBe(null)
+      expect(registry.get('stale')).toBeUndefined()
+    })
   })
 })
 
@@ -203,6 +211,12 @@ describe('attachRef', () => {
       expect(allRefs.ref1).toBeDefined()
       expect(allRefs.ref2).toBeDefined()
       expect(allRefs.ref3).toBeDefined()
+    })
+
+    it('VUE-9 loop ref 使用 Vue ref_for 语义', () => {
+      const vnode = attachRef(h('div'), { type: 'div', ref: 'row' }, registry, owner, { inLoop: true })
+      expect((vnode as any).ref.f).toBe(true)
+      expect((vnode as any).ref.k).toBe('row')
     })
   })
 })

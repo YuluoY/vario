@@ -11,75 +11,19 @@ import type * as ESTree from '@babel/types'
 import type { RuntimeContext, ExpressionOptions } from '@variojs/types'
 import { ExpressionError, ErrorCodes } from '../errors.js'
 import { isSafePropertyAccess } from '../runtime/sandbox.js'
-
-/**
- * 白名单全局函数
- */
-const WHITELISTED_GLOBALS = new Set([
-  'String', 'Number', 'Boolean', 'BigInt', 'Symbol',
-  'Array', 'Object', 'Math', 'Date',
-])
-
-/**
- * 白名单函数（带命名空间）
- */
-const WHITELISTED_FUNCTIONS = new Set([
-  'Array.isArray',
-  'Object.is',
-  'Number.isFinite',
-  'Number.isInteger',
-  'Number.isNaN',
-  'Number.isSafeInteger',
-  'Math.abs',
-  'Math.round',
-  'Math.floor',
-  'Math.ceil',
-  'Math.random',
-  'Math.max',
-  'Math.min',
-  'Date.now',
-])
-
-/**
- * 安全的数组方法（只读或返回新数组，不修改原状态）
- */
-const SAFE_ARRAY_METHODS = new Set([
-  // 返回新数组
-  'slice',
-  'concat',
-  'filter',
-  'map',
-  'flat',
-  'flatMap',
-  'toReversed',   // ES2023 不修改原数组的 reverse
-  'toSorted',     // ES2023 不修改原数组的 sort
-  'toSpliced',    // ES2023 不修改原数组的 splice
-  'with',         // ES2023 不修改原数组的索引赋值
-  // 只读方法
-  'indexOf',
-  'lastIndexOf',
-  'includes',
-  'find',
-  'findIndex',
-  'findLast',
-  'findLastIndex',
-  'every',
-  'some',
-  'at',
-  // 返回字符串
-  'join',
-  'toString',
-  'toLocaleString',
-  // 在链式调用中安全使用（如 slice().reverse()）
-  'reverse',
-  'sort',
-])
+import {
+  WHITELISTED_GLOBALS,
+  WHITELISTED_FUNCTIONS,
+  SAFE_ARRAY_METHODS,
+  RUNTIME_HELPERS,
+  ALLOWED_CAPABILITY_ROOTS,
+  isRegisteredCapabilityCall,
+  isWhitelistedGlobalStaticCall,
+  invokeCapability,
+} from './policy.js'
 
 /**
  * 危险属性名称集合（用于阻止原型链污染攻击）
- * - constructor: 可用于访问 Function 构造函数
- * - prototype: 可用于修改原型链
- * - __proto__: 可用于修改对象原型
  */
 const DANGEROUS_PROPERTIES = new Set([
   'constructor',
@@ -92,23 +36,6 @@ const DANGEROUS_PROPERTIES = new Set([
  */
 function isDangerousProperty(propName: string | number): boolean {
   return typeof propName === 'string' && DANGEROUS_PROPERTIES.has(propName)
-}
-
-/**
- * 运行时辅助函数
- */
-  const RUNTIME_HELPERS: Record<string, (...args: unknown[]) => unknown> = {
-  '$truncate': (str: unknown, length: unknown): unknown => {
-    if (typeof str !== 'string') return str
-    const len = typeof length === 'number' ? length : 0
-    return str.length > len ? str.slice(0, len) + '...' : str
-  },
-  '$format': (date: unknown, _format?: unknown): unknown => {
-    const d = typeof date === 'number' ? new Date(date) : (date as Date)
-    // 简单格式化，可根据需要扩展
-    // format 参数暂未实现，保留接口以便未来扩展
-    return d.toISOString()
-  },
 }
 
 /**
@@ -512,6 +439,22 @@ export function evaluateExpression(
         } else if (callee.type === 'MemberExpression') {
           // 成员函数调用：Math.max(), Array.isArray(), array.slice()
           const member = callee as ESTree.MemberExpression
+          const capabilityRootEarly = member.object.type === 'Identifier'
+            ? (member.object as ESTree.Identifier).name
+            : null
+          const capabilityMethodEarly = !member.computed && member.property.type === 'Identifier'
+            ? (member.property as ESTree.Identifier).name
+            : null
+          if (
+            capabilityRootEarly &&
+            capabilityMethodEarly &&
+            ALLOWED_CAPABILITY_ROOTS.has(capabilityRootEarly) &&
+            isRegisteredCapabilityCall(ctx, capabilityRootEarly, capabilityMethodEarly)
+          ) {
+            funcName = `${capabilityRootEarly}.${capabilityMethodEarly}`
+            funcObj = invokeCapability
+            callContext = { __varioCapability: [capabilityRootEarly, capabilityMethodEarly] }
+          } else {
           const obj = evaluate(member.object)
           
           // null/undefined 检查
@@ -542,7 +485,9 @@ export function evaluateExpression(
           // 检查是否是数组实例方法调用（安全的只读方法）
           if (Array.isArray(obj) && !member.computed && member.property.type === 'Identifier') {
             const methodName = (member.property as ESTree.Identifier).name
-            if (SAFE_ARRAY_METHODS.has(methodName)) {
+            // reverse/sort 仅链式调用（对象为 CallExpression 结果，如 slice()）放行
+            const chained = member.object.type === 'CallExpression'
+            if (SAFE_ARRAY_METHODS.has(methodName) || (chained && (methodName === 'reverse' || methodName === 'sort'))) {
               // 这是安全的数组方法，直接使用
               funcObj = (obj as any)[methodName]
               funcName = `Array.${methodName}` // 用于标识和错误信息
@@ -575,6 +520,7 @@ export function evaluateExpression(
               callContext = obj
             }
           }
+          }
         } else {
           throw new ExpressionError(
             JSON.stringify(node),
@@ -586,9 +532,25 @@ export function evaluateExpression(
         // 检查白名单
         // 如果是数组方法（funcName 以 Array. 开头且方法在安全列表中），则允许
         const isArrayMethod = funcName.startsWith('Array.') && SAFE_ARRAY_METHODS.has(funcName.split('.')[1])
+        const capabilityRoot = callee.type === 'MemberExpression' && callee.object.type === 'Identifier'
+          ? (callee.object as ESTree.Identifier).name
+          : null
+        const capabilityMethod = callee.type === 'MemberExpression' && !callee.computed && callee.property.type === 'Identifier'
+          ? (callee.property as ESTree.Identifier).name
+          : null
+        const isCapability = !!(capabilityRoot && capabilityMethod && isRegisteredCapabilityCall(ctx, capabilityRoot, capabilityMethod))
+        const isChainedMutator = !!(
+          callee.type === 'MemberExpression' &&
+          !callee.computed &&
+          callee.property.type === 'Identifier' &&
+          (callee.property.name === 'reverse' || callee.property.name === 'sort') &&
+          callee.object.type === 'CallExpression'
+        )
         const isWhitelisted = isArrayMethod ||
-                             WHITELISTED_FUNCTIONS.has(funcName) || 
-                             WHITELISTED_GLOBALS.has(funcName.split('.')[0]) ||
+                             isCapability ||
+                             isChainedMutator ||
+                             isWhitelistedGlobalStaticCall(funcName) ||
+                             WHITELISTED_FUNCTIONS.has(funcName) ||
                              RUNTIME_HELPERS[funcName] !== undefined
         
         if (!allowGlobals && !isWhitelisted) {
@@ -610,6 +572,15 @@ export function evaluateExpression(
           }
           return evaluate(arg)
         })
+
+        if (
+          callContext &&
+          typeof callContext === 'object' &&
+          '__varioCapability' in (callContext as object)
+        ) {
+          const pair = (callContext as { __varioCapability: [string, string] }).__varioCapability
+          return invokeCapability(pair[0], pair[1], args, ctx)
+        }
         
         // 调用运行时辅助函数
         if (RUNTIME_HELPERS[funcName]) {

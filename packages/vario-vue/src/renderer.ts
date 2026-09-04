@@ -23,6 +23,14 @@ import { AttrsBuilder } from './features/attrs-builder.js'
 import { LoopHandler } from './features/loop-handler.js'
 import { ChildrenResolver } from './features/children-resolver.js'
 import { parseStyleString } from './features/style-utils.js'
+import {
+  scanSchemaIterative,
+  DEFAULT_MOUNT_MAX_DEPTH,
+  SchemaDepthError,
+  getOrCreateEngine,
+  type DiagnosticSink
+} from '@variojs/core'
+import { emitPerformance } from './internal/performance-hooks.js'
 import type { VNodePlugin } from './plugins/types.js'
 import { defaultPlugins } from './plugins/index.js'
 import type { NodeContext } from './features/node-context.js'
@@ -61,6 +69,12 @@ export interface VueRendererOptions {
   modelOptions?: ModelOptions  // Model 绑定配置（路径分隔符、默认惰性）
   /** VNode 插件列表，默认使用 defaultPlugins（lifecycle/keepAlive/transition/teleport） */
   plugins?: VNodePlugin[]
+  /** 页面级 model 配置，不写入全局 registerModelConfig */
+  modelConfigs?: Map<string, import('./bindings.js').ModelConfig>
+  regionInterceptor?: (schema: SchemaNode, path: string, ctx: RuntimeContext) => VNode | null | undefined
+  diagnosticSink?: DiagnosticSink
+  /** 显式运行时模式：决定表达式求值与事件作用域的路径（禁止用"能否查到 PageSession"推断） */
+  runtimeMode?: 'legacy' | 'shadow' | 'prepared'
 }
 
 /**
@@ -84,6 +98,13 @@ export class VueRenderer implements VarioNodeRenderer {
   private childrenResolver: ChildrenResolver
   /** VNode 插件（组件包装 + VNode 装饰） */
   private plugins: VNodePlugin[]
+  private sink?: DiagnosticSink
+  private preparedByPlugin = new WeakSet<object>()
+  /** 显式运行时模式（legacy 走 evaluate 旧缓存；prepared 走 plan+memo） */
+  readonly runtimeMode: 'legacy' | 'shadow' | 'prepared'
+  /** 深度扫描结果缓存（按 schema 引用；patch 时 invalidateScan 失效） */
+  private scanCache = new WeakMap<SchemaNode, ReturnType<typeof scanSchemaIterative>>()
+  regionInterceptor?: (schema: SchemaNode, path: string, ctx: RuntimeContext) => VNode | null | undefined
 
   /**
    * 稳定的 parentMap 引用（方案 C 优化）
@@ -96,7 +117,9 @@ export class VueRenderer implements VarioNodeRenderer {
   constructor(options: VueRendererOptions = {}) {
     this.instance = options.instance || null
     this.getState = options.getState
+    this.runtimeMode = options.runtimeMode ?? 'legacy'
     this.refsRegistry = options.refsRegistry || new RefsRegistry()
+    this.regionInterceptor = options.regionInterceptor
     // 初始化功能模块
     // 合并全局组件：app / instance 上下文的全局组件作为基础，options.components 覆盖同名组件
     const appComponents =
@@ -107,8 +130,11 @@ export class VueRenderer implements VarioNodeRenderer {
       ? { ...appComponents, ...options.components }
       : appComponents
     this.componentResolver = new ComponentResolver(globalComponents)
-    this.expressionEvaluator = new ExpressionEvaluator()
-    this.eventHandler = new EventHandler((expr, ctx) => this.expressionEvaluator.evaluateExpr(expr, ctx))
+    this.expressionEvaluator = new ExpressionEvaluator(this.runtimeMode)
+    this.eventHandler = new EventHandler(
+      (expr, ctx) => this.expressionEvaluator.evaluateExpr(expr, ctx),
+      this.runtimeMode
+    )
     this.directiveHandler = new DirectiveHandler((expr, ctx) => this.expressionEvaluator.evaluateExpr(expr, ctx))
     
     // 初始化指令映射表并注册内置指令
@@ -129,9 +155,26 @@ export class VueRenderer implements VarioNodeRenderer {
       this.getState,
       this.pathResolver,
       this.eventHandler,
-      options.modelOptions?.lazy
+      options.modelOptions?.lazy,
+      options.modelConfigs
     )
-    this.plugins = options.plugins ?? defaultPlugins
+    this.plugins = (options.plugins ?? defaultPlugins).slice()
+    this.sink = options.diagnosticSink
+    for (const plugin of this.plugins) {
+      try {
+        plugin.setup?.(getOrCreateEngine())
+        this.sink?.emit({
+          name: 'plugin-resolve',
+          diagnostic: { code: plugin.name, message: 'plugin-resolve', path: '', phase: 'plugin' }
+        })
+      } catch (error) {
+        this.sink?.emit({
+          name: 'plugin-error',
+          diagnostic: { code: plugin.name, message: 'plugin-error', path: '', phase: 'plugin' }
+        })
+        throw error
+      }
+    }
 
     // LoopHandler 和 ChildrenResolver 需要 createVNode
     const createVNodeFn = (
@@ -175,10 +218,61 @@ export class VueRenderer implements VarioNodeRenderer {
     )
   }
 
+  release(): void {
+    this.getState = undefined
+    this.regionInterceptor = undefined
+    this.instance = null
+    this.attrsBuilder.release()
+    for (const plugin of this.plugins) {
+      plugin.dispose?.()
+    }
+    this.plugins = []
+    this.refsRegistry.clear()
+  }
+
+  /**
+   * 使 schema 根的深度扫描缓存失效（patchNode / onSchemaPatch 后调用）
+   */
+  invalidateScan(root: SchemaNode): void {
+    this.scanCache.delete(root)
+  }
+
   /**
    * 渲染 Schema 为 VNode
    */
   render(schema: SchemaNode, ctx: RuntimeContext): VNode | null {
+    // 深度扫描结果按 schema 引用缓存（schema patch 时调 invalidateScan 失效）
+    let scan = this.scanCache.get(schema)
+    if (!scan) {
+      scan = scanSchemaIterative(schema)
+      this.scanCache.set(schema, scan)
+    }
+    if (scan.maxDepth > DEFAULT_MOUNT_MAX_DEPTH) {
+      throw new SchemaDepthError(
+        `Schema depth ${scan.maxDepth} exceeds mount limit ${DEFAULT_MOUNT_MAX_DEPTH}`,
+        {
+          schemaPath: scan.maxPath,
+          metadata: {
+            phase: 'mount',
+            node: scan.maxNode,
+            path: scan.maxPath,
+            actual: scan.maxDepth,
+            limit: DEFAULT_MOUNT_MAX_DEPTH
+          }
+        }
+      )
+    }
+    for (const plugin of this.plugins) {
+      try {
+        plugin.validate?.(schema as VueSchemaNode)
+      } catch (error) {
+        this.sink?.emit({
+          name: 'plugin-error',
+          diagnostic: { code: plugin.name, message: 'plugin-error', path: '', phase: 'plugin' }
+        })
+        throw error
+      }
+    }
     const vnode = this.createVNode(schema, ctx, [], undefined, this._stableParentMap, '')
     if (vnode === null || vnode === undefined) {
       return h(Fragment, null, [])
@@ -208,8 +302,19 @@ export class VueRenderer implements VarioNodeRenderer {
       return this.createErrorVNode('Schema missing type property')
     }
 
+    if (!this.preparedByPlugin.has(schema)) {
+      this.preparedByPlugin.add(schema)
+      for (const plugin of this.plugins) {
+        plugin.prepare?.(schema as VueSchemaNode)
+      }
+    }
+
+    const intercepted = this.regionInterceptor?.(schema, path, ctx)
+    if (intercepted) return intercepted
+
     // ── 2. parentMap 注册 ──
     this.registerParentMap(schema, nodeContext, parentMap)
+    emitPerformance('legacyRenderNode')
 
     // ── 3. 条件渲染（cond） ──
     const condValue = this.evaluateCond(schema, ctx)
@@ -267,23 +372,19 @@ export class VueRenderer implements VarioNodeRenderer {
     return vnode
   }
 
-  // ============================================================================
-  // createVNode 管线阶段方法
-  // ============================================================================
+  renderNode(
+    schema: SchemaNode,
+    ctx: RuntimeContext,
+    path = ''
+  ): VNode {
+    return this.createVNode(schema, ctx, [], undefined, this._stableParentMap, path)
+  }
 
   /** 注册 parentMap（节点→父节点映射） */
   private registerParentMap(schema: SchemaNode, nodeContext?: NodeContext, parentMap?: ParentMap): void {
     if (parentMap == null) return
-    if (nodeContext == null) {
-      parentMap.set(schema, null)
-    } else {
-      parentMap.set(schema, nodeContext.parent ?? null)
-      const siblings = nodeContext.siblings ?? []
-      const parent = nodeContext.parent
-      if (parent != null) {
-        siblings.forEach(s => parentMap!.set(s, parent))
-      }
-    }
+    emitPerformance('parentMapWrite')
+    parentMap.set(schema, nodeContext?.parent ?? null)
   }
 
   /** 求值 cond 表达式。返回 truthy 值 / null（false）/ Error */
@@ -293,6 +394,7 @@ export class VueRenderer implements VarioNodeRenderer {
       const val = this.expressionEvaluator.evaluateExpr(schema.cond, ctx)
       return val ? val : null
     } catch (error) {
+      if (error instanceof RangeError) throw error
       return error instanceof Error ? error : new Error(String(error))
     }
   }
@@ -302,7 +404,8 @@ export class VueRenderer implements VarioNodeRenderer {
     if (!schema.show) return true
     try {
       return this.expressionEvaluator.evaluateExpr(schema.show, ctx)
-    } catch {
+    } catch (error) {
+      if (error instanceof RangeError) throw error
       return true
     }
   }
@@ -338,8 +441,16 @@ export class VueRenderer implements VarioNodeRenderer {
     // 遍历插件的 wrapComponent 阶段（第一个匹配即生效）
     for (const plugin of this.plugins) {
       if (!plugin.wrapComponent) continue
-      const result = plugin.wrapComponent(component, attrs, children, vueSchema, ctx)
-      if (result !== null) return result
+      try {
+        const result = plugin.wrapComponent(component, attrs, children, vueSchema, ctx)
+        if (result !== null) return result
+      } catch (error) {
+        this.sink?.emit({
+          name: 'plugin-error',
+          diagnostic: { code: plugin.name, message: 'plugin-error', path: '', phase: 'plugin' }
+        })
+        throw error
+      }
     }
     try {
       return h(component, attrs, children)
@@ -397,7 +508,9 @@ export class VueRenderer implements VarioNodeRenderer {
   ): VNode {
     // ref（核心）
     if (vueSchema.ref) {
-      vnode = attachRef(vnode, vueSchema, this.refsRegistry, this.instance)
+      vnode = attachRef(vnode, vueSchema, this.refsRegistry, this.instance, {
+        inLoop: '$item' in ctx || '$index' in ctx
+      })
     }
 
     // 自定义指令（核心）
@@ -497,8 +610,16 @@ export class VueRenderer implements VarioNodeRenderer {
   ): VNode | null {
     for (const plugin of this.plugins) {
       if (!plugin.wrapComponent) continue
-      const result = plugin.wrapComponent(component, attrs, children, vueSchema, ctx)
-      if (result !== null) return result
+      try {
+        const result = plugin.wrapComponent(component, attrs, children, vueSchema, ctx)
+        if (result !== null) return result
+      } catch (error) {
+        this.sink?.emit({
+          name: 'plugin-error',
+          diagnostic: { code: plugin.name, message: 'plugin-error', path: '', phase: 'plugin' }
+        })
+        throw error
+      }
     }
     return null
   }
@@ -521,8 +642,10 @@ export class VueRenderer implements VarioNodeRenderer {
   /**
    * 附加 ref
    */
-  attachRef(vnode: VNode, vueSchema: VueSchemaNode): VNode {
-    return attachRef(vnode, vueSchema, this.refsRegistry, this.instance)
+  attachRef(vnode: VNode, vueSchema: VueSchemaNode, ctx?: RuntimeContext): VNode {
+    return attachRef(vnode, vueSchema, this.refsRegistry, this.instance, {
+      inLoop: !!(ctx && ('$item' in ctx || '$index' in ctx))
+    })
   }
 
   /**

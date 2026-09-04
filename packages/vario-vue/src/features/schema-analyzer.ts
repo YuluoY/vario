@@ -78,7 +78,7 @@ export function createSchemaAnalyzer(
       if (!isLazy) {
         analyze()
       }
-    }, { deep: true, immediate: !isLazy })
+    }, { deep: false, immediate: !isLazy })
   } else if (!isLazy) {
     analyze()
   }

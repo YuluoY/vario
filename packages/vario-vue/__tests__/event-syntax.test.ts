@@ -168,8 +168,7 @@ describe('事件语法', () => {
       // 字符串数组应该被规范化为多个 call action
       // 但 execute 可能只执行第一个，所以我们检查至少第一个被调用
       expect(method1).toHaveBeenCalled()
-      // TODO: 检查为什么第二个方法没有被调用
-      // expect(method2).toHaveBeenCalled()
+      expect(method2).toHaveBeenCalled()
     })
   })
 
@@ -381,6 +380,89 @@ describe('事件语法', () => {
       expect(handleClick).toHaveBeenCalled()
       const callArgs = handleClick.mock.calls[0]
       expect(callArgs[1]).toEqual({ id: 999 })
+    })
+  })
+
+  describe('EventFrame', () => {
+    it('legacy 模式事件不创建 frame；$event 挂在 ctx 上', async () => {
+      const { PageSession } = await import('../src/runtime/page-session.js')
+      const { prepareView } = await import('@variojs/schema')
+      const eventHandler = new EventHandler(evaluateExpr, 'legacy')
+      const mockEvent = new Event('click')
+      const ctx = createRuntimeContext({}, {
+        methods: {
+          ping() {
+            expect(ctx.$event).toBe(mockEvent)
+          }
+        }
+      })
+      const session = new PageSession({
+        ctx,
+        view: prepareView({ type: 'button' } as never)
+      })
+      const schema: SchemaNode = {
+        type: 'button',
+        events: {
+          click: { type: 'call', method: 'ping' }
+        }
+      }
+      const before = session.frames.size
+      await eventHandler.getEventHandlers(schema, ctx).onClick(mockEvent)
+      expect(session.currentFrame()).toBeNull()
+      expect(session.frames.size).toBe(before)
+      session.dispose()
+    })
+
+    it('prepared 模式事件帧按 id 登记并在结束后释放（FR-6）', async () => {
+      const { PageSession } = await import('../src/runtime/page-session.js')
+      const { prepareView } = await import('@variojs/schema')
+      const eventHandler = new EventHandler(evaluateExpr, 'prepared')
+      const mockEvent = new Event('click')
+      let duringExecution = -1
+      const ctx = createRuntimeContext({}, {
+        methods: {
+          ping() {
+            duringExecution = session.frames.size
+          }
+        }
+      })
+      const session = new PageSession({
+        ctx,
+        view: prepareView({ type: 'button' } as never)
+      })
+      const schema: SchemaNode = {
+        type: 'button',
+        events: {
+          click: { type: 'call', method: 'ping' }
+        }
+      }
+      const before = session.frames.size
+      await eventHandler.getEventHandlers(schema, ctx).onClick(mockEvent)
+      expect(duringExecution).toBe(before + 1)
+      expect(session.frames.size).toBe(before)
+      expect(session.currentFrame()).toBeNull()
+      session.dispose()
+    })
+
+    it('createEventFrame/releaseFrame：交叠事件互不影响、按 id 释放', async () => {
+      const { PageSession } = await import('../src/runtime/page-session.js')
+      const { prepareView } = await import('@variojs/schema')
+      const ctx = createRuntimeContext({})
+      const session = new PageSession({
+        ctx,
+        view: prepareView({ type: 'button' } as never)
+      })
+      const frameA = session.createEventFrame({ $event: 'a' })
+      const frameB = session.createEventFrame({ $event: 'b' })
+      expect(session.frames.has(frameA.id)).toBe(true)
+      expect(session.frames.has(frameB.id)).toBe(true)
+      // 乱序释放：B 先结束不影响 A
+      session.releaseFrame(frameB)
+      expect(session.frames.has(frameA.id)).toBe(true)
+      expect(session.frames.has(frameB.id)).toBe(false)
+      session.releaseFrame(frameA)
+      expect(session.frames.size).toBe(0)
+      session.dispose()
     })
   })
 })

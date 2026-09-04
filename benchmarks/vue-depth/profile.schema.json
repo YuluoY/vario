@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Vario vue-depth locked performance profile",
+  "type": "object",
+  "required": ["version", "protocol", "calibratedAt", "p95"],
+  "properties": {
+    "version": { "type": "integer" },
+    "protocol": {
+      "type": "object",
+      "required": ["warmup", "samples", "processCount"],
+      "properties": {
+        "warmup": { "const": 20 },
+        "samples": { "const": 50 },
+        "processCount": { "const": 3 }
+      }
+    },
+    "calibratedAt": { "type": "string", "format": "date-time" },
+    "commit": { "type": "string" },
+    "p95": {
+      "type": "object",
+      "required": ["PERF_T1", "PERF_T2", "PERF_T3", "PERF_T4", "PERF_T5", "PERF_T6"]
+    }
+  }
+}

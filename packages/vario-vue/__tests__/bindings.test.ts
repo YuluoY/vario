@@ -8,8 +8,8 @@
  * - 自定义配置
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
-import { createModelBinding, registerModelConfig, clearModelConfigs } from '../src/bindings.js'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { createModelBinding, registerModelConfig, clearModelConfigs, createBindingConfigTable } from '../src/bindings.js'
 import { createRuntimeContext } from '@variojs/core'
 
 describe('createModelBinding', () => {
@@ -187,6 +187,50 @@ describe('createModelBinding', () => {
       )
       expect(binding.value).toBe('')
       expect(emptyCtx._get('name')).toBe('')
+    })
+
+    it('VUE-8 lazy model 不为每轮 render 创建 timer', () => {
+      vi.useFakeTimers()
+      const spy = vi.spyOn(globalThis, 'setTimeout')
+      const emptyCtx = createRuntimeContext({})
+      const before = spy.mock.calls.length
+      for (let i = 0; i < 20; i++) {
+        createModelBinding(
+          'input',
+          'optional',
+          emptyCtx,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          true
+        )
+      }
+      expect(spy.mock.calls.length).toBe(before)
+      spy.mockRestore()
+      vi.useRealTimers()
+    })
+
+    it('LIFE-4 page modelConfigs do not write global customConfigs', () => {
+      const pageA = createBindingConfigTable({
+        IsolatedInput: { prop: 'aValue', event: 'update:aValue' }
+      })
+      const bindingA = createModelBinding(
+        'IsolatedInput',
+        'name',
+        ctx,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        {},
+        pageA
+      )
+      expect(bindingA.aValue).toBe('Test')
+      const bindingB = createModelBinding('IsolatedInput', 'name', ctx)
+      expect(bindingB.modelValue).toBe('Test')
+      expect(bindingB.aValue).toBeUndefined()
     })
   })
 })

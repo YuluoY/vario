@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Vario vue-depth benchmark result",
+  "type": "object",
+  "required": [
+    "runnerId",
+    "commit",
+    "mode",
+    "environment",
+    "warmup",
+    "samples",
+    "processCount",
+    "correctness",
+    "metrics",
+    "rawSamples"
+  ],
+  "properties": {
+    "runnerId": { "type": "string" },
+    "commit": { "type": "string" },
+    "worktree": { "type": "string" },
+    "mode": { "enum": ["legacy", "prepared"] },
+    "warmup": { "type": "integer", "const": 20 },
+    "samples": { "type": "integer", "const": 50 },
+    "processCount": { "type": "integer", "const": 3 },
+    "environment": {
+      "type": "object",
+      "required": ["node", "chrome", "vue", "os", "cpu"]
+    },
+    "correctness": {
+      "type": "object",
+      "required": ["passed", "domDepth", "leafText"]
+    },
+    "metrics": {
+      "type": "object",
+      "required": ["renderP95", "domP95", "longTaskP95"]
+    },
+    "rawSamples": { "type": "array" }
+  }
+}

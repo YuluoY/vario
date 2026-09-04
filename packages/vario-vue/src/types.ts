@@ -14,8 +14,10 @@
  */
 
 import type { Schema, SchemaNode } from '@variojs/schema'
-import type { RuntimeContext, ExpressionOptions } from '@variojs/types'
+import type { RuntimeContext, ExpressionOptions, RuntimeBudget } from '@variojs/types'
+import type { DiagnosticSink } from '@variojs/core'
 import type { Ref, VNode, ComputedRef, App, Directive } from 'vue'
+import type { VirtualListAdapter } from './runtime/virtual-list-adapter.js'
 import type { SchemaStats } from './features/schema-analyzer.js'
 import type { SchemaQueryApi } from './composables/useSchemaQuery.js'
 
@@ -62,6 +64,14 @@ export interface VueSchemaNode extends SchemaNode {
    * 组件更新前调用（引用 methods 中的方法名）
    */
   readonly onBeforeUpdate?: string
+  /**
+   * KeepAlive 激活时调用（引用 methods 中的方法名）
+   */
+  readonly onActivated?: string
+  /**
+   * KeepAlive 停用时调用（引用 methods 中的方法名）
+   */
+  readonly onDeactivated?: string
 
   /**
    * Provide 值（向下传递数据）
@@ -169,6 +179,11 @@ export interface UseVarioOptions<TState extends Record<string, unknown> = Record
   modelBindings?: Record<string, any>
   /** 事件处理 */
   onEmit?: (event: string, data?: unknown) => void
+  /**
+   * 状态变更回调：每次 `_set` / model 写回成功后触发。
+   * （`skipCallback` 的内部写入——如 computed 同步——不触发）
+   */
+  onStateChange?: (path: string, value: unknown, ctx: RuntimeContext<TState>) => void
   /** 错误处理 */
   onError?: (error: Error) => void
   /** 错误边界配置 */
@@ -188,8 +203,7 @@ export interface UseVarioOptions<TState extends Record<string, unknown> = Record
   components?: Record<string, any>
   /** 表达式求值配置 */
   exprOptions?: ExpressionOptions
-  /**
-   * Model 绑定配置（供外部/扩展使用）
+  /** Model 绑定配置（供外部/扩展使用）
    * - separator: 路径分隔符，默认 '.'
    * - lazy: 整棵 schema 的 model 默认惰性，true 时不预写 state
    */
@@ -197,6 +211,27 @@ export interface UseVarioOptions<TState extends Record<string, unknown> = Record
     separator?: string
     lazy?: boolean
   }
+  /**
+   * 命名空间数据 getter（如 $variables/$datasources/$functions/$utils）。
+   * 返回的快照会注入到 RuntimeContext，供 cond/show/loop/props `{{ }}` 求值。
+   * 这是正式 API：结构不变时只应走本通道热更新，不要因此换根 schema 引用。
+   * 每次调用应返回最新快照。
+   */
+  namespaces?: () => Record<string, unknown>
+  /**
+   * 命名空间变化订阅。当命名空间数据变化时调用 handler，触发 ctx 更新 + 按 path 失效缓存 + 重渲染。
+   * handler 可接收 `{ namespace, path }`；path 存在时只失效依赖该路径的表达式缓存。
+   * 返回取消订阅函数，如无订阅源则返回 undefined。
+   */
+  onNamespacesChange?: (
+    handler: (info?: { namespace?: string; path?: string }) => void
+  ) => (() => void) | undefined
+  onSchemaPatch?: (info: { path: string; patch: Partial<SchemaNode>; root: SchemaNode }) => void
+  runtimeMode?: 'legacy' | 'shadow' | 'prepared'
+  engineId?: string
+  runtimeBudget?: Partial<RuntimeBudget>
+  diagnosticSink?: DiagnosticSink
+  virtualAdapter?: VirtualListAdapter | null
 }
 
 /**
@@ -217,6 +252,10 @@ export interface UseVarioResult<TState extends Record<string, unknown>> extends 
   stats: Ref<SchemaStats>
   /** 手动触发重新渲染（用于错误恢复） */
   retry: () => void
+  /** 释放 PageSession；幂等，unmount 时也会调用 */
+  dispose: () => void
+  pause: () => void
+  resume: () => void
 }
 
 /**

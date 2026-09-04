@@ -17,3 +17,10 @@ export {
   type QueryEngineOptions,
   type NodeResult
 } from './query-engine.js'
+
+export {
+  scanSchemaIterative,
+  DEFAULT_MOUNT_MAX_DEPTH,
+  DEFAULT_SCAN_MAX_DEPTH,
+  type SchemaScanResult
+} from './scan.js'

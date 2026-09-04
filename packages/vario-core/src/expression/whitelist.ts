@@ -10,41 +10,16 @@
 
 import type * as ESTree from '@babel/types'
 import { ExpressionError, ErrorCodes } from '../errors.js'
+import {
+  DANGEROUS_FUNCTIONS,
+  isExactWhitelistedFunction,
+  isWhitelistedGlobalStaticCall,
+  SAFE_ARRAY_METHODS,
+  ALLOWED_CAPABILITY_ROOTS,
+} from './policy.js'
 
-/**
- * 白名单全局函数
- */
-const WHITELISTED_GLOBALS = new Set([
-  'String', 'Number', 'Boolean', 'BigInt', 'Symbol',
-  'Array', 'Object', 'Math', 'Date',
-])
-
-/**
- * 白名单函数（带命名空间）
- */
-const WHITELISTED_FUNCTIONS = new Set([
-  'Array.isArray',
-  'Object.is',
-  'Number.isFinite',
-  'Number.isInteger',
-  'Number.isNaN',
-  'Number.isSafeInteger',
-  'Math.abs',
-  'Math.round',
-  'Math.floor',
-  'Math.ceil',
-  'Math.random',
-  'Math.max',
-  'Math.min',
-  'Date.now',
-])
-
-/**
- * 检查名称是否为全局对象名称
- */
-function isGlobalObjectName(name: string): boolean {
-  return ['window', 'document', 'global', 'globalThis', 'self'].includes(name)
-}
+/** 数组的原地变更方法：仅链式调用（slice().reverse()）放行 */
+const CHAINED_MUTATOR_METHODS = new Set(['reverse', 'sort'])
 
 /**
  * 允许的 AST 节点类型
@@ -70,6 +45,7 @@ const ALLOWED_NODE_TYPES = new Set([
   'ConditionalExpression', // 三元表达式：a ? b : c
   'CallExpression',        // 函数调用：Math.max()
   'TemplateLiteral',      // 模板字符串：`${name}`
+  'TemplateElement',      // 模板字符串分段
   'SequenceExpression',   // 序列表达式：(a, b)
   'NullishCoalescingExpression', // 空值合并：a ?? b
 ])
@@ -142,37 +118,39 @@ export function validateAST(ast: ESTree.Node, options?: { allowGlobals?: boolean
       const funcName = getFunctionName(call.callee)
       if (funcName) {
         // 检查是否为危险函数（eval, Function, etc.）- 即使 allowGlobals 也禁止
-        const dangerousFunctions = ['eval', 'Function', 'setTimeout', 'setInterval', 'execScript']
-        if (dangerousFunctions.includes(funcName) || funcName.startsWith('eval') || funcName.startsWith('Function')) {
+        const dangerousFunctions = DANGEROUS_FUNCTIONS
+        if (dangerousFunctions.has(funcName) || funcName.startsWith('eval') || funcName.startsWith('Function')) {
           errors.push(`Dangerous function "${funcName}" is not allowed at ${path}`)
           return
         }
         
-        // 如果 allowGlobals，跳过白名单检查
         if (!allowGlobals) {
-          // 检查是否为全局函数调用（如 Array.isArray, Math.max）
-          const isGlobalFunction = 
-            WHITELISTED_FUNCTIONS.has(funcName) ||
-            WHITELISTED_GLOBALS.has(funcName.split('.')[0])
-          
-          // 检查是否为对象方法调用（如 array.slice, user.getName）
-          // 如果 callee 是 MemberExpression 且 object 不是全局对象，则允许
-          let isObjectMethod = false
-          if (call.callee.type === 'MemberExpression') {
+          let allowed = isExactWhitelistedFunction(funcName) || isWhitelistedGlobalStaticCall(funcName)
+          if (!allowed && call.callee.type === 'MemberExpression' && !call.callee.computed) {
             const member = call.callee as ESTree.MemberExpression
-            // 如果 object 是 Identifier（变量名），且不在全局对象白名单中，则认为是对象方法
-            if (member.object.type === 'Identifier') {
-              const objName = member.object.name
-              // 不是全局对象名称，则认为是用户数据的对象方法
-              if (!WHITELISTED_GLOBALS.has(objName) && !isGlobalObjectName(objName)) {
-                isObjectMethod = true
+            if (member.property.type === 'Identifier') {
+              const prop = member.property.name
+              if (SAFE_ARRAY_METHODS.has(prop)) allowed = true
+              if (member.object.type === 'Identifier' && ALLOWED_CAPABILITY_ROOTS.has(member.object.name)) {
+                allowed = true
+              }
+              // reverse/sort 仅链式调用（callee 对象为 CallExpression 结果）放行
+              if (CHAINED_MUTATOR_METHODS.has(prop) && member.object.type === 'CallExpression') {
+                allowed = true
               }
             }
           }
-          
-          if (!isGlobalFunction && !isObjectMethod && !funcName.startsWith('$')) {
-            // 不在白名单中的函数，禁止调用
-            errors.push(`Function "${funcName}" is not in whitelist at ${path}`)
+          if (!allowed) {
+            if (
+              call.callee.type === 'MemberExpression' &&
+              !call.callee.computed &&
+              call.callee.property.type === 'Identifier' &&
+              CHAINED_MUTATOR_METHODS.has(call.callee.property.name)
+            ) {
+              errors.push(`Function "${funcName}" mutates state; use slice().reverse() at ${path}`)
+            } else {
+              errors.push(`Function "${funcName}" is not in whitelist at ${path}`)
+            }
             return
           }
         }

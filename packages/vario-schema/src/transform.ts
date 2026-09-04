@@ -23,6 +23,7 @@ import { createRuntimeContext } from '@variojs/core'
 import { validateSchema } from './validator.js'
 import { SchemaValidationError } from './schema.types.js'
 import { normalizeSchema } from './normalizer.js'
+import { wrapLegacy } from './migrations/index.js'
 
 /**
  * defineSchema API
@@ -108,12 +109,15 @@ export function defineSchema<
 
   // 5. 规范化 Schema
   const normalizedSchema = normalizeSchema(schema)
+  const document = wrapLegacy(normalizedSchema)
 
-  // 6. 返回 VarioView
   return {
     schema: normalizedSchema,
     stateType: config.state,
-    servicesType: config.services
+    servicesType: config.services,
+    document: config.state
+      ? { ...document, initialState: config.state as Record<string, unknown> }
+      : document
   }
 }
 

@@ -1,0 +1,3022 @@
+{
+  "collectedAt": "2026-09-01T05:10:57.522Z",
+  "chrome": "151.0.7922.34",
+  "protocol": {
+    "warmup": 20,
+    "samples": 50,
+    "processCount": 3,
+    "mode": "production"
+  },
+  "t7": {
+    "p95": 10.300000190734863,
+    "correct": true,
+    "rawSamples": [
+      {
+        "prepareMs": 7.400000095367432,
+        "vnodeMs": 7.400000095367432,
+        "commitMs": 7.400000095367432,
+        "paintMs": 7.400000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 10.199999809265137,
+        "vnodeMs": 10.199999809265137,
+        "commitMs": 10.199999809265137,
+        "paintMs": 10.199999809265137,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.300000190734863,
+        "vnodeMs": 6.300000190734863,
+        "commitMs": 6.300000190734863,
+        "paintMs": 6.300000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.099999904632568,
+        "vnodeMs": 6.099999904632568,
+        "commitMs": 6.099999904632568,
+        "paintMs": 6.099999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9,
+        "vnodeMs": 9,
+        "commitMs": 9,
+        "paintMs": 9,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.599999904632568,
+        "vnodeMs": 6.599999904632568,
+        "commitMs": 6.599999904632568,
+        "paintMs": 6.599999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 7,
+        "vnodeMs": 7,
+        "commitMs": 7,
+        "paintMs": 7,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9.600000381469727,
+        "vnodeMs": 9.600000381469727,
+        "commitMs": 9.600000381469727,
+        "paintMs": 9.600000381469727,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.400000095367432,
+        "vnodeMs": 6.400000095367432,
+        "commitMs": 6.400000095367432,
+        "paintMs": 6.400000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.099999904632568,
+        "vnodeMs": 6.099999904632568,
+        "commitMs": 6.099999904632568,
+        "paintMs": 6.099999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.300000190734863,
+        "vnodeMs": 6.300000190734863,
+        "commitMs": 6.300000190734863,
+        "paintMs": 6.300000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9.400000095367432,
+        "vnodeMs": 9.400000095367432,
+        "commitMs": 9.400000095367432,
+        "paintMs": 9.400000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.200000286102295,
+        "vnodeMs": 6.200000286102295,
+        "commitMs": 6.200000286102295,
+        "paintMs": 6.200000286102295,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.200000286102295,
+        "vnodeMs": 6.200000286102295,
+        "commitMs": 6.200000286102295,
+        "paintMs": 6.200000286102295,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 8.900000095367432,
+        "vnodeMs": 8.900000095367432,
+        "commitMs": 8.900000095367432,
+        "paintMs": 8.900000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 7,
+        "vnodeMs": 7,
+        "commitMs": 7,
+        "paintMs": 7,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.800000190734863,
+        "vnodeMs": 6.800000190734863,
+        "commitMs": 6.800000190734863,
+        "paintMs": 6.800000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9,
+        "vnodeMs": 9,
+        "commitMs": 9,
+        "paintMs": 9,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.099999904632568,
+        "vnodeMs": 6.099999904632568,
+        "commitMs": 6.099999904632568,
+        "paintMs": 6.099999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6,
+        "vnodeMs": 6,
+        "commitMs": 6,
+        "paintMs": 6,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.099999904632568,
+        "vnodeMs": 6.099999904632568,
+        "commitMs": 6.099999904632568,
+        "paintMs": 6.099999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9.400000095367432,
+        "vnodeMs": 9.400000095367432,
+        "commitMs": 9.400000095367432,
+        "paintMs": 9.400000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.200000286102295,
+        "vnodeMs": 6.200000286102295,
+        "commitMs": 6.200000286102295,
+        "paintMs": 6.200000286102295,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 5.900000095367432,
+        "vnodeMs": 5.900000095367432,
+        "commitMs": 5.900000095367432,
+        "paintMs": 5.900000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9.199999809265137,
+        "vnodeMs": 9.199999809265137,
+        "commitMs": 9.199999809265137,
+        "paintMs": 9.199999809265137,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.5,
+        "vnodeMs": 6.5,
+        "commitMs": 6.5,
+        "paintMs": 6.5,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 5.900000095367432,
+        "vnodeMs": 5.900000095367432,
+        "commitMs": 5.900000095367432,
+        "paintMs": 5.900000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9.199999809265137,
+        "vnodeMs": 9.199999809265137,
+        "commitMs": 9.199999809265137,
+        "paintMs": 9.199999809265137,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.099999904632568,
+        "vnodeMs": 6.099999904632568,
+        "commitMs": 6.099999904632568,
+        "paintMs": 6.099999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 5.900000095367432,
+        "vnodeMs": 5.900000095367432,
+        "commitMs": 5.900000095367432,
+        "paintMs": 5.900000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6,
+        "vnodeMs": 6,
+        "commitMs": 6,
+        "paintMs": 6,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 8.800000190734863,
+        "vnodeMs": 8.800000190734863,
+        "commitMs": 8.800000190734863,
+        "paintMs": 8.800000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 5.699999809265137,
+        "vnodeMs": 5.699999809265137,
+        "commitMs": 5.699999809265137,
+        "paintMs": 5.699999809265137,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6,
+        "vnodeMs": 6,
+        "commitMs": 6,
+        "paintMs": 6,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 8.100000381469727,
+        "vnodeMs": 8.100000381469727,
+        "commitMs": 8.100000381469727,
+        "paintMs": 8.100000381469727,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 5.900000095367432,
+        "vnodeMs": 5.900000095367432,
+        "commitMs": 5.900000095367432,
+        "paintMs": 5.900000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 5.800000190734863,
+        "vnodeMs": 5.800000190734863,
+        "commitMs": 5.800000190734863,
+        "paintMs": 5.800000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9.5,
+        "vnodeMs": 9.5,
+        "commitMs": 9.5,
+        "paintMs": 9.5,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.400000095367432,
+        "vnodeMs": 6.400000095367432,
+        "commitMs": 6.400000095367432,
+        "paintMs": 6.400000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 5.900000095367432,
+        "vnodeMs": 5.900000095367432,
+        "commitMs": 5.900000095367432,
+        "paintMs": 5.900000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.599999904632568,
+        "vnodeMs": 6.599999904632568,
+        "commitMs": 6.599999904632568,
+        "paintMs": 6.599999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.200000286102295,
+        "vnodeMs": 6.200000286102295,
+        "commitMs": 6.200000286102295,
+        "paintMs": 6.200000286102295,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.199999809265137,
+        "vnodeMs": 6.199999809265137,
+        "commitMs": 6.199999809265137,
+        "paintMs": 6.199999809265137,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 5.800000190734863,
+        "vnodeMs": 5.800000190734863,
+        "commitMs": 5.800000190734863,
+        "paintMs": 5.800000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 8.400000095367432,
+        "vnodeMs": 8.400000095367432,
+        "commitMs": 8.400000095367432,
+        "paintMs": 8.400000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6,
+        "vnodeMs": 6,
+        "commitMs": 6,
+        "paintMs": 6,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 5.900000095367432,
+        "vnodeMs": 5.900000095367432,
+        "commitMs": 5.900000095367432,
+        "paintMs": 5.900000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 8.900000095367432,
+        "vnodeMs": 8.900000095367432,
+        "commitMs": 8.900000095367432,
+        "paintMs": 8.900000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.599999904632568,
+        "vnodeMs": 6.599999904632568,
+        "commitMs": 6.599999904632568,
+        "paintMs": 6.599999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.399999618530273,
+        "vnodeMs": 6.399999618530273,
+        "commitMs": 6.399999618530273,
+        "paintMs": 6.399999618530273,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 10.5,
+        "vnodeMs": 10.5,
+        "commitMs": 10.5,
+        "paintMs": 10.5,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.600000381469727,
+        "vnodeMs": 6.600000381469727,
+        "commitMs": 6.600000381469727,
+        "paintMs": 6.600000381469727,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 7,
+        "vnodeMs": 7,
+        "commitMs": 7,
+        "paintMs": 7,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.599999904632568,
+        "vnodeMs": 6.599999904632568,
+        "commitMs": 6.599999904632568,
+        "paintMs": 6.599999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9.199999809265137,
+        "vnodeMs": 9.199999809265137,
+        "commitMs": 9.199999809265137,
+        "paintMs": 9.199999809265137,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.800000190734863,
+        "vnodeMs": 6.800000190734863,
+        "commitMs": 6.800000190734863,
+        "paintMs": 6.800000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.299999713897705,
+        "vnodeMs": 6.299999713897705,
+        "commitMs": 6.299999713897705,
+        "paintMs": 6.299999713897705,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 10.800000190734863,
+        "vnodeMs": 10.800000190734863,
+        "commitMs": 10.800000190734863,
+        "paintMs": 10.800000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.099999904632568,
+        "vnodeMs": 6.099999904632568,
+        "commitMs": 6.099999904632568,
+        "paintMs": 6.099999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.199999809265137,
+        "vnodeMs": 6.199999809265137,
+        "commitMs": 6.199999809265137,
+        "paintMs": 6.199999809265137,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 10.300000190734863,
+        "vnodeMs": 10.300000190734863,
+        "commitMs": 10.300000190734863,
+        "paintMs": 10.300000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.300000190734863,
+        "vnodeMs": 6.300000190734863,
+        "commitMs": 6.300000190734863,
+        "paintMs": 6.300000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.5,
+        "vnodeMs": 6.5,
+        "commitMs": 6.5,
+        "paintMs": 6.5,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.300000190734863,
+        "vnodeMs": 6.300000190734863,
+        "commitMs": 6.300000190734863,
+        "paintMs": 6.300000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9.599999904632568,
+        "vnodeMs": 9.599999904632568,
+        "commitMs": 9.599999904632568,
+        "paintMs": 9.599999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.599999904632568,
+        "vnodeMs": 6.599999904632568,
+        "commitMs": 6.599999904632568,
+        "paintMs": 6.599999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 7.300000190734863,
+        "vnodeMs": 7.300000190734863,
+        "commitMs": 7.300000190734863,
+        "paintMs": 7.300000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9.800000190734863,
+        "vnodeMs": 9.800000190734863,
+        "commitMs": 9.800000190734863,
+        "paintMs": 9.800000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.300000190734863,
+        "vnodeMs": 6.300000190734863,
+        "commitMs": 6.300000190734863,
+        "paintMs": 6.300000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 7.099999904632568,
+        "vnodeMs": 7.099999904632568,
+        "commitMs": 7.099999904632568,
+        "paintMs": 7.099999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9,
+        "vnodeMs": 9,
+        "commitMs": 9,
+        "paintMs": 9,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.5,
+        "vnodeMs": 6.5,
+        "commitMs": 6.5,
+        "paintMs": 6.5,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6,
+        "vnodeMs": 6,
+        "commitMs": 6,
+        "paintMs": 6,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.699999809265137,
+        "vnodeMs": 6.699999809265137,
+        "commitMs": 6.699999809265137,
+        "paintMs": 6.699999809265137,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9.799999713897705,
+        "vnodeMs": 9.799999713897705,
+        "commitMs": 9.799999713897705,
+        "paintMs": 9.799999713897705,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.699999809265137,
+        "vnodeMs": 6.699999809265137,
+        "commitMs": 6.699999809265137,
+        "paintMs": 6.699999809265137,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.5,
+        "vnodeMs": 6.5,
+        "commitMs": 6.5,
+        "paintMs": 6.5,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9,
+        "vnodeMs": 9,
+        "commitMs": 9,
+        "paintMs": 9,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.200000286102295,
+        "vnodeMs": 6.200000286102295,
+        "commitMs": 6.200000286102295,
+        "paintMs": 6.200000286102295,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.600000381469727,
+        "vnodeMs": 6.600000381469727,
+        "commitMs": 6.600000381469727,
+        "paintMs": 6.600000381469727,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.400000095367432,
+        "vnodeMs": 6.400000095367432,
+        "commitMs": 6.400000095367432,
+        "paintMs": 6.400000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.400000095367432,
+        "vnodeMs": 6.400000095367432,
+        "commitMs": 6.400000095367432,
+        "paintMs": 6.400000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.5,
+        "vnodeMs": 6.5,
+        "commitMs": 6.5,
+        "paintMs": 6.5,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.300000190734863,
+        "vnodeMs": 6.300000190734863,
+        "commitMs": 6.300000190734863,
+        "paintMs": 6.300000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 8.900000095367432,
+        "vnodeMs": 8.900000095367432,
+        "commitMs": 8.900000095367432,
+        "paintMs": 8.900000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.099999904632568,
+        "vnodeMs": 6.099999904632568,
+        "commitMs": 6.099999904632568,
+        "paintMs": 6.099999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.299999713897705,
+        "vnodeMs": 6.299999713897705,
+        "commitMs": 6.299999713897705,
+        "paintMs": 6.299999713897705,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 8.699999809265137,
+        "vnodeMs": 8.699999809265137,
+        "commitMs": 8.699999809265137,
+        "paintMs": 8.699999809265137,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.099999904632568,
+        "vnodeMs": 6.099999904632568,
+        "commitMs": 6.099999904632568,
+        "paintMs": 6.099999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.299999713897705,
+        "vnodeMs": 6.299999713897705,
+        "commitMs": 6.299999713897705,
+        "paintMs": 6.299999713897705,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.599999904632568,
+        "vnodeMs": 6.599999904632568,
+        "commitMs": 6.599999904632568,
+        "paintMs": 6.599999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9,
+        "vnodeMs": 9,
+        "commitMs": 9,
+        "paintMs": 9,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.300000190734863,
+        "vnodeMs": 6.300000190734863,
+        "commitMs": 6.300000190734863,
+        "paintMs": 6.300000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 7.199999809265137,
+        "vnodeMs": 7.199999809265137,
+        "commitMs": 7.199999809265137,
+        "paintMs": 7.199999809265137,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9.300000190734863,
+        "vnodeMs": 9.300000190734863,
+        "commitMs": 9.300000190734863,
+        "paintMs": 9.300000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.099999904632568,
+        "vnodeMs": 6.099999904632568,
+        "commitMs": 6.099999904632568,
+        "paintMs": 6.099999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.099999904632568,
+        "vnodeMs": 6.099999904632568,
+        "commitMs": 6.099999904632568,
+        "paintMs": 6.099999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9,
+        "vnodeMs": 9,
+        "commitMs": 9,
+        "paintMs": 9,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 7,
+        "vnodeMs": 7,
+        "commitMs": 7,
+        "paintMs": 7,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.700000286102295,
+        "vnodeMs": 6.700000286102295,
+        "commitMs": 6.700000286102295,
+        "paintMs": 6.700000286102295,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 11.100000381469727,
+        "vnodeMs": 11.100000381469727,
+        "commitMs": 11.100000381469727,
+        "paintMs": 11.100000381469727,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.399999618530273,
+        "vnodeMs": 6.399999618530273,
+        "commitMs": 6.399999618530273,
+        "paintMs": 6.399999618530273,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.400000095367432,
+        "vnodeMs": 6.400000095367432,
+        "commitMs": 6.400000095367432,
+        "paintMs": 6.400000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.300000190734863,
+        "vnodeMs": 6.300000190734863,
+        "commitMs": 6.300000190734863,
+        "paintMs": 6.300000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9.199999809265137,
+        "vnodeMs": 9.199999809265137,
+        "commitMs": 9.199999809265137,
+        "paintMs": 9.199999809265137,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.699999809265137,
+        "vnodeMs": 6.699999809265137,
+        "commitMs": 6.699999809265137,
+        "paintMs": 6.699999809265137,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.799999713897705,
+        "vnodeMs": 6.799999713897705,
+        "commitMs": 6.799999713897705,
+        "paintMs": 6.799999713897705,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 10.100000381469727,
+        "vnodeMs": 10.100000381469727,
+        "commitMs": 10.100000381469727,
+        "paintMs": 10.100000381469727,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6,
+        "vnodeMs": 6,
+        "commitMs": 6,
+        "paintMs": 6,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.399999618530273,
+        "vnodeMs": 6.399999618530273,
+        "commitMs": 6.399999618530273,
+        "paintMs": 6.399999618530273,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 8.900000095367432,
+        "vnodeMs": 8.900000095367432,
+        "commitMs": 8.900000095367432,
+        "paintMs": 8.900000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.600000381469727,
+        "vnodeMs": 6.600000381469727,
+        "commitMs": 6.600000381469727,
+        "paintMs": 6.600000381469727,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.5,
+        "vnodeMs": 6.5,
+        "commitMs": 6.5,
+        "paintMs": 6.5,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.199999809265137,
+        "vnodeMs": 6.199999809265137,
+        "commitMs": 6.199999809265137,
+        "paintMs": 6.199999809265137,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9.199999809265137,
+        "vnodeMs": 9.199999809265137,
+        "commitMs": 9.199999809265137,
+        "paintMs": 9.199999809265137,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.099999904632568,
+        "vnodeMs": 6.099999904632568,
+        "commitMs": 6.099999904632568,
+        "paintMs": 6.099999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.5,
+        "vnodeMs": 6.5,
+        "commitMs": 6.5,
+        "paintMs": 6.5,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 8.800000190734863,
+        "vnodeMs": 8.800000190734863,
+        "commitMs": 8.800000190734863,
+        "paintMs": 8.800000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.100000381469727,
+        "vnodeMs": 6.100000381469727,
+        "commitMs": 6.100000381469727,
+        "paintMs": 6.100000381469727,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.700000286102295,
+        "vnodeMs": 6.700000286102295,
+        "commitMs": 6.700000286102295,
+        "paintMs": 6.700000286102295,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.200000286102295,
+        "vnodeMs": 6.200000286102295,
+        "commitMs": 6.200000286102295,
+        "paintMs": 6.200000286102295,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.899999618530273,
+        "vnodeMs": 6.899999618530273,
+        "commitMs": 6.899999618530273,
+        "paintMs": 6.899999618530273,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 7.099999904632568,
+        "vnodeMs": 7.099999904632568,
+        "commitMs": 7.099999904632568,
+        "paintMs": 7.099999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.599999904632568,
+        "vnodeMs": 6.599999904632568,
+        "commitMs": 6.599999904632568,
+        "paintMs": 6.599999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9.400000095367432,
+        "vnodeMs": 9.400000095367432,
+        "commitMs": 9.400000095367432,
+        "paintMs": 9.400000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.600000381469727,
+        "vnodeMs": 6.600000381469727,
+        "commitMs": 6.600000381469727,
+        "paintMs": 6.600000381469727,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.200000286102295,
+        "vnodeMs": 6.200000286102295,
+        "commitMs": 6.200000286102295,
+        "paintMs": 6.200000286102295,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 8.900000095367432,
+        "vnodeMs": 8.900000095367432,
+        "commitMs": 8.900000095367432,
+        "paintMs": 8.900000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.300000190734863,
+        "vnodeMs": 6.300000190734863,
+        "commitMs": 6.300000190734863,
+        "paintMs": 6.300000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.200000286102295,
+        "vnodeMs": 6.200000286102295,
+        "commitMs": 6.200000286102295,
+        "paintMs": 6.200000286102295,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.400000095367432,
+        "vnodeMs": 6.400000095367432,
+        "commitMs": 6.400000095367432,
+        "paintMs": 6.400000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9.299999713897705,
+        "vnodeMs": 9.299999713897705,
+        "commitMs": 9.299999713897705,
+        "paintMs": 9.299999713897705,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.5,
+        "vnodeMs": 6.5,
+        "commitMs": 6.5,
+        "paintMs": 6.5,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.300000190734863,
+        "vnodeMs": 6.300000190734863,
+        "commitMs": 6.300000190734863,
+        "paintMs": 6.300000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9.100000381469727,
+        "vnodeMs": 9.100000381469727,
+        "commitMs": 9.100000381469727,
+        "paintMs": 9.100000381469727,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6,
+        "vnodeMs": 6,
+        "commitMs": 6,
+        "paintMs": 6,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.399999618530273,
+        "vnodeMs": 6.399999618530273,
+        "commitMs": 6.399999618530273,
+        "paintMs": 6.399999618530273,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9.300000190734863,
+        "vnodeMs": 9.300000190734863,
+        "commitMs": 9.300000190734863,
+        "paintMs": 9.300000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.599999904632568,
+        "vnodeMs": 6.599999904632568,
+        "commitMs": 6.599999904632568,
+        "paintMs": 6.599999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6,
+        "vnodeMs": 6,
+        "commitMs": 6,
+        "paintMs": 6,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 7.400000095367432,
+        "vnodeMs": 7.400000095367432,
+        "commitMs": 7.400000095367432,
+        "paintMs": 7.400000095367432,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 9,
+        "vnodeMs": 9,
+        "commitMs": 9,
+        "paintMs": 9,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.300000190734863,
+        "vnodeMs": 6.300000190734863,
+        "commitMs": 6.300000190734863,
+        "paintMs": 6.300000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.399999618530273,
+        "vnodeMs": 6.399999618530273,
+        "commitMs": 6.399999618530273,
+        "paintMs": 6.399999618530273,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 10.699999809265137,
+        "vnodeMs": 10.699999809265137,
+        "commitMs": 10.699999809265137,
+        "paintMs": 10.699999809265137,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.200000286102295,
+        "vnodeMs": 6.200000286102295,
+        "commitMs": 6.200000286102295,
+        "paintMs": 6.200000286102295,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.599999904632568,
+        "vnodeMs": 6.599999904632568,
+        "commitMs": 6.599999904632568,
+        "paintMs": 6.599999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 10.300000190734863,
+        "vnodeMs": 10.300000190734863,
+        "commitMs": 10.300000190734863,
+        "paintMs": 10.300000190734863,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 7.5,
+        "vnodeMs": 7.5,
+        "commitMs": 7.5,
+        "paintMs": 7.5,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      },
+      {
+        "prepareMs": 6.599999904632568,
+        "vnodeMs": 6.599999904632568,
+        "commitMs": 6.599999904632568,
+        "paintMs": 6.599999904632568,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T7"
+      }
+    ]
+  },
+  "t8": {
+    "p95": 0.19999980926513672,
+    "correct": true,
+    "rawSamples": [
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.20000028610229492,
+        "vnodeMs": 0.20000028610229492,
+        "commitMs": 0.20000028610229492,
+        "paintMs": 0.20000028610229492,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.10000038146972656,
+        "vnodeMs": 0.10000038146972656,
+        "commitMs": 0.10000038146972656,
+        "paintMs": 0.10000038146972656,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.10000038146972656,
+        "vnodeMs": 0.10000038146972656,
+        "commitMs": 0.10000038146972656,
+        "paintMs": 0.10000038146972656,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.10000038146972656,
+        "vnodeMs": 0.10000038146972656,
+        "commitMs": 0.10000038146972656,
+        "paintMs": 0.10000038146972656,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.10000038146972656,
+        "vnodeMs": 0.10000038146972656,
+        "commitMs": 0.10000038146972656,
+        "paintMs": 0.10000038146972656,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.20000028610229492,
+        "vnodeMs": 0.20000028610229492,
+        "commitMs": 0.20000028610229492,
+        "paintMs": 0.20000028610229492,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.10000038146972656,
+        "vnodeMs": 0.10000038146972656,
+        "commitMs": 0.10000038146972656,
+        "paintMs": 0.10000038146972656,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.10000038146972656,
+        "vnodeMs": 0.10000038146972656,
+        "commitMs": 0.10000038146972656,
+        "paintMs": 0.10000038146972656,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.10000038146972656,
+        "vnodeMs": 0.10000038146972656,
+        "commitMs": 0.10000038146972656,
+        "paintMs": 0.10000038146972656,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.10000038146972656,
+        "vnodeMs": 0.10000038146972656,
+        "commitMs": 0.10000038146972656,
+        "paintMs": 0.10000038146972656,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.10000038146972656,
+        "vnodeMs": 0.10000038146972656,
+        "commitMs": 0.10000038146972656,
+        "paintMs": 0.10000038146972656,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.19999980926513672,
+        "vnodeMs": 0.19999980926513672,
+        "commitMs": 0.19999980926513672,
+        "paintMs": 0.19999980926513672,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.10000038146972656,
+        "vnodeMs": 0.10000038146972656,
+        "commitMs": 0.10000038146972656,
+        "paintMs": 0.10000038146972656,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.10000038146972656,
+        "vnodeMs": 0.10000038146972656,
+        "commitMs": 0.10000038146972656,
+        "paintMs": 0.10000038146972656,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.19999980926513672,
+        "vnodeMs": 0.19999980926513672,
+        "commitMs": 0.19999980926513672,
+        "paintMs": 0.19999980926513672,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.19999980926513672,
+        "vnodeMs": 0.19999980926513672,
+        "commitMs": 0.19999980926513672,
+        "paintMs": 0.19999980926513672,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.10000038146972656,
+        "vnodeMs": 0.10000038146972656,
+        "commitMs": 0.10000038146972656,
+        "paintMs": 0.10000038146972656,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.20000028610229492,
+        "vnodeMs": 0.20000028610229492,
+        "commitMs": 0.20000028610229492,
+        "paintMs": 0.20000028610229492,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.10000038146972656,
+        "vnodeMs": 0.10000038146972656,
+        "commitMs": 0.10000038146972656,
+        "paintMs": 0.10000038146972656,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.19999980926513672,
+        "vnodeMs": 0.19999980926513672,
+        "commitMs": 0.19999980926513672,
+        "paintMs": 0.19999980926513672,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0.09999990463256836,
+        "vnodeMs": 0.09999990463256836,
+        "commitMs": 0.09999990463256836,
+        "paintMs": 0.09999990463256836,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      },
+      {
+        "prepareMs": 0,
+        "vnodeMs": 0,
+        "commitMs": 0,
+        "paintMs": 0,
+        "longTaskMs": 0,
+        "longTaskCount": 0,
+        "correct": true,
+        "gate": "PERF-T8"
+      }
+    ]
+  }
+}

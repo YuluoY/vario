@@ -9,12 +9,13 @@
 
 import type { Schema } from '@variojs/schema'
 import { readFileSync, writeFileSync, mkdirSync } from 'fs'
-import { join } from 'path'
+import { join, basename, relative, dirname } from 'path'
 
 export interface CodegenOptions {
   template?: string
   output?: string
   schema?: string
+  root?: string
 }
 
 export function generateCode(options: CodegenOptions = {}) {
@@ -31,10 +32,10 @@ export function generateCode(options: CodegenOptions = {}) {
     try {
       const schemaContent = readFileSync(schema, 'utf-8')
       const schemaData = JSON.parse(schemaContent) as Schema
-      generateFromSchema(schemaData, output)
+      generateFromSchema(schemaData, output, schema, options.root)
     } catch (error) {
       console.error('Failed to load schema:', error)
-      process.exit(1)
+      throw error instanceof Error ? error : new Error(String(error))
     }
   } else {
     console.log('No schema provided, using default template')
@@ -44,19 +45,19 @@ export function generateCode(options: CodegenOptions = {}) {
 /**
  * 从 Schema 生成代码
  */
-function generateFromSchema(schema: Schema, outputDir: string) {
-  // 确保输出目录存在
-  mkdirSync(outputDir, { recursive: true })
-  
-  // 生成类型定义
+function generateFromSchema(schema: Schema, outputDir: string, schemaPath: string, root?: string) {
+  const relBase = root
+    ? relative(root, schemaPath).replace(/\.[^.]+$/, '') || 'schema'
+    : basename(schemaPath).replace(/\.[^.]+$/, '') || 'schema'
+  const dirPart = dirname(relBase)
+  const outDir = dirPart === '.' ? outputDir : join(outputDir, dirPart)
+  mkdirSync(outDir, { recursive: true })
+  const base = basename(relBase)
   const typeDefs = generateTypeDefinitions(schema)
-  writeFileSync(join(outputDir, 'types.ts'), typeDefs)
-  
-  // 生成 Schema 文件
+  writeFileSync(join(outDir, `${base}.types.ts`), typeDefs)
   const schemaFile = generateSchemaFile(schema)
-  writeFileSync(join(outputDir, 'schema.ts'), schemaFile)
-  
-  console.log(`Generated files in ${outputDir}`)
+  writeFileSync(join(outDir, `${base}.schema.ts`), schemaFile)
+  console.log(`Generated files in ${outDir}`)
 }
 
 /**

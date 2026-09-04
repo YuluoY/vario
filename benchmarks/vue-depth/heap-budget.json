@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "protocol": "cdp",
+  "MEM1": "no parent retain after loop release",
+  "MEM2": "20 mount/unmount no positive slope",
+  "MEM3": "100 session retained <= 5MB",
+  "calibratedAt": "2026-08-31T16:26:19.690Z"
+}

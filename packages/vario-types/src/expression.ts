@@ -33,4 +33,5 @@ export interface ExpressionCache {
   result: unknown  // 表达式求值结果，类型无法静态推导
   dependencies: string[]  // 支持通配符：['items.*', 'user.name']
   timestamp: number
+  policyFingerprint?: string
 }

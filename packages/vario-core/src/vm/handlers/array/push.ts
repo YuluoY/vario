@@ -8,7 +8,6 @@
 
 import type { RuntimeContext, Action } from '@variojs/types'
 import { ActionError, ErrorCodes } from '@/errors.js'
-import { invalidateCache } from '@/expression/cache.js'
 import { evaluateExpressionsRecursively } from './utils.js'
 
 /**
@@ -55,15 +54,11 @@ export async function handlePush(
   
   // 递归求值表达式（支持对象/数组中的表达式）
   const finalValue = evaluateExpressionsRecursively(inputValue, ctx)
-  
-  // 如果是数组，展开添加
+  const next = array.slice()
   if (Array.isArray(finalValue)) {
-    array.push(...finalValue)
+    next.push(...finalValue)
   } else {
-    array.push(finalValue)
+    next.push(finalValue)
   }
-  
-  // 使相关缓存失效
-  invalidateCache(path, ctx)
-  invalidateCache(`${path}.*`, ctx)
+  ctx._set(path, next)
 }

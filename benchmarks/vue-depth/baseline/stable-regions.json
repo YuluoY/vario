@@ -1,0 +1,1230 @@
+{
+  "runnerId": "huyongledeMacBook-Pro.local:arm64",
+  "commit": "0d513afa8c338729aba1e9fd3351e1b47c7cb582",
+  "worktree": "/Users/huyongle/Desktop/workspace/project/vario/packages/vario-vue",
+  "mode": "prepared",
+  "warmup": 20,
+  "samples": 50,
+  "processCount": 3,
+  "environment": {
+    "node": "v24.12.0",
+    "chrome": "n/a",
+    "vue": "3.5.27",
+    "os": "darwin 25.4.0",
+    "cpu": "Apple M5"
+  },
+  "correctness": {
+    "passed": true,
+    "domDepth": 2,
+    "leafText": "item-0"
+  },
+  "metrics": {
+    "renderP95": 0.19012500000008004,
+    "domP95": 0,
+    "longTaskP95": 0
+  },
+  "rawSamples": [
+    {
+      "prepareMs": 0.0007909999999355932,
+      "vnodeMs": 0.08766599999989921,
+      "commitMs": 0.08766599999989921,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007920000000467553,
+      "vnodeMs": 0.015750000000025466,
+      "commitMs": 0.015750000000025466,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0008330000000569271,
+      "vnodeMs": 0.07695799999987685,
+      "commitMs": 0.07695799999987685,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007919999998193816,
+      "vnodeMs": 0.01445800000010422,
+      "commitMs": 0.01445800000010422,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007080000000314612,
+      "vnodeMs": 0.0695419999999558,
+      "commitMs": 0.0695419999999558,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0008749999999508873,
+      "vnodeMs": 0.01424999999994725,
+      "commitMs": 0.01424999999994725,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0008330000000569271,
+      "vnodeMs": 0.06279199999994489,
+      "commitMs": 0.06279199999994489,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007919999998193816,
+      "vnodeMs": 0.013916000000108397,
+      "commitMs": 0.013916000000108397,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0006670000000212895,
+      "vnodeMs": 0.06624999999985448,
+      "commitMs": 0.06624999999985448,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007920000000467553,
+      "vnodeMs": 0.01316699999983939,
+      "commitMs": 0.01316699999983939,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.000666000000137501,
+      "vnodeMs": 0.05904199999986304,
+      "commitMs": 0.05904199999986304,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007080000000314612,
+      "vnodeMs": 0.020125000000007276,
+      "commitMs": 0.020125000000007276,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.006624999999985448,
+      "vnodeMs": 0.08187500000008185,
+      "commitMs": 0.08187500000008185,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.003958000000011452,
+      "vnodeMs": 0.026499999999941792,
+      "commitMs": 0.026499999999941792,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.001958000000058746,
+      "vnodeMs": 0.07141699999988305,
+      "commitMs": 0.07141699999988305,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0014579999999568827,
+      "vnodeMs": 0.013416000000006534,
+      "commitMs": 0.013416000000006534,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0010419999998703133,
+      "vnodeMs": 0.06545900000014626,
+      "commitMs": 0.06545900000014626,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0025000000000545697,
+      "vnodeMs": 0.012124999999969077,
+      "commitMs": 0.012124999999969077,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007499999999254214,
+      "vnodeMs": 0.05795799999987139,
+      "commitMs": 0.05795799999987139,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0010830000001078588,
+      "vnodeMs": 0.012958000000026004,
+      "commitMs": 0.012958000000026004,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007080000000314612,
+      "vnodeMs": 0.05749999999989086,
+      "commitMs": 0.05749999999989086,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0008340000001680892,
+      "vnodeMs": 0.013707999999951426,
+      "commitMs": 0.013707999999951426,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0008329999998295534,
+      "vnodeMs": 0.053625000000010914,
+      "commitMs": 0.053625000000010914,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007920000000467553,
+      "vnodeMs": 0.013457999999900494,
+      "commitMs": 0.013457999999900494,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007920000000467553,
+      "vnodeMs": 0.05674999999996544,
+      "commitMs": 0.05674999999996544,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007499999999254214,
+      "vnodeMs": 0.029042000000117696,
+      "commitMs": 0.029042000000117696,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007499999999254214,
+      "vnodeMs": 0.05495799999994233,
+      "commitMs": 0.05495799999994233,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007920000000467553,
+      "vnodeMs": 0.010667000000012195,
+      "commitMs": 0.010667000000012195,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007090000001426233,
+      "vnodeMs": 0.04962499999987813,
+      "commitMs": 0.04962499999987813,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007499999999254214,
+      "vnodeMs": 0.010042000000112239,
+      "commitMs": 0.010042000000112239,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0006670000000212895,
+      "vnodeMs": 0.04874999999992724,
+      "commitMs": 0.04874999999992724,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007500000001527951,
+      "vnodeMs": 0.010999999999967258,
+      "commitMs": 0.010999999999967258,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.004750000000058208,
+      "vnodeMs": 0.0865000000001146,
+      "commitMs": 0.0865000000001146,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0030420000000503933,
+      "vnodeMs": 0.015499999999974534,
+      "commitMs": 0.015499999999974534,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.001334000000042579,
+      "vnodeMs": 0.06024999999999636,
+      "commitMs": 0.06024999999999636,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.004000000000132786,
+      "vnodeMs": 0.01125000000001819,
+      "commitMs": 0.01125000000001819,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0009589999999661813,
+      "vnodeMs": 0.04574999999999818,
+      "commitMs": 0.04574999999999818,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0008330000000569271,
+      "vnodeMs": 0.014457999999876847,
+      "commitMs": 0.014457999999876847,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0008749999999508873,
+      "vnodeMs": 0.04570800000010422,
+      "commitMs": 0.04570800000010422,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007080000000314612,
+      "vnodeMs": 0.011332999999922322,
+      "commitMs": 0.011332999999922322,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007499999999254214,
+      "vnodeMs": 0.04825000000005275,
+      "commitMs": 0.04825000000005275,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0008329999998295534,
+      "vnodeMs": 0.009332999999969616,
+      "commitMs": 0.009332999999969616,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007500000001527951,
+      "vnodeMs": 0.04587500000002365,
+      "commitMs": 0.04587500000002365,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0006670000000212895,
+      "vnodeMs": 0.009500000000116415,
+      "commitMs": 0.009500000000116415,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007089999999152496,
+      "vnodeMs": 0.08958300000017516,
+      "commitMs": 0.08958300000017516,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.003041000000166605,
+      "vnodeMs": 0.01637499999992542,
+      "commitMs": 0.01637499999992542,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0031249999999545253,
+      "vnodeMs": 0.05795899999998255,
+      "commitMs": 0.05795899999998255,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.001209000000017113,
+      "vnodeMs": 0.016083000000207903,
+      "commitMs": 0.016083000000207903,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0009999999999763531,
+      "vnodeMs": 0.04612500000007458,
+      "commitMs": 0.04612500000007458,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0020839999999680003,
+      "vnodeMs": 0.009457999999995081,
+      "commitMs": 0.009457999999995081,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007080000000314612,
+      "vnodeMs": 0.03179099999988466,
+      "commitMs": 0.03179099999988466,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007499999999254214,
+      "vnodeMs": 0.008915999999999258,
+      "commitMs": 0.008915999999999258,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007080000000314612,
+      "vnodeMs": 0.03291599999988648,
+      "commitMs": 0.03291599999988648,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007920000000467553,
+      "vnodeMs": 0.007166999999981272,
+      "commitMs": 0.007166999999981272,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0006659999999101274,
+      "vnodeMs": 0.03283299999998235,
+      "commitMs": 0.03283299999998235,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007500000001527951,
+      "vnodeMs": 4.456208000000061,
+      "commitMs": 4.456208000000061,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.2367500000000291,
+      "vnodeMs": 0.07837499999982356,
+      "commitMs": 0.07837499999982356,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0031249999999545253,
+      "vnodeMs": 0.008625000000165528,
+      "commitMs": 0.008625000000165528,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0009999999999763531,
+      "vnodeMs": 0.02816700000016681,
+      "commitMs": 0.02816700000016681,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007500000001527951,
+      "vnodeMs": 0.0060000000000854925,
+      "commitMs": 0.0060000000000854925,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0006250000001273293,
+      "vnodeMs": 0.02529200000003584,
+      "commitMs": 0.02529200000003584,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.02145899999982248,
+      "vnodeMs": 0.006624999999985448,
+      "commitMs": 0.006624999999985448,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0006249999998999556,
+      "vnodeMs": 1.4609159999999974,
+      "commitMs": 1.4609159999999974,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.008458999999902517,
+      "vnodeMs": 0.253832999999986,
+      "commitMs": 0.253832999999986,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0039159999998901185,
+      "vnodeMs": 0.055290999999897394,
+      "commitMs": 0.055290999999897394,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0027500000001055014,
+      "vnodeMs": 0.012958000000026004,
+      "commitMs": 0.012958000000026004,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0012500000000272848,
+      "vnodeMs": 0.029166000000032,
+      "commitMs": 0.029166000000032,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007080000000314612,
+      "vnodeMs": 0.006416999999828477,
+      "commitMs": 0.006416999999828477,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0006249999998999556,
+      "vnodeMs": 0.06908300000009149,
+      "commitMs": 0.06908300000009149,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.005999999999858119,
+      "vnodeMs": 0.02016700000012861,
+      "commitMs": 0.02016700000012861,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.005499999999983629,
+      "vnodeMs": 0.20458299999995688,
+      "commitMs": 0.20458299999995688,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0014999999998508429,
+      "vnodeMs": 0.007291000000122949,
+      "commitMs": 0.007291000000122949,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007499999999254214,
+      "vnodeMs": 0.0909999999998945,
+      "commitMs": 0.0909999999998945,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.006041000000095664,
+      "vnodeMs": 0.2891669999999067,
+      "commitMs": 0.2891669999999067,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.007749999999987267,
+      "vnodeMs": 0.07045799999991686,
+      "commitMs": 0.07045799999991686,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0017500000001291482,
+      "vnodeMs": 0.014916999999968539,
+      "commitMs": 0.014916999999968539,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.003208000000086031,
+      "vnodeMs": 0.06362499999977445,
+      "commitMs": 0.06362499999977445,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.001291999999921245,
+      "vnodeMs": 0.006917000000157714,
+      "commitMs": 0.006917000000157714,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007080000000314612,
+      "vnodeMs": 0.026084000000082597,
+      "commitMs": 0.026084000000082597,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0006250000001273293,
+      "vnodeMs": 0.005791999999928521,
+      "commitMs": 0.005791999999928521,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0005419999999958236,
+      "vnodeMs": 0.02458400000000438,
+      "commitMs": 0.02458400000000438,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0005830000000059954,
+      "vnodeMs": 0.005457999999862295,
+      "commitMs": 0.005457999999862295,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0004999999998744897,
+      "vnodeMs": 0.0757499999999709,
+      "commitMs": 0.0757499999999709,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0026669999999739957,
+      "vnodeMs": 0.0126669999999649,
+      "commitMs": 0.0126669999999649,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.001291999999921245,
+      "vnodeMs": 0.06641599999989012,
+      "commitMs": 0.06641599999989012,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.011457999999947788,
+      "vnodeMs": 0.03016699999989214,
+      "commitMs": 0.03016699999989214,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.005125000000134605,
+      "vnodeMs": 0.13658400000008442,
+      "commitMs": 0.13658400000008442,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0017500000001291482,
+      "vnodeMs": 0.008291000000099302,
+      "commitMs": 0.008291000000099302,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007499999999254214,
+      "vnodeMs": 0.06908300000009149,
+      "commitMs": 0.06908300000009149,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0072090000001026056,
+      "vnodeMs": 0.007542000000057669,
+      "commitMs": 0.007542000000057669,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.003541999999924883,
+      "vnodeMs": 0.08416600000009566,
+      "commitMs": 0.08416600000009566,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0035830000001624285,
+      "vnodeMs": 0.01658399999996618,
+      "commitMs": 0.01658399999996618,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0018749999999272404,
+      "vnodeMs": 0.06312499999989996,
+      "commitMs": 0.06312499999989996,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0014579999999568827,
+      "vnodeMs": 0.013208000000076936,
+      "commitMs": 0.013208000000076936,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.001291999999921245,
+      "vnodeMs": 0.05633299999999508,
+      "commitMs": 0.05633299999999508,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0013750000000527507,
+      "vnodeMs": 0.01379199999996672,
+      "commitMs": 0.01379199999996672,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0012500000000272848,
+      "vnodeMs": 0.06070799999997689,
+      "commitMs": 0.06070799999997689,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.001374999999825377,
+      "vnodeMs": 0.01312499999994543,
+      "commitMs": 0.01312499999994543,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.001291999999921245,
+      "vnodeMs": 0.057500000000118234,
+      "commitMs": 0.057500000000118234,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.001291999999921245,
+      "vnodeMs": 0.012833000000000538,
+      "commitMs": 0.012833000000000538,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0012910000000374566,
+      "vnodeMs": 0.07029199999988123,
+      "commitMs": 0.07029199999988123,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0012910000000374566,
+      "vnodeMs": 0.016000000000076398,
+      "commitMs": 0.016000000000076398,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0012500000000272848,
+      "vnodeMs": 0.20041699999978846,
+      "commitMs": 0.20041699999978846,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.02091599999994287,
+      "vnodeMs": 0.018082999999933236,
+      "commitMs": 0.018082999999933236,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.003165999999964697,
+      "vnodeMs": 0.4004579999998441,
+      "commitMs": 0.4004579999998441,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.004250000000183718,
+      "vnodeMs": 0.010999999999967258,
+      "commitMs": 0.010999999999967258,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.001125000000001819,
+      "vnodeMs": 0.03483300000016243,
+      "commitMs": 0.03483300000016243,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0007500000001527951,
+      "vnodeMs": 0.009666999999808468,
+      "commitMs": 0.009666999999808468,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0005830000000059954,
+      "vnodeMs": 0.0442920000000413,
+      "commitMs": 0.0442920000000413,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0006249999998999556,
+      "vnodeMs": 0.006791000000021086,
+      "commitMs": 0.006791000000021086,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0006250000001273293,
+      "vnodeMs": 0.03224999999997635,
+      "commitMs": 0.03224999999997635,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0005839999998897838,
+      "vnodeMs": 0.008042000000159533,
+      "commitMs": 0.008042000000159533,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0016669999999976426,
+      "vnodeMs": 0.041916000000128406,
+      "commitMs": 0.041916000000128406,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0005839999998897838,
+      "vnodeMs": 0.007124999999859938,
+      "commitMs": 0.007124999999859938,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0005410000001120352,
+      "vnodeMs": 0.03258400000004258,
+      "commitMs": 0.03258400000004258,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0005830000000059954,
+      "vnodeMs": 0.006333000000040556,
+      "commitMs": 0.006333000000040556,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0014160000000629225,
+      "vnodeMs": 0.03270799999995688,
+      "commitMs": 0.03270799999995688,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0005000000001018634,
+      "vnodeMs": 0.005958000000191532,
+      "commitMs": 0.005958000000191532,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0004999999998744897,
+      "vnodeMs": 0.12466600000016115,
+      "commitMs": 0.12466600000016115,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.005709000000024389,
+      "vnodeMs": 0.02091700000005403,
+      "commitMs": 0.02091700000005403,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0017920000000231084,
+      "vnodeMs": 0.09191699999996672,
+      "commitMs": 0.09191699999996672,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0010830000001078588,
+      "vnodeMs": 0.009416000000101121,
+      "commitMs": 0.009416000000101121,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0005839999998897838,
+      "vnodeMs": 0.030749999999898137,
+      "commitMs": 0.030749999999898137,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0018749999999272404,
+      "vnodeMs": 0.007249999999885404,
+      "commitMs": 0.007249999999885404,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0004999999998744897,
+      "vnodeMs": 0.03158300000018244,
+      "commitMs": 0.03158300000018244,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0005409999998846615,
+      "vnodeMs": 0.007249999999885404,
+      "commitMs": 0.007249999999885404,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0005000000001018634,
+      "vnodeMs": 0.03062499999987267,
+      "commitMs": 0.03062499999987267,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0005419999999958236,
+      "vnodeMs": 0.005832999999938693,
+      "commitMs": 0.005832999999938693,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0004999999998744897,
+      "vnodeMs": 0.031167000000095868,
+      "commitMs": 0.031167000000095868,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0005419999999958236,
+      "vnodeMs": 0.11979200000018864,
+      "commitMs": 0.11979200000018864,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.003417000000126791,
+      "vnodeMs": 0.07470799999987321,
+      "commitMs": 0.07470799999987321,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0015420000001995504,
+      "vnodeMs": 0.015582999999878666,
+      "commitMs": 0.015582999999878666,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0012500000000272848,
+      "vnodeMs": 0.06908300000009149,
+      "commitMs": 0.06908300000009149,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.001207999999905951,
+      "vnodeMs": 0.01812500000005457,
+      "commitMs": 0.01812500000005457,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.003584000000046217,
+      "vnodeMs": 0.06558399999994435,
+      "commitMs": 0.06558399999994435,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0020829999998568383,
+      "vnodeMs": 0.009084000000029846,
+      "commitMs": 0.009084000000029846,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0008339999999407155,
+      "vnodeMs": 0.19012500000008004,
+      "commitMs": 0.19012500000008004,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.002124999999978172,
+      "vnodeMs": 0.03058299999997871,
+      "commitMs": 0.03058299999997871,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.005208000000038737,
+      "vnodeMs": 0.07437499999991815,
+      "commitMs": 0.07437499999991815,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0016669999999976426,
+      "vnodeMs": 0.017832999999882304,
+      "commitMs": 0.017832999999882304,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0014169999999467109,
+      "vnodeMs": 0.07225000000016735,
+      "commitMs": 0.07225000000016735,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0012500000000272848,
+      "vnodeMs": 0.018332999999984168,
+      "commitMs": 0.018332999999984168,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.001291999999921245,
+      "vnodeMs": 0.12791700000002493,
+      "commitMs": 0.12791700000002493,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.0020829999998568383,
+      "vnodeMs": 0.041249999999990905,
+      "commitMs": 0.041249999999990905,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.003083000000060565,
+      "vnodeMs": 0.12066699999991215,
+      "commitMs": 0.12066699999991215,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.005541999999877589,
+      "vnodeMs": 0.01654200000007222,
+      "commitMs": 0.01654200000007222,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.001209000000017113,
+      "vnodeMs": 0.07204200000001038,
+      "commitMs": 0.07204200000001038,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.001209000000017113,
+      "vnodeMs": 0.01637499999992542,
+      "commitMs": 0.01637499999992542,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.001207999999905951,
+      "vnodeMs": 0.06687499999998181,
+      "commitMs": 0.06687499999998181,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    },
+    {
+      "prepareMs": 0.001291999999921245,
+      "vnodeMs": 0.01495799999997871,
+      "commitMs": 0.01495799999997871,
+      "paintMs": 0,
+      "longTaskMs": 0,
+      "correct": true
+    }
+  ],
+  "scenario": "stable-regions",
+  "regionRender": 0
+}

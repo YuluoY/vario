@@ -17,6 +17,10 @@
 import type { SchemaNode, LoopConfig, ModelScopeConfig } from './schema.types.js'
 import { SchemaValidationError } from './schema.types.js'
 import { parseExpression, validateAST } from '@variojs/core'
+import type { DiagnosticSink } from '@variojs/core'
+import type { Action } from '@variojs/types'
+import { normalizeEventHandler } from './event-handler.js'
+import { validateActionPayload } from './action-contract.js'
 
 /**
  * 验证选项
@@ -30,6 +34,7 @@ export interface ValidationOptions {
   customValidators?: Array<(node: SchemaNode, path: string) => void>
   /** 最大递归深度（默认 100），防止超深嵌套或循环引用导致栈溢出 */
   maxDepth?: number
+  diagnosticSink?: DiagnosticSink
 }
 
 /** 默认最大递归深度 */
@@ -50,7 +55,8 @@ export function validateSchemaNode(
   path: string = 'root',
   options: ValidationOptions = {},
   _depth: number = 0,
-  _visited?: Set<unknown>
+  _visited?: Set<unknown>,
+  _seenIds?: Map<string, string>
 ): asserts node is SchemaNode {
   const {
     validateExpressions = true,
@@ -87,6 +93,20 @@ export function validateSchemaNode(
   }
   visited.add(node)
 
+  const seenIds = _seenIds ?? new Map<string, string>()
+  const nodeId = (node as { id?: unknown }).id
+  if (typeof nodeId === 'string' && nodeId.length > 0) {
+    const previous = seenIds.get(nodeId)
+    if (previous !== undefined) {
+      throw new SchemaValidationError(
+        path,
+        `Duplicate node id "${nodeId}" (already at ${previous})`,
+        'DUPLICATE_NODE_ID'
+      )
+    }
+    seenIds.set(nodeId, path)
+  }
+
   // 验证 type 字段（必需）
   if (typeof node.type !== 'string' || node.type.length === 0) {
     throw new SchemaValidationError(
@@ -117,7 +137,7 @@ export function validateSchemaNode(
     } else if (Array.isArray(node.children)) {
       // 数组子节点：递归验证每个子节点
       node.children.forEach((child, index) => {
-        validateSchemaNode(child, `${path}.children[${index}]`, options, _depth + 1, visited)
+        validateSchemaNode(child, `${path}.children[${index}]`, options, _depth + 1, visited, seenIds)
       })
     } else {
       throw new SchemaValidationError(
@@ -138,25 +158,24 @@ export function validateSchemaNode(
       )
     }
 
-    for (const [eventName, instructions] of Object.entries(node.events)) {
-      if (!Array.isArray(instructions)) {
+    for (const [eventName, handler] of Object.entries(node.events)) {
+      if (handler == null) continue
+
+      const isShape =
+        typeof handler === 'string' ||
+        Array.isArray(handler) ||
+        (isObject(handler) && typeof (handler as { type?: unknown }).type === 'string')
+
+      if (!isShape) {
         throw new SchemaValidationError(
           `${path}.events.${eventName}`,
-          'Event handler must be an array of instructions',
+          'Event handler must be one of: Action, Action[], method name, method name[], or [call, method, params?, modifiers?]',
           'INVALID_EVENT_HANDLER_TYPE'
         )
       }
 
-      // 验证每个动作
-      instructions.forEach((action, index) => {
-        if (!isObject(action) || typeof action.type !== 'string') {
-          throw new SchemaValidationError(
-            `${path}.events.${eventName}[${index}]`,
-            'Action must be an object with "type" field',
-            'INVALID_ACTION'
-          )
-        }
-      })
+      const actions = normalizeEventHandler(handler as import('@variojs/types').EventHandler)
+      validateActions(actions, `${path}.events.${eventName}`)
     }
   }
 
@@ -427,6 +446,32 @@ function validatePath(path: string, errorPath: string): void {
   }
 }
 
+function validateActions(actions: Action[], path: string): void {
+  actions.forEach((action, index) => {
+    const actionPath = `${path}[${index}]`
+    const issue = validateActionPayload(action)
+    if (issue) {
+      throw new SchemaValidationError(
+        actionPath,
+        issue.message,
+        issue.code
+      )
+    }
+
+    const rec = action as Record<string, unknown>
+    if (action.type === 'if') {
+      if (Array.isArray(rec.then)) validateActions(rec.then as Action[], `${actionPath}.then`)
+      if (Array.isArray(rec.else)) validateActions(rec.else as Action[], `${actionPath}.else`)
+    }
+    if (action.type === 'loop' && Array.isArray(rec.body)) {
+      validateActions(rec.body as Action[], `${actionPath}.body`)
+    }
+    if (action.type === 'batch' && Array.isArray(rec.actions)) {
+      validateActions(rec.actions as Action[], `${actionPath}.actions`)
+    }
+  })
+}
+
 /**
  * 类型守卫：检查是否为对象
  */
@@ -445,7 +490,7 @@ export function validateSchema(
   schema: unknown,
   options: ValidationOptions = {}
 ): asserts schema is SchemaNode {
-  validateSchemaNode(schema, 'root', options)
+  validateSchemaNode(schema, 'root', options, 0, undefined, new Map())
 }
 
 /**
@@ -466,6 +511,10 @@ export function validateSchemaWithResult(
   
   try {
     validateSchema(schema, options)
+    options.diagnosticSink?.emit({
+      name: 'schema-validate',
+      diagnostic: { code: 'SCHEMA_VALIDATE', message: 'schema-validate', path: '', phase: 'validate' }
+    })
     return { valid: true, errors: [] }
   } catch (error) {
     if (error instanceof SchemaValidationError) {
@@ -477,6 +526,10 @@ export function validateSchemaWithResult(
         'VALIDATION_ERROR'
       ))
     }
+    options.diagnosticSink?.emit({
+      name: 'schema-validate',
+      diagnostic: { code: errors[0]?.code ?? 'VALIDATION_ERROR', message: 'schema-validate', path: errors[0]?.path ?? 'root', phase: 'validate' }
+    })
     return { valid: false, errors }
   }
 }

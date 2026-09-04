@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec eslint packages/ --max-warnings 0
+      - run: pnpm --filter @variojs/types test
+      - run: pnpm --filter @variojs/core test
+      - run: pnpm --filter @variojs/schema test
+      - run: pnpm --filter @variojs/cli test
+      - run: pnpm --filter @variojs/vue test
+      - run: pnpm --filter @variojs/types build && pnpm --filter @variojs/core build && pnpm --filter @variojs/schema build && pnpm --filter @variojs/vue build
+      - run: pnpm exec vitest run tests/consumer --config packages/vario-vue/vitest.config.ts
+      - run: pnpm --filter './docs' build
+
+  vue-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        vue: ['3.4.38', '3.5.27']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @variojs/vue add -D vue@${{ matrix.vue }}
+      - run: pnpm --filter @variojs/types build && pnpm --filter @variojs/core build && pnpm --filter @variojs/schema build && pnpm --filter @variojs/vue build
+      - run: pnpm exec vitest run tests/consumer --config packages/vario-vue/vitest.config.ts
+      - run: pnpm --filter @variojs/vue exec vitest run __tests__/ssr/hydration.test.ts __tests__/runtime/runtime-mode.test.ts __tests__/ssr/request-isolation.test.ts __tests__/correctness/depth-render.test.ts __tests__/prepared/feature-parity.test.ts __tests__/correctness/lifecycle-identity.test.ts

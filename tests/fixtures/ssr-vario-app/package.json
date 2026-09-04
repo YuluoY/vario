@@ -1,0 +1,6 @@
+{
+  "name": "ssr-vario-app",
+  "private": true,
+  "type": "module",
+  "description": "T4.5 renderToString → hydrate fixture"
+}

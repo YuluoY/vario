@@ -94,4 +94,46 @@ describe('Query Engine (Core)', () => {
       expect(result?.node.type).toBe('App')
     })
   })
+
+  describe('CONTRACT-4 query semantics', () => {
+    it('finds root by id', () => {
+      const schema = { type: 'App', id: 'root', children: [{ type: 'Body', id: 'body' }] }
+      const { index } = analyzeSchema(schema)
+      const engine = createQueryEngine({ schema, index })
+      const result = engine.findById('root')
+      expect(result?.path).toBe('')
+      expect(result?.node.type).toBe('App')
+    })
+
+    it('falls back to traversal when index is missing', () => {
+      const schema = createTestSchema()
+      const engine = createQueryEngine({ schema })
+      const result = engine.findById('title')
+      expect(result?.node.type).toBe('Title')
+    })
+
+    it('first-match stops at first duplicate id', () => {
+      const schema = {
+        type: 'App',
+        children: [
+          { type: 'A', id: 'dup' },
+          { type: 'B', id: 'dup' }
+        ]
+      }
+      const { index } = analyzeSchema(schema)
+      expect(index.idMap.get('dup')).toBe('children.0')
+    })
+
+    it('CANVAS-1 findById().patch() mutates and readonly throws', () => {
+      const schema = createTestSchema()
+      const engine = createQueryEngine({ schema, index: analyzeSchema(schema).index })
+      const title = engine.findById('title')
+      title?.patch({ props: { label: 'patched' } })
+      expect(schema.children?.[0].children?.[0].props?.label).toBe('patched')
+      const frozen = createTestSchema()
+      Object.freeze(frozen)
+      const ro = createQueryEngine({ schema: frozen, readonly: true })
+      expect(() => ro.findById('title')?.patch({ props: { x: 1 } })).toThrow(/readonly/i)
+    })
+  })
 })

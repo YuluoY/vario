@@ -1,81 +1,73 @@
 /**
  * 表达式求值入口函数
- * 
+ *
  * 整合解析、验证、缓存、求值流程
  */
 
 import type { RuntimeContext, ExpressionOptions } from '@variojs/types'
 import { ExpressionError, ErrorCodes } from '../errors.js'
 import { parseExpression } from './parser.js'
+import { extractExpression } from './utils.js'
 import { validateAST } from './whitelist.js'
 import { evaluateExpression } from './evaluator.js'
 import { extractDependencies } from './dependencies.js'
 import { getCompiledExpression } from './compiler.js'
 import {
-  getCachedExpression,
+  lookupCachedExpression,
   setCachedExpression,
 } from './cache.js'
+import { getPolicyFingerprint, isPureAst } from './policy.js'
 
-/**
- * 求值表达式（完整流程）
- * 
- * @param expr 表达式字符串
- * @param ctx 运行时上下文
- * @returns 求值结果（类型无法静态推导，返回 unknown）
- * 
- * 注意：表达式求值结果类型无法在编译时确定，因为：
- * 1. 表达式是运行时字符串
- * 2. 状态类型是动态的
- * 3. 表达式可能返回任意类型
- * 
- * 如果需要类型安全，应在使用结果时进行类型守卫或类型断言
- */
+const LEXICAL_ROOTS = new Set(['item', 'index', '$item', '$index', 'row', 'cell'])
+/** 每次事件/每个节点取当前值的特殊变量：表达式一律不缓存（FR-3） */
+const SPECIAL_VAR_ROOTS = new Set(['$event', '$self', '$parent', '$siblings', '$children'])
+
+function hasLexicalRoot(source: string): boolean {
+  return /(?:^|[^.\w])(?:item|index|\$item|\$index|row|cell|\$event|\$self|\$parent|\$siblings|\$children)(?:[.[]|$)/.test(source)
+}
+
 export function evaluate(
   expr: string,
   ctx: RuntimeContext,
   options: ExpressionOptions = {}
 ): unknown {
   try {
-    // 合并选项：ctx.$exprOptions 优先级低于直接传入的 options
     const mergedOptions = {
       ...ctx.$exprOptions,
       ...options
     }
-    
-    // 1. 检查结果缓存
-    const cached = getCachedExpression(expr, ctx)
-    if (cached !== null) {
-      return cached
+    const source = extractExpression(expr)
+    const fingerprint = getPolicyFingerprint(mergedOptions)
+    const lexical = hasLexicalRoot(source)
+
+    if (!lexical) {
+      const cached = lookupCachedExpression(source, ctx, fingerprint)
+      if (cached.hit) {
+        return cached.value
+      }
     }
-    
-    // 2. 解析为 AST
-    const ast = parseExpression(expr)
-    
-    // 3. AST 白名单校验（传递 allowGlobals 和 maxNestingDepth 选项）
-    validateAST(ast, { 
+
+    const ast = parseExpression(source)
+
+    validateAST(ast, {
       allowGlobals: mergedOptions.allowGlobals,
       maxNestingDepth: mergedOptions.maxNestingDepth
     })
-    
-    // 4. 尝试使用编译缓存（简单表达式）
-    const compiled = getCompiledExpression(expr, ast)
-    if (compiled) {
-      const result = compiled(ctx)
-      // 提取依赖并缓存结果
-      const dependencies = extractDependencies(ast)
-      setCachedExpression(expr, result, dependencies, ctx)
-      return result
-    }
-    
-    // 5. 复杂表达式，使用解释执行
-    const result = evaluateExpression(ast, ctx, mergedOptions)
-    
-    // 6. 提取依赖并缓存
+
+    const compiled = getCompiledExpression(source, ast)
+    const result = compiled
+      ? compiled(ctx)
+      : evaluateExpression(ast, ctx, mergedOptions)
+
     const dependencies = extractDependencies(ast)
-    setCachedExpression(expr, result, dependencies, ctx)
-    
+    const cacheable = result === null || typeof result !== 'object'
+    if (!lexical && cacheable && isPureAst(ast) && !dependencies.some(d => LEXICAL_ROOTS.has(d.split('.')[0]) || SPECIAL_VAR_ROOTS.has(d.split('.')[0]))) {
+      setCachedExpression(source, result, dependencies, ctx, fingerprint)
+    }
+
     return result
   } catch (error: unknown) {
+    if (error instanceof RangeError) throw error
     if (error instanceof ExpressionError) {
       throw error
     }

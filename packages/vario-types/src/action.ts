@@ -40,15 +40,17 @@ export type ActionType = keyof ActionMap
  * // type 字段会有智能提示：'call' | 'set' | 'emit' | ...
  * const action: Action = { type: 'call', method: 'handleClick' }
  */
-export type Action = 
-  | {
-      [K in keyof ActionMap]: {
-        readonly type: K
-      } & Readonly<ActionMap[K]>
-    }[keyof ActionMap]
-  | {
-      readonly type: string
-    }
+export type BuiltInAction = {
+  [K in keyof ActionMap]: {
+    readonly type: K
+  } & Readonly<ActionMap[K]>
+}[keyof ActionMap]
+
+export type CustomAction = {
+  readonly type: string
+}
+
+export type Action = BuiltInAction | CustomAction
 
 /**
  * 类型守卫：检查动作是否符合特定类型

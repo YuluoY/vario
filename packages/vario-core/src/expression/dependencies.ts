@@ -37,15 +37,17 @@ export function extractDependencies(ast: ESTree.Node): string[] {
           const basePath = object.name
           
           if (member.computed) {
-            // 计算属性：items[0] -> 保守策略：标记 items.*
-            dependencies.add(`${basePath}.*`)
-            traverse(member.property, path)
+            const index = member.property
+            if (index.type === 'NumericLiteral' || index.type === 'StringLiteral') {
+              dependencies.add(`${basePath}.${String(index.value)}`)
+            } else {
+              dependencies.add(`${basePath}.*`)
+              traverse(member.property, path)
+            }
           } else {
             // 静态属性：user.name
             const prop = (member.property as ESTree.Identifier).name
             dependencies.add(`${basePath}.${prop}`)
-            // 同时添加通配符依赖（保守策略）
-            dependencies.add(`${basePath}.*`)
           }
         } else {
           // 嵌套成员访问：user.profile.name
@@ -63,12 +65,16 @@ export function extractDependencies(ast: ESTree.Node): string[] {
           const basePath = object.name
           
           if (member.computed) {
-            dependencies.add(`${basePath}.*`)
-            traverse(member.property, path)
+            const prop = member.property
+            if (prop.type === 'NumericLiteral' || prop.type === 'StringLiteral') {
+              dependencies.add(`${basePath}.${String(prop.value)}`)
+            } else {
+              dependencies.add(`${basePath}.*`)
+              traverse(member.property, path)
+            }
           } else {
             const prop = (member.property as ESTree.Identifier).name
             dependencies.add(`${basePath}.${prop}`)
-            dependencies.add(`${basePath}.*`)
           }
         } else {
           traverse(object, path)

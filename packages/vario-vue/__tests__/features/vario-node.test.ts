@@ -107,11 +107,11 @@ describe('shouldComponentize', () => {
       })).toBe(true)
     })
 
-    it('leaf scope boundary → descendants=0 → no componentize', () => {
+    it('leaf custom component → descendants=0 → not componentize', () => {
       expect(shouldComponentize({ type: 'ElButton' })).toBe(false)
     })
 
-    it('flat 2 children → descendants=2 < 5 → no componentize', () => {
+    it('flat 2 children custom component → descendants=2 < 5 → not componentize', () => {
       expect(shouldComponentize({
         type: 'ElCard',
         children: [{ type: 'span' }, { type: 'span' }]

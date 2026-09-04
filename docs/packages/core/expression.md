@@ -43,6 +43,20 @@ validateAST(ast)  // 抛错表示存在不安全构造
 
 未在白名单中的函数或成员（如 `eval`、`window`、`require`）不允许使用。
 
+### 函数白名单清单
+
+**全局对象（静态方法可用，实例方法不可用）**：
+
+- `Math`（含 `Math.random`）、`JSON`（`parse`/`stringify`）、`Number`、`String`、`Boolean`、`Array`、`Object`（仅 `keys`/`values`/`entries`/`freeze` 等静态方法；`Object.prototype` 上的方法如 `hasOwnProperty`、`toString` 被拒绝）
+- `Date`（`now` 等静态方法）、`isNaN`、`isFinite`、`parseInt`、`parseFloat`
+
+**数组方法（只读）**：`slice`、`concat`、`join`、`indexOf`、`includes`、`find`、`findIndex`、`filter`、`map`、`some`、`every`、`reduce`、`flatMap` 等。
+
+**原位变更方法受限**：
+
+- `reverse`、`sort` **仅在链式调用时放行**（callee 是上一次方法调用的结果），如 `list.slice().reverse()`、`items.slice().sort((a, b) => a - b)`；直接对状态调用 `list.reverse()` 会被拒绝（错误信息会提示改用 `slice().reverse()`），以保护共享状态不被表达式原位修改。
+- `push`/`pop`/`shift`/`splice`/`unshift` 不在表达式白名单内，请通过 `ctx._set` 或对应的 VM action 修改数组。
+
 ## 依赖收集与缓存
 
 - **extractDependencies**：可从表达式 AST 抽依赖路径（如 `['user.name','count']`），用于做细粒度更新。

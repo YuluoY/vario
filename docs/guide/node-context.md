@@ -11,6 +11,8 @@
 - **`ctx.$siblings`** - 兄弟节点数组（不包含自身）
 - **`ctx.$children`** - 子节点数组
 
+> **prepared 模式注意**：在 prepared 运行时下，`$siblings` 与 `$children` 是按需构建的**只读视图**（每次访问重新计算），对其元素或数组的就地修改不会同步回 schema 树；需要变更节点时请通过 `ctx._set` 写状态或 `patchNode` 更新 schema。`$self`/`$parent` 行为与 legacy 一致。
+
 ## 基础用法
 
 ### 访问当前节点

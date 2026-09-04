@@ -1,6 +1,6 @@
 {
   "name": "@variojs/schema",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Vario Schema DSL - Schema definition, validation, normalization, and transformation",
   "type": "module",
   "main": "./dist/index.js",
@@ -10,6 +10,14 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./codec": {
+      "import": "./dist/codec.js",
+      "types": "./dist/codec.d.ts"
+    },
+    "./compiler": {
+      "import": "./dist/compiler.js",
+      "types": "./dist/compiler.d.ts"
     }
   },
   "scripts": {

@@ -8,7 +8,6 @@
 import type { RuntimeContext, Action } from '@variojs/types'
 import { ActionError, ErrorCodes } from '@/errors.js'
 import { evaluate } from '@/expression/evaluate.js'
-import { invalidateCache } from '@/expression/cache.js'
 import { evaluateExpressionsRecursively } from './utils.js'
 
 /**
@@ -70,10 +69,7 @@ export async function handleSplice(
     }
   }
   
-  // 执行 splice
-  array.splice(finalStart, finalDeleteCount, ...finalItems)
-  
-  // 使相关缓存失效
-  invalidateCache(path, ctx)
-  invalidateCache(`${path}.*`, ctx)
+  const next = array.slice()
+  next.splice(finalStart, finalDeleteCount, ...finalItems)
+  ctx._set(path, next)
 }

@@ -1,2 +1,5 @@
 #!/usr/bin/env node
-import '../dist/index.js'
+import { runCli } from '../dist/index.js'
+
+const code = runCli(process.argv)
+if (code) process.exit(code)

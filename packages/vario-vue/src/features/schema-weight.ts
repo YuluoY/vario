@@ -20,7 +20,8 @@ export function isScopeBoundary(schema: SchemaNode): boolean {
 
   // 1. lifecycle / provide / inject
   if (s.onMounted || s.onUnmounted || s.onUpdated ||
-      s.onBeforeMount || s.onBeforeUnmount || s.onBeforeUpdate) {
+      s.onBeforeMount || s.onBeforeUnmount || s.onBeforeUpdate ||
+      s.onActivated || s.onDeactivated) {
     return true
   }
   if (s.provide && typeof s.provide === 'object' && Object.keys(s.provide as object).length > 0) {

@@ -10,6 +10,10 @@ import type { VNodePlugin } from './types.js'
 
 export const transitionPlugin: VNodePlugin = {
   name: 'transition',
+  setup() {},
+  validate() {},
+  prepare() {},
+  dispose() {},
 
   decorateVNode(vnode: VNode, schema: VueSchemaNode): VNode {
     if (!schema.transition) return vnode

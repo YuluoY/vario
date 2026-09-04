@@ -7,7 +7,6 @@
 
 import type { RuntimeContext, Action } from '@variojs/types'
 import { ActionError, ErrorCodes } from '@/errors.js'
-import { invalidateCache } from '@/expression/cache.js'
 
 /**
  * 处理 pop 动作
@@ -39,10 +38,6 @@ export async function handlePop(
     )
   }
   
-  // 删除末尾元素
-  array.pop()
-  
-  // 使相关缓存失效
-  invalidateCache(path, ctx)
-  invalidateCache(`${path}.*`, ctx)
+  const next = array.slice(0, -1)
+  ctx._set(path, next)
 }

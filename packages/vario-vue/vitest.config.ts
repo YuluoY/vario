@@ -16,6 +16,12 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node', // 暂时使用 node 环境，后续可改为 jsdom
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        execArgv: ['--expose-gc']
+      }
+    },
     // 默认排除重量级用例，避免 pnpm test 时 OOM；需跑时用 pnpm test:perf / pnpm test:comprehensive
     exclude: [
       '**/node_modules/**',
@@ -27,7 +33,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@variojs/core': resolve(__dirname, '../vario-core/src'),
-      '@variojs/schema': resolve(__dirname, '../vario-schema/src')
+      '@variojs/schema': resolve(__dirname, '../vario-schema/src'),
+      ...(process.env.VARIO_VUE_RESOLVE
+        ? { vue: resolve(process.env.VARIO_VUE_RESOLVE) }
+        : {})
     }
   }
 })

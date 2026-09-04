@@ -18,6 +18,14 @@ export interface ErrorContext {
   action?: Action
   /** 调用栈（简化版） */
   stack?: string[]
+  engineId?: string
+  pageId?: string
+  schemaId?: string
+  revision?: number
+  nodeId?: string
+  actionId?: string
+  expressionId?: string
+  phase?: string
   /** 额外上下文信息 */
   metadata?: Record<string, unknown>
 }
@@ -158,6 +166,37 @@ export class BatchError extends VarioError {
 }
 
 /**
+ * 路径写入失败：不触发成功 change callback。
+ */
+export class PathWriteError extends VarioError {
+  public readonly path: string
+
+  constructor(
+    path: string,
+    message: string,
+    code: string = ErrorCodes.PATH_WRITE_ERROR,
+    context: ErrorContext = {}
+  ) {
+    super(message, code, {
+      ...context,
+      metadata: { ...context.metadata, path },
+    })
+    this.name = 'PathWriteError'
+    this.path = path
+  }
+}
+
+export class SchemaDepthError extends VarioError {
+  constructor(
+    message: string,
+    context: ErrorContext = {}
+  ) {
+    super(message, ErrorCodes.SCHEMA_DEPTH_EXCEEDED, context)
+    this.name = 'SchemaDepthError'
+  }
+}
+
+/**
  * 错误码定义
  */
 export const ErrorCodes = {
@@ -189,6 +228,28 @@ export const ErrorCodes = {
   // Schema 相关错误
   SCHEMA_VALIDATION_ERROR: 'SCHEMA_VALIDATION_ERROR',
   SCHEMA_INVALID_ACTION: 'SCHEMA_INVALID_ACTION',
+  SCHEMA_DEPTH_EXCEEDED: 'SCHEMA_DEPTH_EXCEEDED',
+  SCHEMA_CIRCULAR_REFERENCE: 'SCHEMA_CIRCULAR_REFERENCE',
+
+  // Path / session
+  PATH_WRITE_ERROR: 'PATH_WRITE_ERROR',
+  PATH_FORBIDDEN_SEGMENT: 'PATH_FORBIDDEN_SEGMENT',
+  PATH_BUDGET_EXCEEDED: 'PATH_BUDGET_EXCEEDED',
+  PATH_UNRESOLVED_INDEX: 'PATH_UNRESOLVED_INDEX',
+  SESSION_CANCELLED: 'SESSION_CANCELLED',
+  SESSION_DISPOSED: 'SESSION_DISPOSED',
+  SESSION_DISPOSED_WRITE: 'SESSION_DISPOSED_WRITE',
+  SESSION_PAUSED: 'SESSION_PAUSED',
+  SCHEMA_READONLY: 'SCHEMA_READONLY',
+  UNSUPPORTED_EVENT_MODIFIER: 'UNSUPPORTED_EVENT_MODIFIER',
+  CAPABILITY_NOT_REGISTERED: 'CAPABILITY_NOT_REGISTERED',
+  TELEPORT_INVALID_TARGET: 'TELEPORT_INVALID_TARGET',
+  TELEPORT_MISSING_HOST: 'TELEPORT_MISSING_HOST',
+  LOOP_DUPLICATE_KEY: 'LOOP_DUPLICATE_KEY',
+  LOOP_INVALID_KEY: 'LOOP_INVALID_KEY',
+  LOOP_INDEX_FALLBACK: 'LOOP_INDEX_FALLBACK',
+  LOOP_BUDGET_EXCEEDED: 'LOOP_BUDGET_EXCEEDED',
+  SCOPE_STALE_GENERATION: 'SCOPE_STALE_GENERATION',
 } as const
 
 export type ErrorCode = typeof ErrorCodes[keyof typeof ErrorCodes]

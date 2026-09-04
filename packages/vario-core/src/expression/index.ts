@@ -10,10 +10,12 @@ export { extractDependencies } from './dependencies.js'
 export {
   getCachedExpression,
   setCachedExpression,
+  lookupCachedExpression,
   invalidateCache,
   clearCache,
   getCacheStats
 } from './cache.js'
+export { getPolicyFingerprint, registerCapability, getCapability, listCapabilities } from './policy.js'
 export {
   extractExpression,
   normalizeExpression,
@@ -26,3 +28,7 @@ export {
   clearCompiledCache,
   type CompiledExpression
 } from './compiler.js'
+export { compileExpressionPlan, compileExpressionPlanUncached } from './plan-compiler.js'
+export { getCachedExpressionPlan, sharedPlanCache, getPlanCacheStats } from './plan-cache.js'
+export { ResultMemo } from './result-memo.js'
+export { evaluateExpressionPlan } from './plan-evaluator.js'

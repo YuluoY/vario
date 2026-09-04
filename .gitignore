@@ -69,3 +69,9 @@ Thumbs.db
 .claude/skills/*/dist/
 blog-screenshots
 docs/runtime
+# uluo skill flow runtime state
+.skill-state.json
+
+# 工具产物（基准构建输出、playwright CLI 日志）
+output/
+.playwright-cli/

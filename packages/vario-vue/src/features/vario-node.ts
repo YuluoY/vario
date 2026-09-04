@@ -9,6 +9,7 @@ import {
   defineComponent,
   h,
   computed,
+  onErrorCaptured,
   type VNode,
   type PropType,
 } from 'vue'
@@ -81,7 +82,7 @@ export interface VarioNodeRenderer {
     ctx: RuntimeContext
   ) => VNode
   /** 附加 ref */
-  attachRef?: (vnode: VNode, vueSchema: VueSchemaNode) => VNode
+  attachRef?: (vnode: VNode, vueSchema: VueSchemaNode, ctx?: RuntimeContext) => VNode
   /** 获取 model 路径栈更新 */
   getUpdatedModelPathStack?: (
     schema: SchemaNode,
@@ -111,11 +112,19 @@ export function countDescendants(schema: SchemaNode, threshold?: number): number
 /**
  * 判断是否应该组件化该节点。
  *
- * 规则：scope boundary 且后代节点总数 >= COMPONENT_OVERHEAD(5) 时组件化。
- * countDescendants 同时覆盖扁平列表（5+ 叶节点）和嵌套结构（2-3 节点各有子树）。
+ * 规则：
+ * - loop 节点不组件化（由 LoopHandler 处理）
+ * - _componentize: true 显式强制组件化（绕过 scope boundary 和后代阈值检查）
+ * - 非 scope boundary 不组件化
+ * - scope boundary 且后代 >= 5 时组件化（避免小组件化开销大于内联渲染）
  */
 export function shouldComponentize(schema: SchemaNode): boolean {
   if (schema.loop) return false
+
+  // 显式 opt-in：_componentize 标志绕过 scope boundary 和后代阈值
+  const s = schema as Record<string, unknown>
+  if (s._componentize === true) return true
+
   if (!isScopeBoundary(schema)) return false
   return countDescendants(schema, 5) >= 5
 }
@@ -163,22 +172,28 @@ export const VarioNode = defineComponent({
     }
   },
   setup(props) {
+    onErrorCaptured((error) => {
+      if (error instanceof RangeError) throw error
+      return false
+    })
+
     // 使用 computed 缓存条件求值结果
     const condValue = computed(() => {
       if (!props.schema.cond) return true
       try {
         return props.renderer.evaluateExpr(props.schema.cond, props.ctx)
-      } catch {
+      } catch (error) {
+        if (error instanceof RangeError) throw error
         return false
       }
     })
 
-    // 使用 computed 缓存 show 求值结果
     const showValue = computed(() => {
       if (!props.schema.show) return true
       try {
         return props.renderer.evaluateExpr(props.schema.show, props.ctx)
-      } catch {
+      } catch (error) {
+        if (error instanceof RangeError) throw error
         return true
       }
     })
@@ -223,11 +238,14 @@ export const VarioNode = defineComponent({
       }
 
       // 构建属性
+      // 注意：自身 model 绑定必须用「原始」modelPathStack——renderer.buildAttrs 内部会自行
+      // 处理 scope 压栈。传 push 后的栈会把自身段拼进 model 路径（'x' → 'x.x'），
+      // 触发默认值预写把标量 state 键替换为嵌套对象（ElDialog 永不关闭等症状）
       const attrs = renderer.buildAttrs(
         schema,
         ctx,
         resolvedComponent,
-        currentModelPathStack.value,
+        props.modelPathStack,
         nodeContext,
         parentMap
       )
@@ -282,7 +300,7 @@ export const VarioNode = defineComponent({
 
       // 处理 ref
       if (vueSchema.ref && renderer.attachRef) {
-        vnode = renderer.attachRef(vnode, vueSchema)
+        vnode = renderer.attachRef(vnode, vueSchema, ctx)
       }
 
       // 通过插件装饰 VNode（keepAlive/transition/teleport 等）

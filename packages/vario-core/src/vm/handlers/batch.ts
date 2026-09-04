@@ -1,24 +1,23 @@
 /**
  * batch 动作处理器
- * 
- * 功能：批量执行动作（保证原子性）
- * 示例：{ "type": "batch", "actions": [...] }
+ *
+ * 失败后按 journal 记录的 (path, oldValue) 逆序恢复；
+ * 回滚写入绕过 assertSessionCanWrite，并在 endChangeTransaction 之前完成；
+ * BatchError 不被二次包装。
  */
 
 import type { RuntimeContext, Action } from '@variojs/types'
 import { ActionError, BatchError, ErrorCodes } from '@/errors.js'
-import { execute } from '../executor.js'
+import { runChild } from '../executor.js'
+import { beginChangeTransaction, endChangeTransaction } from '../../runtime/change-set.js'
+import { getExecutionSession } from '../execution-session.js'
 
-/**
- * 处理 batch 动作
- */
 export async function handleBatch(
   ctx: RuntimeContext,
   action: Action
 ): Promise<void> {
-  // 类型断言：确保 action 包含 batch 动作的属性
   const { actions } = action as Action & { actions?: Action[] }
-  
+
   if (!actions || !Array.isArray(actions)) {
     throw new ActionError(
       action,
@@ -27,22 +26,40 @@ export async function handleBatch(
       { metadata: { param: 'actions' } }
     )
   }
-  
+
   const errors: Array<{ action: Action; error: Error }> = []
-  
-  // 批量执行，收集错误
-  for (const act of actions) {
-    try {
-      await execute([act], ctx)
-    } catch (error: unknown) {
-      errors.push({
-        action: act,
-        error: error instanceof Error ? error : new Error(String(error))
-      })
+  const session = getExecutionSession(ctx)
+  const journal = session?.beginJournal()
+
+  beginChangeTransaction(ctx)
+  try {
+    for (const act of actions) {
+      try {
+        await runChild([act], ctx)
+      } catch (error: unknown) {
+        errors.push({
+          action: act,
+          error: error instanceof Error ? error : new Error(String(error))
+        })
+      }
     }
+    if (errors.length > 0) {
+      // 逆序恢复 batch 内每次 _set 记录的旧值；
+      // bypassSession：session 可能已 timeout/abort，回滚不能被 assertSessionCanWrite 拦截
+      const entries = journal ? [...journal.entries].reverse() : []
+      for (const entry of entries) {
+        try {
+          ctx._set(entry.path, entry.oldValue as never, { skipCallback: true, bypassSession: true })
+        } catch {
+          // 单条回滚失败不阻断后续条目
+        }
+      }
+      journal?.rollback()
+    }
+  } finally {
+    endChangeTransaction(ctx)
   }
-  
-  // 如果有错误，抛出 BatchError
+
   if (errors.length > 0) {
     throw new BatchError(
       errors,
@@ -55,4 +72,5 @@ export async function handleBatch(
       }
     )
   }
+  journal?.commit()
 }

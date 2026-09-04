@@ -70,7 +70,7 @@ export function analyzeSchema(
 
     // 构建 ID 索引
     const nodeWithId = node as any
-    if (nodeWithId.id && typeof nodeWithId.id === 'string') {
+    if (nodeWithId.id && typeof nodeWithId.id === 'string' && !idMap.has(nodeWithId.id)) {
       idMap.set(nodeWithId.id, path)
     }
 

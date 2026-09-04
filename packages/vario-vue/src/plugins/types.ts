@@ -46,4 +46,9 @@ export interface VNodePlugin {
     schema: VueSchemaNode,
     ctx: RuntimeContext
   ) => VNode
+
+  setup?: (engine?: unknown) => void
+  validate?: (schema: VueSchemaNode) => void
+  prepare?: (schema: VueSchemaNode) => void
+  dispose?: () => void
 }

@@ -9,7 +9,7 @@
 import type { RuntimeContext, Action } from '@variojs/types'
 import { ActionError, ErrorCodes } from '@/errors.js'
 import { evaluate, extractExpression } from '@/expression/index.js'
-import { execute } from '../executor.js'
+import { runChild } from '../executor.js'
 
 /**
  * 处理 if 动作
@@ -43,11 +43,11 @@ export async function handleIf(
   // 执行对应的分支
   if (condition) {
     if (then && Array.isArray(then)) {
-      await execute(then, ctx)
+      await runChild(then, ctx)
     }
   } else {
     if (elseBranch && Array.isArray(elseBranch)) {
-      await execute(elseBranch, ctx)
+      await runChild(elseBranch, ctx)
     }
   }
 }

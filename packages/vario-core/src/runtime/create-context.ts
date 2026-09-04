@@ -14,9 +14,13 @@ import type {
   OnStateChangeCallback
 } from '@variojs/types'
 import { createProxy } from './proxy.js'
-import { registerBuiltinMethods } from '../vm/handlers/index.js'
-import { getPathValue as getPath, setPathValue as setPath } from './path.js'
+import { getPathValue as getPath, setPathValue as setPath, parsePathCached } from './path.js'
+import { assertWritablePath } from './path-policy.js'
 import { invalidateCache } from '../expression/cache.js'
+import { PathWriteError, ErrorCodes } from '../errors.js'
+import { assertSessionCanWrite, getExecutionSession } from '../vm/execution-session.js'
+import { isContextDisposed, emitContextDiagnostic } from './runtime-session.js'
+import { recordChange } from './change-set.js'
 
 /**
  * 创建运行时上下文（传入具体 initialState 时，TState 从实参自动推导）
@@ -50,11 +54,18 @@ export function createRuntimeContext<TState extends Record<string, unknown>>(
     onEmit,
     methods = {},
     onStateChange,
-    createObject = () => ({}),
+    createObject = () => Object.create(null) as Record<string, unknown>,
     createArray = () => [],
     exprOptions,
     adapter
   } = options
+
+  const methodsTable = Object.create(null) as MethodsRegistry
+  for (const key of Object.keys(methods)) {
+    if (Object.prototype.hasOwnProperty.call(methods, key)) {
+      methodsTable[key] = methods[key]
+    }
+  }
 
   // 用于存储 proxied 引用，以便 _set 中的 onStateChange 能使用正确的引用
   let proxiedRef: RuntimeContext<TState> | null = null
@@ -69,7 +80,7 @@ export function createRuntimeContext<TState extends Record<string, unknown>>(
         onEmit(event, data)
       }
     },
-    $methods: methods as MethodsRegistry,
+    $methods: methodsTable,
     $exprOptions: exprOptions,
     _get: <TPath extends string>(path: TPath): GetPathValue<TState, TPath> => {
       if (adapter) {
@@ -77,27 +88,57 @@ export function createRuntimeContext<TState extends Record<string, unknown>>(
       }
       return getPath(ctx as Record<string, unknown>, path) as GetPathValue<TState, TPath>
     },
-    _set: <TPath extends string>(path: TPath, value: SetPathValue<TState, TPath>, options?: { skipCallback?: boolean }): void => {
+    _set: <TPath extends string>(path: TPath, value: SetPathValue<TState, TPath>, options?: { skipCallback?: boolean; bypassSession?: boolean }): void => {
+      const targetCtx = (proxiedRef || ctx) as RuntimeContext
+      if (isContextDisposed(targetCtx)) {
+        // disposed 后写入：静默忽略 + 诊断（FR-7）；execute 仍抛 SESSION_DISPOSED
+        emitContextDiagnostic(targetCtx, {
+          name: 'state-write',
+          diagnostic: {
+            code: ErrorCodes.SESSION_DISPOSED_WRITE,
+            message: 'write to disposed context ignored',
+            path,
+            phase: 'runtime'
+          }
+        })
+        return
+      }
+      if (!options?.bypassSession) {
+        assertSessionCanWrite(targetCtx)
+        // batch journal：记录 (path, oldValue) 供逆序回滚
+        const journal = getExecutionSession(targetCtx)?.journal
+        if (journal && !journal.committed && !journal.rolledBack) {
+          journal.record(path, adapter ? adapter.get(path) : getPath(ctx as Record<string, unknown>, path))
+        }
+      }
+      const segments = parsePathCached(path)
+      assertWritablePath(path, segments)
+
       if (adapter) {
         adapter.set(path, value)
       } else {
-        setPath(ctx as Record<string, unknown>, path, value, {
+        const ok = setPath(ctx as Record<string, unknown>, path, value, {
           createObject,
           createArray
         })
+        if (!ok) {
+          throw new PathWriteError(
+            path,
+            `Failed to write path "${path}"`,
+            ErrorCodes.PATH_WRITE_ERROR
+          )
+        }
       }
       // 使缓存失效（使用 proxied 引用以确保缓存键一致）
-      invalidateCache(path, (proxiedRef || ctx) as RuntimeContext)
+      invalidateCache(path, targetCtx)
+      recordChange(targetCtx, path, value)
       if (onStateChange && !options?.skipCallback) {
         ;(onStateChange as OnStateChangeCallback<TState>)(path, value, proxiedRef || ctx)
       }
     },
   } as RuntimeContext<TState>
 
-  // 3. 自动注册内置指令到 $methods（RuntimeContext<TState> 与 RuntimeContext 在 _set 值域上逆变，需通过 unknown 转接）
-  registerBuiltinMethods(ctx as unknown as RuntimeContext)
-
-  // 4. 使用 Proxy 保护系统 API（传入 adapter 以路由状态访问）
+  // 使用 Proxy 保护系统 API（传入 adapter 以路由状态访问）
   const proxied = createProxy(ctx as unknown as RuntimeContext, adapter) as RuntimeContext<TState>
   
   // 5. 保存 proxied 引用供 _set 使用

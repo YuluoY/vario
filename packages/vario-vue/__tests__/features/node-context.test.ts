@@ -93,7 +93,7 @@ describe('applyNodeContextToCtx', () => {
     const schema = node('button')
     map.set(schema, null)
     const ctx: Record<string, unknown> = {}
-    applyNodeContextToCtx(ctx, schema, undefined, map)
+    applyNodeContextToCtx(ctx, schema, map)
     expect(ctx.$self).toBeDefined()
     expect((ctx.$self as SchemaNode).type).toBe('button')
   })
@@ -105,17 +105,17 @@ describe('applyNodeContextToCtx', () => {
     map.set(selfSchema, parentSchema)
     map.set(parentSchema, null)
     const ctx: Record<string, unknown> = {}
-    applyNodeContextToCtx(ctx, selfSchema, { parent: parentSchema }, map)
+    applyNodeContextToCtx(ctx, selfSchema, map)
     expect(ctx.$parent).toBeDefined()
     expect((ctx.$parent as SchemaNode).type).toBe('div')
     expect((ctx.$parent as Record<string, unknown>).parent).toBe(null)
 
     const ctxRoot: Record<string, unknown> = {}
-    applyNodeContextToCtx(ctxRoot, parentSchema, undefined, map)
+    applyNodeContextToCtx(ctxRoot, parentSchema, map)
     expect(ctxRoot.$parent).toBe(null)
   })
 
-  it('ctx.$siblings 为除自身外的兄弟节点 proxy 数组', () => {
+  it('ctx.$siblings 为除自身外的兄弟节点 proxy 数组（从 parentMap 实时派生）', () => {
     const map: ParentMap = new WeakMap()
     const a = node('span')
     const b = node('button')
@@ -125,11 +125,7 @@ describe('applyNodeContextToCtx', () => {
     map.set(b, parent)
     map.set(c, parent)
     const ctx: Record<string, unknown> = {}
-    applyNodeContextToCtx(ctx, b, {
-      parent,
-      siblings: [a, b, c],
-      selfIndex: 1
-    }, map)
+    applyNodeContextToCtx(ctx, b, map)
     expect(Array.isArray(ctx.$siblings)).toBe(true)
     expect((ctx.$siblings as SchemaNode[]).length).toBe(2)
     const types = (ctx.$siblings as SchemaNode[]).map(s => s.type)
@@ -144,13 +140,65 @@ describe('applyNodeContextToCtx', () => {
     const withChildren = node('div', [child])
     map.set(withChildren, null)
     const ctxWith: Record<string, unknown> = {}
-    applyNodeContextToCtx(ctxWith, withChildren, undefined, map)
+    applyNodeContextToCtx(ctxWith, withChildren, map)
     expect(ctxWith.$children).toEqual([child])
 
     const leaf = node('button')
     map.set(leaf, null)
     const ctxLeaf: Record<string, unknown> = {}
-    applyNodeContextToCtx(ctxLeaf, leaf, undefined, map)
+    applyNodeContextToCtx(ctxLeaf, leaf, map)
     expect(ctxLeaf.$children).toBeUndefined()
+  })
+})
+
+describe('applyPreparedNodeContext', () => {
+  it('derives $parent/$siblings from PreparedView index without copying siblings', async () => {
+    const { prepareView, getPreparedSources } = await import('@variojs/schema')
+    const { applyPreparedNodeContext } = await import('../../src/features/node-context.js')
+    const a = node('span')
+    ;(a as { id?: string }).id = 'a'
+    const b = node('em')
+    ;(b as { id?: string }).id = 'b'
+    const root = node('div', [a, b])
+    ;(root as { id?: string }).id = 'root'
+    const view = prepareView(root as never)
+    const sources = getPreparedSources(view)
+    const map: ParentMap = new WeakMap()
+    map.set(a, root)
+    map.set(b, root)
+    map.set(root, null)
+    const ctx: Record<string, unknown> = {}
+    applyPreparedNodeContext(ctx, a, view, 'a', sources, map)
+    expect((ctx.$parent as SchemaNode).type).toBe('div')
+    expect(Array.isArray(ctx.$siblings)).toBe(true)
+    expect((ctx.$siblings as SchemaNode[]).length).toBe(1)
+    const first = ctx.$siblings
+    expect(ctx.$siblings).toBe(first)
+    expect((ctx.$siblings as SchemaNode[])[0].type).toBe('em')
+  })
+
+  it('loop item $siblings come from LoopRegion cell table', async () => {
+    const { prepareView, getPreparedSources } = await import('@variojs/schema')
+    const { applyPreparedNodeContext } = await import('../../src/features/node-context.js')
+    const row = node('li')
+    ;(row as { id?: string }).id = 'row'
+    const list = node('ul', [row])
+    ;(list as { id?: string }).id = 'list'
+    ;(list as { loop?: unknown }).loop = { items: 'items', itemKey: 'item', indexKey: 'index' }
+    const view = prepareView(list as never)
+    const sources = getPreparedSources(view)
+    const map: ParentMap = new WeakMap()
+    map.set(row, list)
+    map.set(list, null)
+    const cells = new Map([
+      ['list', Object.freeze([{ key: 'k0', index: 0 }, { key: 'k1', index: 1 }])]
+    ])
+    const ctx: Record<string, unknown> = { $index: 0 }
+    applyPreparedNodeContext(ctx, row, view, 'row', sources, map, cells)
+    expect((ctx.$parent as SchemaNode).type).toBe('ul')
+    expect((ctx.$siblings as { key: string }[]).length).toBe(1)
+    expect((ctx.$siblings as { key: string }[])[0].key).toBe('k1')
+    const first = ctx.$siblings
+    expect(ctx.$siblings).toBe(first)
   })
 })

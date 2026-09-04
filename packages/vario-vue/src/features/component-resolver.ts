@@ -4,7 +4,7 @@
  * 负责解析 Schema 中的组件类型，支持原生 DOM 元素和全局注册的组件
  */
 
-import { markRaw } from 'vue'
+import { markRaw, getCurrentInstance } from 'vue'
 
 /**
  * 原生 HTML DOM 元素列表
@@ -38,7 +38,7 @@ const NATIVE_DOM_ELEMENTS = new Set([
 /**
  * 判断是否为原生 DOM 元素
  */
-function isNativeDOMElement(type: string): boolean {
+export function isNativeDOMElement(type: string): boolean {
   return NATIVE_DOM_ELEMENTS.has(type.toLowerCase())
 }
 
@@ -73,15 +73,12 @@ export class ComponentResolver {
       resolved = type
     } else {
       try {
-        // 从全局组件注册表中查找组件
-        if (this.globalComponents) {
-          const globalComponent = this.globalComponents[type]
-          resolved = globalComponent || type
-        } else {
-          resolved = type
-        }
-      } catch (_error) {
-        // 解析失败，作为 HTML 标签使用
+        // 从全局组件注册表中查找组件；未命中时在渲染实例的 appContext 兜底（T3.3：
+        // VarioLegacyRoot / region 组件 render 内 getCurrentInstance 即该组件）
+        const instanceComponents = getCurrentInstance()?.appContext?.components
+        const globalComponent = this.globalComponents?.[type] ?? instanceComponents?.[type]
+        resolved = globalComponent || type
+      } catch {
         resolved = type
       }
     }

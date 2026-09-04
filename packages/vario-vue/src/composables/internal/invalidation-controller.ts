@@ -8,11 +8,6 @@
  */
 
 export interface InvalidationController {
-  /** 标记：下一次 reactive watch 回调应被跳过（由 ctx._set 触发时使用） */
-  markSkipOnce: () => void
-  /** 消费并返回是否应跳过本次 watch 回调 */
-  consumeSkipOnce: () => boolean
-  /** 从 watch onTrigger 事件采集潜在变更路径 */
   collectFromTrigger: (target: unknown, key: unknown) => void
   /**
    * 按当前采集结果执行失效
@@ -30,7 +25,6 @@ export function createInvalidationController<TState extends Record<string, unkno
   toRawValue: (value: object) => unknown,
   maxIndexDepth = 6
 ): InvalidationController {
-  let skipReactiveWatchOnce = false
   const pendingInvalidatePaths = new Set<string>()
   let forceInvalidateAll = false
 
@@ -107,14 +101,6 @@ export function createInvalidationController<TState extends Record<string, unkno
   }
 
   return {
-    markSkipOnce: () => {
-      skipReactiveWatchOnce = true
-    },
-    consumeSkipOnce: () => {
-      if (!skipReactiveWatchOnce) return false
-      skipReactiveWatchOnce = false
-      return true
-    },
     collectFromTrigger: (target: unknown, key: unknown) => {
       const path = tryResolveTriggerPath(target, key)
       if (path) {
