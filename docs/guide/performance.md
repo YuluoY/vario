@@ -138,6 +138,35 @@ const { vnode, state } = useVario(schema)
 state.stats = { ... }
 ```
 
+### 显式强制组件化 _componentize
+
+自动组件化需要同时满足「scope boundary」和「子树权重 > 5」两个条件。当你确定某个子树需要渲染隔离、但不满足自动条件时（例如子树只有 3 个节点但含高频更新的表达式），可以在节点上显式声明：
+
+```typescript
+const schema = {
+  type: 'div',
+  children: [
+    {
+      type: 'ElDialog',
+      _componentize: true,   // 🎯 显式 opt-in，绕过 scope boundary 与阈值检查
+      children: [
+        { type: 'ElInput', model: 'form.title' },
+        { type: 'ElInput', model: 'form.desc' }
+      ]
+    }
+  ]
+}
+```
+
+判定优先级（`shouldComponentize`）：
+
+1. **loop 节点永不组件化**（循环由 LoopHandler / LoopItemCell 接管）
+2. `_componentize: true` → 直接组件化
+3. 是 scope boundary 且后代节点数 ≥ 5 → 自动组件化
+4. 其余 → 内联渲染
+
+注意：`_componentize` 是渲染提示属性，未纳入正式类型声明（通过 `SchemaNode` 的扩展属性通道传入），组件数量过多会带来额外实例开销，仅在自动规则不达标且有实测收益时使用。
+
 ---
 
 ## Scope-Weight 循环组件化
@@ -207,14 +236,93 @@ state.todos[0].done = true
 
 ---
 
+## 长列表虚拟化
+
+### 什么是虚拟化
+
+当列表项数达到数千级时，全量展开 DOM 会突破渲染预算。虚拟化只渲染**可视范围内**的循环项，其余项由宿主适配器（滚动容器）管理。Vario 通过 `loop.virtual` 声明意图，通过 `virtualAdapter` 提供实现：
+
+```typescript
+import { useVario, createReferenceVirtualAdapter } from '@variojs/vue'
+
+const schema = {
+  type: 'div',
+  children: [{
+    type: 'ElTableRow',
+    loop: {
+      items: '{{ rows }}',
+      itemKey: 'row',
+      key: 'uid',         // 稳定 key（item 属性名），滚动时复用已有单元格
+      virtual: true       // 声明该循环接受虚拟化
+    },
+    children: '{{ row.label }}'
+  }]
+}
+
+const { vnode } = useVario(schema, {
+  state: { rows: [] },
+  // 虚拟化适配器：默认实现按 viewport=200、overscan=4 截取
+  virtualAdapter: createReferenceVirtualAdapter({ viewport: 200, overscan: 4 })
+})
+```
+
+### 行为规则
+
+- `virtual: true`（或缺省）：提供了 `virtualAdapter` 时按可视范围渲染
+- `virtual: false`：强制全量展开，适合小列表，但仍受预算约束
+- 未提供适配器时，无论 `virtual` 取值均全量渲染
+
+### 预算与诊断
+
+| 机制 | 触发条件 | 行为 |
+|------|----------|------|
+| `LOOP_LARGE_LIST` 诊断 | 项数 > `maxLoopItemsPerRegion`（默认 1000） | 不截断全量渲染，提示接入虚拟化 |
+| `LOOP_BUDGET_EXCEEDED` | 展开节点数超出 `maxExpandedNodes`（默认 10000）等预算 | 抛错终止渲染 |
+| `LOOP_DUPLICATE_KEY` | `key` 解析出重复值 | 抛错并发出诊断 |
+
+预算可通过 `useVario` 的 `runtimeBudget` 调整（`maxExpandedNodes`、`maxLoopItemsPerRegion`、`maxActiveLoopCells` 等）。
+
+### 自定义适配器
+
+参考实现只做简单的条数截取。接入真实滚动容器（如 Element Plus 虚拟化表格）时实现 `VirtualListAdapter` 接口：
+
+```typescript
+import type { VirtualListAdapter } from '@variojs/vue'
+
+const myAdapter: VirtualListAdapter = {
+  // 返回当前应渲染的 [start, end) 区间与两侧预取量
+  getVisibleRange(input) {
+    const { scrollTop, rowHeight, viewportHeight } = measureContainer()
+    const start = Math.max(0, Math.floor(scrollTop / rowHeight) - 4)
+    const end = Math.min(input.itemCount, Math.ceil((scrollTop + viewportHeight) / rowHeight) + 4)
+    return { start, end, overscan: 4 }
+  },
+  // 列表项数变化时同步滚动状态（可选）
+  onItemsChanged(change) { syncScrollbar(change.itemCount) },
+  // 滚动位置恢复锚点（可选）
+  restoreAnchor(key) { scrollToKey(key) }
+}
+```
+
+> 虚拟化依赖 prepared 渲染管线（`runtimeMode: 'shadow' | 'prepared'`），legacy 管线下 `virtual` 与 `virtualAdapter` 不生效。
+
+---
+
 ## 其他优化技巧
 
 ### 循环 key 优化
 
-为循环项设置稳定的 `key` 是 Vue 优化的基础：
+为循环项设置稳定的 `key` 是 Vue 优化的基础。v0.4+ 推荐在 `loop` 上声明 `key`（prepared 管线生效，缺省回退 `item.id` → `itemKey:index`，见[控制流指南](/guide/control-flow#key-稳定-item-key)）：
 
 ```typescript
-// ✅ 推荐：使用稳定的 id
+// ✅ v0.4+ 推荐：loop.key 声明式稳定 key
+{
+  type: 'div',
+  loop: { items: '{{ users }}', itemKey: 'user', key: 'uid' },
+  children: '{{ user.name }}'
+}
+
+// ✅ legacy 管线：props.key 表达式
 {
   type: 'div',
   loop: { items: '{{ users }}', itemKey: 'user' },

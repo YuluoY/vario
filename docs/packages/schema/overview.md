@@ -4,10 +4,13 @@
 
 ## 职责边界
 
-- **类型**：SchemaNode、LoopConfig、ModelScopeConfig、Schema、以及 defineSchema 的 InferStateType / InferServicesFromConfig
-- **验证**：validateSchema / validateSchemaNode / validateSchemaWithResult，含结构、表达式、路径
+- **类型**：SchemaNode、LoopConfig、ModelScopeConfig、Schema、SchemaDocument/MaterialManifest，以及 defineSchema 的 InferStateType / InferServicesFromConfig
+- **验证**：validateSchema / validateSchemaNode / validateSchemaWithResult，含结构、表达式、路径、重复节点 ID 检测
 - **规范化**：normalizeSchema / normalizeSchemaNode，统一格式并带缓存
 - **defineSchema**：把“状态 + 服务 + schema 函数”编译成纯 Schema，并做校验与类型推导
+- **文档信封与序列化**：serializeSchema / parseSchema（SchemaDocument v0/v1），见[文档与序列化迁移](/packages/schema/document)
+- **版本迁移**：migrateToV1 / rollbackToV0 / wrapLegacy，v0 裸节点与 v1 信封互转
+- **物料清单**：validateMaterialManifest / MaterialManifest，声明文档依赖的组件版本与能力
 
 不负责：求值、VM 执行、UI 渲染（这些在 Core 与各渲染包）。
 
@@ -26,6 +29,7 @@ Core 用于表达式校验与 RuntimeContext 类型；若只做类型导入或�
 | [类型与 Schema 节点](/packages/schema/types) | type / props / children / events / cond / show / loop / model |
 | [验证](/packages/schema/validation) | validateSchema、选项、SchemaValidationError |
 | [规范化](/packages/schema/normalization) | normalizeSchema、缓存、使用场景 |
+| [文档与序列化迁移](/packages/schema/document) | SchemaDocument、serializeSchema/parseSchema、migrateToV1、物料清单 |
 | [defineSchema](/packages/schema/define-schema) | 配置、schema 函数、类型推导、与 useVario 的配合 |
 | [API](/packages/schema/api) | 导出汇总 |
 | [最佳实践](/packages/schema/best-practices) | 编写与校验 Schema 的实践建议 |

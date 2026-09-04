@@ -136,6 +136,63 @@ const { renderSchema } = useVario({
 })
 ```
 
+## Schema 增强特性（v0.4+）
+
+### `loop.key`：声明式稳定 item key
+
+```typescript
+{
+  type: 'div',
+  loop: {
+    items: '{{ orders }}',
+    itemKey: 'order',
+    key: 'orderNo'   // 缺省回退 item.id，再回退 itemKey:index
+  },
+  children: '{{ order.title }}'
+}
+```
+
+列表重排/插入/删除时按业务 key 复用循环项，key 重复会抛 `LOOP_DUPLICATE_KEY`。详见[控制流指南](/guide/control-flow#key-稳定-item-key)。
+
+### `loop.virtual`：长列表虚拟化
+
+```typescript
+const { vnode } = useVario(schema, {
+  virtualAdapter: createReferenceVirtualAdapter({ viewport: 200, overscan: 4 })
+})
+```
+
+配合 `virtualAdapter` 只渲染可视范围内的循环项；`virtual: false` 强制全量但仍受预算约束。详见[性能指南](/guide/performance#长列表虚拟化)。
+
+### `_componentize`：显式强制组件化
+
+```typescript
+{
+  type: 'ElDialog',
+  _componentize: true,   // 绕过 scope boundary 与「后代 ≥ 5」阈值，直接包装为独立组件
+  children: [...]
+}
+```
+
+自动组件化规则不达标、但实测有渲染隔离收益的子树使用。详见[性能指南](/guide/performance#显式强制组件化-_componentize)。
+
+### `onActivated` / `onDeactivated`：KeepAlive 生命周期
+
+```typescript
+{
+  type: 'ElTabPane',
+  keepAlive: true,
+  onActivated: 'resumeState',     // 激活时调用 methods.resumeState
+  onDeactivated: 'pauseState'     // 停用时调用 methods.pauseState
+}
+```
+
+详见[生命周期文档](/packages/vue/lifecycle)。
+
+### SchemaDocument 文档信封
+
+schema 之上新增版本化信封（`version`/`root`/`materials`/`extensions` 等），配套 `serializeSchema`/`parseSchema` 序列化与 `migrateToV1` 迁移。详见[@variojs/schema 文档](/packages/schema/document)。
+
 ## 实际案例
 
 ### 模态框（.self 修饰符）
@@ -295,4 +352,6 @@ type DirectiveArray = readonly [
 - [事件处理](/guide/events)
 - [事件修饰符](/guide/event-modifiers)
 - [自定义指令](/guide/directives)
+- [控制流](/guide/control-flow)
+- [性能优化](/guide/performance)
 - [快速开始](/guide/quick-start)

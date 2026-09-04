@@ -41,13 +41,20 @@ import type { LoopConfig } from '@variojs/schema'
   loop: {
     items: '{{ list }}',   // 数据源表达式
     itemKey: 'item',
-    indexKey: 'index'      // 可选
+    indexKey: 'index',     // 可选
+    key: 'uid',            // 可选（v0.4+）：稳定 item key
+    virtual: true          // 可选（v0.4+）：宿主虚拟化
   },
   children: [{ type: 'div', children: '{{ index + 1 }}. {{ item.name }}' }]
 }
 ```
 
-**LoopConfig**：`items`（表达式）、`itemKey`、`indexKey?`。渲染层会对 `items` 求值得到数组，再对每一项创建循环上下文（$item、$index）。
+**LoopConfig**：`items`（表达式）、`itemKey`、`indexKey?`、`key?`、`virtual?`。渲染层会对 `items` 求值得到数组，再对每一项创建循环上下文（$item、$index）。
+
+- **key**：稳定 item key，指向 item 上的属性（如 `'uid'` → `item.uid`）；缺省回退 `item.id`，再回退 `` `${itemKey}:${index}` ``。key 重复会抛 `LOOP_DUPLICATE_KEY`。
+- **virtual**：是否接受宿主虚拟化渲染（需配合渲染包的 `virtualAdapter`）；`false` 时全量展开但仍受运行预算约束。
+
+两个字段均由 prepared 渲染管线消费，详见[控制流指南](/guide/control-flow#循环渲染)。
 
 ## 双向绑定 model
 
@@ -83,9 +90,10 @@ import type { LoopConfig } from '@variojs/schema'
 - **Schema\<TState\>**：整棵树的根类型，一般就是 **SchemaNode\<TState\>**。
 - **SchemaNode\<TState\>**：可带状态泛型，用于在 defineSchema 或类型工具里推导“该 Schema 依赖的状态形状”。
 
-## ModelScopeConfig、LoopConfig
+## ModelScopeConfig、LoopConfig、SchemaDocument
 
 - **ModelScopeConfig**：`{ path: string; scope?: boolean; default?: unknown; lazy?: boolean }`，仅用于 model 的对象形式；`default` 为状态未初始化时的默认值；`lazy: true` 为惰性绑定（不预写 state，仅用户修改后写入）。
-- **LoopConfig**：`{ items: string; itemKey: string; indexKey?: string }`。
+- **LoopConfig**：`{ items: string; itemKey: string; indexKey?: string; key?: string; virtual?: boolean }`。
+- **SchemaDocument**：文档信封 `{ version, root, schemaVersion?, id?, initialState?, materials?, materialVersions?, extensions? }`，用于存储、传输与版本治理，见[文档与序列化迁移](/packages/schema/document)。defineSchema 返回的 **VarioView** 上可通过 `document` 字段挂载。
 
 在 [验证](/packages/schema/validation) 中会说明这些字段如何在运行时被校验。

@@ -19,29 +19,36 @@ import type {
   LoopConfig,
   EventHandler,
   DirectiveConfig,
-  
+
+  // 文档信封类型（v0.4+）
+  SchemaDocument,
+  SchemaVersion,
+  NodeId,
+  MaterialManifest,
+
   // Action 类型
   Action,
   ActionType,
   ActionMap,
-  
+
   // Runtime 类型
   RuntimeContext,
   MethodHandler,
+  ExecutionMetadata,
   MethodsRegistry,
   CreateContextOptions,
-  
+
   // Expression 类型
   ExpressionOptions,
   ExpressionCache,
-  
+
   // 工具类型
   PathSegment,
   GetPathValue,
   SetPathValue,
   OnStateChangeCallback,
   InferStateType,
-  
+
   // Error 类型
   ErrorContext,
   SchemaValidationErrorContext
@@ -71,12 +78,16 @@ interface MyState {
 }
 
 const schema: SchemaNode<MyState> = {
-  tag: 'div',
-  model: { bind: 'username' },  // ✅ 类型安全：keyof MyState
-  if: '{{ items.length > 0 }}',  // ✅ 表达式类型推导
-  loop: {
-    from: '{{ items }}',  // ✅ 数组路径类型安全
-    as: 'item'
+  type: 'div',                    // ✅ type（不是 tag）
+  model: 'username',              // ✅ 字符串路径绑定
+  cond: 'items.length > 0',       // ✅ 条件渲染（v-if 语义）
+  show: 'username !== ""',        // ✅ 条件显示（v-show 语义）
+  loop: {                         // ✅ LoopConfig
+    items: 'items',               //    数据源表达式
+    itemKey: 'item',              //    循环变量名
+    indexKey: 'index',            //    可选：索引变量名
+    key: 'id',                    //    可选（v0.4+）：稳定 item key
+    virtual: true                 //    可选（v0.4+）：宿主虚拟化
   },
   events: {
     click: { type: 'call', method: 'handleClick' }
@@ -103,10 +114,10 @@ const modifiers2: ModelModifiers = {
 
 // 在 Schema 中使用
 const schema: SchemaNode = {
-  tag: 'ElInput',
+  type: 'ElInput',
   model: {
-    bind: 'username',
-    modifier: ['trim', 'lazy']  // ✅ 类型安全
+    path: 'username',       // ✅ 对象形式：path 必填
+    modifiers: ['trim', 'lazy']  // ✅ 类型安全
   }
 }
 ```
@@ -206,30 +217,57 @@ Vue 特定的 Schema 节点类型：
 ```typescript
 import type { VueSchemaNode } from '@variojs/vue'
 
-const schema: VueSchemaNode<MyState> = {
-  tag: 'div',
+const schema: VueSchemaNode = {
+  type: 'div',
   ref: 'myDiv',  // ✅ Vue 模板引用
-  
-  // ✅ 生命周期钩子
+
+  // ✅ 生命周期钩子（值为 methods 中的方法名）
   onMounted: 'init',
   onUnmounted: 'cleanup',
   onUpdated: 'handleUpdate',
-  
+  onActivated: 'resumeState',      // v0.4+：KeepAlive 激活
+  onDeactivated: 'pauseState',     // v0.4+：KeepAlive 停用
+
   // ✅ Vue 特性
   provide: { theme: 'dark' },
   inject: ['userInfo'],
   teleport: 'body',
   transition: 'fade',
   keepAlive: true,
-  
+
   // ✅ 继承 SchemaNode 所有属性
   model: 'fieldName',
-  show: '{{ visible }}',
+  show: 'visible',
   events: {
     click: { type: 'call', method: 'onClick' }
   }
 }
 ```
+
+### SchemaDocument 与 MaterialManifest（v0.4+）
+
+存储与跨端传输用的文档信封类型，配合 `@variojs/schema` 的 `serializeSchema`/`parseSchema`/`migrateToV1` 使用：
+
+```typescript
+import type { SchemaDocument, MaterialManifest } from '@variojs/types'
+
+const doc: SchemaDocument = {
+  version: 1,                    // 0 = 裸 SchemaNode，1 = 信封
+  schemaVersion: 1,              // schema 结构版本（可选）
+  id: 'page:home',               // 文档 ID（可选）
+  root: { type: 'div', children: [] },  // ★ 必填：schema 根节点
+  initialState: { rows: [] },    // 文档自带初始 state（可选）
+  materials: [{                  // 物料清单（可选）
+    name: 'ElTable',
+    version: '2.5.0',
+    events: ['select'],
+    capabilities: ['virtual']
+  }],
+  extensions: {}                 // 自定义扩展数据（可选）
+}
+```
+
+defineSchema 返回的 `VarioView` 上可通过 `document` 字段挂载。完整说明见 [@variojs/schema 文档与序列化迁移](/packages/schema/document)。
 
 ## 类型推导
 
@@ -240,7 +278,7 @@ import type { InferStateType } from '@variojs/types'
 
 const view = {
   state: { count: 0, name: '' },
-  schema: { tag: 'div' },
+  schema: { type: 'div' },
   services: {}
 }
 

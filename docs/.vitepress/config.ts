@@ -56,6 +56,7 @@ export default defineConfig({
           { text: '类型与 Schema 节点', link: '/packages/schema/types' },
           { text: '验证', link: '/packages/schema/validation' },
           { text: '规范化', link: '/packages/schema/normalization' },
+          { text: '文档与序列化迁移', link: '/packages/schema/document' },
           { text: 'defineSchema', link: '/packages/schema/define-schema' },
           { text: 'API 参考', link: '/packages/schema/api' },
           { text: '最佳实践', link: '/packages/schema/best-practices' }
