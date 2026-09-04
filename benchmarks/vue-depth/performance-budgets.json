@@ -9,8 +9,8 @@
       "prepared"
     ]
   },
-  "calibratedAt": "2026-09-04T22:10:34.423Z",
-  "commit": "85e8d846929eba78b9c2d0adb5237aadc23bbb59",
+  "calibratedAt": "2026-09-04T22:24:44.971Z",
+  "commit": "4cbd484db1f04c5b159526cc0a187322bbb7fa4e",
   "p95": {
     "PERF_T1": 20,
     "PERF_T2": 16,
