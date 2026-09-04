@@ -41,8 +41,10 @@ describe('T1.9 prepare performance gates', () => {
     }
     // 按固定 runner 协议先预热（填充 plan cache），再采样
     for (let i = 0; i < 2; i++) prepareView(schema)
+    // 40 个样本让 p95 成为真正的分位数：共享机器上单次调度抖动
+    // （OS 抢占/GC 暂停落在某次采样里）只占 2.5%，不会直接击穿断言
     const samples: number[] = []
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 40; i++) {
       const t0 = performance.now()
       const view = prepareView(schema)
       samples.push(performance.now() - t0)
