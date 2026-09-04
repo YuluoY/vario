@@ -230,7 +230,7 @@ const { vnode, findById, findAll } = useVario(schemaQueryDemo, {
 :deep(.stat-item) {
   text-align: center;
   padding: 20px;
-  background: #f5f7fa;
+  background: var(--bg-hover);
   border-radius: 8px;
 }
 
@@ -263,7 +263,7 @@ const { vnode, findById, findAll } = useVario(schemaQueryDemo, {
 :deep(.code-card pre) {
   margin: 0;
   padding: 16px;
-  background: #f5f7fa;
+  background: var(--bg-hover);
   border-radius: 4px;
   overflow-x: auto;
 }

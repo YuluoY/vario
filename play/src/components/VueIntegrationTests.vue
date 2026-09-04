@@ -77,7 +77,7 @@
             <el-empty v-else :description="$t('vueIntegrationTests.noSchemaRendered')" />
             <!-- Debug info -->
             <div v-if="renderVNode" class="debug-info">
-              <strong>{{ $t('vueIntegrationTests.debugInfo') }}:</strong>
+              <strong>{{ $t('vueIntegrationTests.debugInfo') }}</strong>
               <pre style="font-size: 11px; margin-top: 5px;">{{ JSON.stringify({
                 type: (renderVNode as any)?.type?.toString() || (renderVNode as any)?.type?.name || 'unknown',
                 hasProps: !!(renderVNode as any)?.props,

@@ -10,7 +10,11 @@
 .main {
   flex: 1;
   padding: $spacing-xl 0;
-  padding-bottom: 100px; // 为固定底部栏留出空间（根据 footer 实际高度调整）
+  padding-bottom: 140px; // 为固定 footer 留出空间（footer 桌面端约 86px + 呼吸空间）
+
+  @include respond-below(xs) {
+    padding-bottom: 190px; // 移动端 footer 为纵向布局，高度约 150px
+  }
   background: var(--bg-base);
   transition: background-color $transition-base;
   min-height: calc(100vh - 56px); // 减去导航栏高度（56px）

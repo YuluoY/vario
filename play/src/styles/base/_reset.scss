@@ -32,3 +32,12 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+html {
+  // 固定 footer 遮挡补偿：scrollIntoView / 锚点 / 键盘焦点滚动时停在 footer 之上
+  scroll-padding-bottom: 140px;
+
+  @include respond-below(xs) {
+    scroll-padding-bottom: 190px;
+  }
+}

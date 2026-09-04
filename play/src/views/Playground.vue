@@ -420,10 +420,18 @@ function parseCode(codeStr: string): { schema: any; state?: any; methods?: any }
 
 // 重置代码
 function resetCode() {
-  code.value = getDefaultCode()
+  const defaultCode = getDefaultCode()
+  code.value = defaultCode
   error.value = null
   vnodeRef.value = null
   runtimeState.value = null
+
+  // monaco-editor-vue3 不响应外部 value 变更，需手动同步编辑器显示
+  const editor = getEditorInstance()
+  if (editor && typeof editor.setValue === 'function' && editor.getValue() !== defaultCode) {
+    editor.setValue(defaultCode)
+  }
+
   ElMessage.success(t('playground.codeReset'))
 }
 

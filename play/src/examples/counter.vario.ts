@@ -113,7 +113,7 @@ export function createCounter(app?: App | null) {
               indexKey: 'index'
             },
             props: {
-              style: 'padding: 8px; margin: 4px 0; background: #f5f7fa; border-radius: 4px;'
+              style: 'padding: 8px; margin: 4px 0; background: var(--bg-hover); border-radius: 4px;'
             },
             children: '第 {{ $index + 1 }} 次: {{ value }}'
           },

@@ -138,7 +138,7 @@ export function createSchemasFactory(t: (key: string) => string): () => Record<s
         {
           type: 'div',
           cond: '{{ submitted }}',
-          props: { style: 'margin-top: 20px; padding: 10px; background: #f0f9ff;' },
+          props: { style: 'margin-top: 20px; padding: 10px; background: var(--bg-active); border-left: 3px solid var(--success-base); border-radius: 4px;' },
           children: t('vueIntegrationTests.submitted').replace('{0}', '{{ name }}').replace('{1}', '{{ message }}')
         }
       ]
@@ -205,7 +205,7 @@ export function createSchemasFactory(t: (key: string) => string): () => Record<s
         {
           type: 'div',
           loop: { items: 'todos', itemKey: 'todo', indexKey: 'index' },
-          props: { style: 'display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding: 8px; border: 1px solid #eee; border-radius: 4px;' },
+          props: { style: 'display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding: 8px; border: 1px solid var(--border-default); border-radius: 4px;' },
           children: [
             {
               type: 'ElCheckbox',

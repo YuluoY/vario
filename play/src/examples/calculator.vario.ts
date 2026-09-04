@@ -25,7 +25,7 @@ export function createCalculator(app?: App | null) {
         type: 'ElCard',
         props: { shadow: 'hover' },
         children: [
-          { type: 'div', props: { style: 'background: #f5f5f5; padding: 20px; border-radius: 4px; margin-bottom: 20px; text-align: right; font-size: 32px; font-family: monospace; min-height: 60px; display: flex; align-items: center; justify-content: flex-end;' }, children: '{{ display || "0" }}' },
+          { type: 'div', props: { style: 'background: var(--bg-hover); padding: 20px; border-radius: 4px; margin-bottom: 20px; text-align: right; font-size: 32px; font-family: monospace; min-height: 60px; display: flex; align-items: center; justify-content: flex-end;' }, children: '{{ display || "0" }}' },
           {
             type: 'div',
             props: { style: 'display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;' },
@@ -62,13 +62,13 @@ export function createCalculator(app?: App | null) {
           {
             type: 'div',
             cond: '{{ history.length > 0 }}',
-            props: { style: 'margin-top: 20px; padding-top: 20px; border-top: 1px solid #ebeef5;' },
+            props: { style: 'margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-default);' },
             children: [
               { type: 'h4', props: { style: 'margin-bottom: 12px; font-size: 14px; color: #909399;' }, children: '历史记录' },
               {
                 type: 'div',
                 loop: { items: '{{ history.slice().reverse() }}', itemKey: 'item' },
-                props: { style: 'padding: 8px; margin-bottom: 4px; background: #f5f7fa; border-radius: 4px; font-size: 12px; font-family: monospace;' },
+                props: { style: 'padding: 8px; margin-bottom: 4px; background: var(--bg-hover); border-radius: 4px; font-size: 12px; font-family: monospace;' },
                 children: '{{ item.expression }} = {{ item.result }}'
               }
             ]
