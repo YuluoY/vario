@@ -69,12 +69,6 @@
             </div>
           </div>
         </div>
-
-        <div class="scroll-indicator">
-          <svg class="scroll-arrow" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 5v14M19 12l-7 7-7-7"/>
-          </svg>
-        </div>
       </section>
 
       <!-- ===== 第 2 屏：为什么需要 Vario ===== -->
@@ -316,6 +310,19 @@
         </div>
       </section>
     </div>
+
+    <!-- 整页滚动圆点导航 -->
+    <nav class="section-dots" :aria-label="$t('app.home')">
+      <button
+        v-for="s in sectionList"
+        :key="s.id"
+        type="button"
+        class="section-dot"
+        :class="{ active: activeSection === s.id }"
+        :aria-label="s.label"
+        @click="scrollToSection(s.id)"
+      />
+    </nav>
   </div>
 </template>
 
@@ -528,6 +535,48 @@ const scenarios = computed(() => [
 // 架构高亮状态
 const activeArchStep = ref(2) // 默认高亮 Core
 
+// ===== 整页滚动：分区导航 =====
+const SECTION_IDS = ['hero', 'why', 'skills', 'architecture', 'usage', 'scenarios', 'ecosystem'] as const
+
+const sectionList = computed(() => [
+  { id: 'hero', label: t('app.home') },
+  { id: 'why', label: t('home.why.title') },
+  { id: 'skills', label: t('home.skills.title') },
+  { id: 'architecture', label: t('home.arch.title') },
+  { id: 'usage', label: t('home.usage.title') },
+  { id: 'scenarios', label: t('home.scenarios.title') },
+  { id: 'ecosystem', label: t('home.eco.title') }
+])
+
+const activeSection = ref<string>('hero')
+let updateActiveSection: (() => void) | null = null
+// 加载初期 UA 内部滚动调整会静默偏离吸附点（不触发 scroll 事件、不受 overflow-anchor 控制），
+// 平滑滚动会因此被强制吸附取消；布局稳定后校正到最近吸附点
+let realignTimers: number[] = []
+
+const realignToNearestSection = () => {
+  const y = window.scrollY
+  const nearest = Math.round(y / window.innerHeight) * window.innerHeight
+  if (Math.abs(y - nearest) > 1) window.scrollTo(0, nearest)
+}
+
+const scrollToSection = (id: string) => {
+  const el = document.getElementById(id)
+  if (!el) return
+  const top = el.getBoundingClientRect().top + window.scrollY
+  const startY = window.scrollY
+  window.scrollTo({ top, behavior: 'smooth' })
+  // 后台/被遮挡页面会暂停平滑滚动动画（完全不动），此时退化为瞬时跳转，保证导航始终可用
+  window.setTimeout(() => {
+    if (Math.abs(window.scrollY - startY) < 1 && Math.abs(window.scrollY - top) > 2) {
+      window.scrollTo(0, top)
+    }
+  }, 300)
+  // 被遮挡页面的 scroll 事件会被推迟派发，主动同步高亮
+  window.setTimeout(() => updateActiveSection?.(), 700)
+  window.setTimeout(() => updateActiveSection?.(), 1200)
+}
+
 // ===== 代码高亮 - 先转义HTML再高亮 =====
 const escapeHtml = (str: string): string => {
   return str
@@ -554,6 +603,24 @@ let triggers: ScrollTrigger[] = []
 let codeLineTriggers: ScrollTrigger[] = []
 
 onMounted(() => {
+  // 启用整页吸附滚动（html 类随首页挂载/卸载增删，不影响其他页面）
+  document.documentElement.classList.add('home-fullpage')
+  // 强制吸附会取消从非吸附点出发的平滑滚动；重载后浏览器恢复的滚动位置可能不对齐，先归零首屏
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
+  window.scrollTo(0, 0)
+  updateActiveSection = () => {
+    const y = window.scrollY + window.innerHeight / 2
+    let current: string = 'hero'
+    for (const id of SECTION_IDS) {
+      const el = document.getElementById(id)
+      if (el && el.offsetTop <= y) current = id
+    }
+    activeSection.value = current
+  }
+  window.addEventListener('scroll', updateActiveSection, { passive: true })
+  updateActiveSection()
+  realignTimers = [300, 700, 1500].map(ms => window.setTimeout(realignToNearestSection, ms))
+
   // 等待 DOM 完全渲染
   nextTick(() => {
     initAnimations()
@@ -676,6 +743,13 @@ const initAnimations = () => {
 onBeforeUnmount(() => {
   triggers.forEach(t => t.kill())
   triggers = []
+  realignTimers.forEach(id => window.clearTimeout(id))
+  realignTimers = []
+  document.documentElement.classList.remove('home-fullpage')
+  if (updateActiveSection) {
+    window.removeEventListener('scroll', updateActiveSection)
+    updateActiveSection = null
+  }
 })
 </script>
 
@@ -878,33 +952,7 @@ onBeforeUnmount(() => {
   }
 }
 
-// Scroll Indicator
-.scroll-indicator {
-  position: absolute;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.7;
-  color: var(--v-text-tertiary);
-
-  .scroll-arrow {
-    animation: float-down 1.5s ease-in-out infinite;
-  }
-}
-
-@keyframes float-down {
-  0%, 100% {
-    transform: translateY(0);
-    opacity: 0.7;
-  }
-  50% {
-    transform: translateY(10px);
-    opacity: 1;
-  }
-}
+// Scroll Indicator 已移除（整页滑动由左侧圆点导航承担）
 
 // ============================================
 // Why Section
@@ -1499,6 +1547,146 @@ onBeforeUnmount(() => {
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+// ============================================
+// 整页滚动（Fullpage Scroll）
+// 桌面端启用滚动吸附：一次滑动翻一屏；
+// html.home-fullpage 由首页挂载/卸载时增删
+// ============================================
+
+// 路由 fade 过渡的 translateY(10px) 会把整页吸附点偏移 10px；
+// 后台标签页中过渡可能冻结在 enter-from 状态导致偏移常驻——首页仅保留透明度淡入
+.home-container.fade-enter-from,
+.home-container.fade-enter-active,
+.home-container.fade-enter-to {
+  transform: none;
+}
+
+// 右侧圆点导航
+.section-dots {
+  position: fixed;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px;
+}
+
+.section-dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--v-text-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.25s ease;
+
+  &:hover {
+    border-color: var(--v-primary-400);
+    transform: scale(1.2);
+  }
+
+  &.active {
+    background: var(--v-primary-500);
+    border-color: var(--v-primary-500);
+    transform: scale(1.35);
+    box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
+  }
+}
+
+// 仅在视口能容纳一屏内容时启用吸附，避免超高内容被锁住无法阅读
+@media (min-width: 1024px) and (min-height: 700px) {
+  .section-dots {
+    display: flex;
+  }
+
+  html.home-fullpage {
+    scroll-snap-type: y mandatory;
+    // 首页没有固定 footer，取消全局 scroll-padding 补偿
+    scroll-padding-bottom: 0;
+    // 入场动画会引起布局位移，浏览器滚动锚定会静默偏移 10px 左右，
+    // 导致停留在非吸附点、平滑滚动被强制吸附取消——禁用锚定
+    overflow-anchor: none;
+  }
+
+  html.home-fullpage .home-container .section {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    min-height: 100svh;
+  }
+
+  // 压缩分区上下内边距，确保各屏内容装进一屏
+  html.home-fullpage .home-container .section {
+    padding-top: clamp(40px, 6vh, 64px);
+    padding-bottom: clamp(40px, 6vh, 64px);
+  }
+
+  // 架构屏：步骤卡片改为徽章居左的紧凑横排
+  html.home-fullpage .home-container .arch-step {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--v-space-md);
+    padding: var(--v-space-md) var(--v-space-lg);
+  }
+
+  html.home-fullpage .home-container .step-badge {
+    width: 28px;
+    height: 28px;
+    margin-bottom: 0;
+    flex-shrink: 0;
+    font-size: 0.8rem;
+  }
+
+  html.home-fullpage .home-container .step-title {
+    font-size: 1.1rem;
+    margin-bottom: var(--v-space-xs);
+  }
+
+  html.home-fullpage .home-container .step-desc {
+    font-size: 0.9rem;
+    margin-bottom: var(--v-space-sm);
+  }
+
+  html.home-fullpage .home-container .step-features li {
+    font-size: 0.78rem;
+  }
+
+  // 使用方式屏：代码与特性左右分栏，代码块内部滚动兜底
+  html.home-fullpage .home-container .usage-content {
+    max-width: 1200px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(220px, 1fr);
+    gap: var(--v-space-2xl);
+    align-items: center;
+  }
+
+  html.home-fullpage .home-container .code-showcase {
+    margin-bottom: 0;
+  }
+
+  html.home-fullpage .home-container .code-line {
+    font-size: 0.78rem;
+    padding: 1px 0;
+  }
+
+  html.home-fullpage .home-container .line-content {
+    line-height: 1.5;
+  }
+
+  html.home-fullpage .home-container .v-code-block__body {
+    max-height: 54vh;
+    overflow-y: auto;
+  }
+
+  html.home-fullpage .home-container .usage-features {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 </style>
